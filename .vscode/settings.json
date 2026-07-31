@@ -1,0 +1,30 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never"
+  },
+
+  // Usa la versione di TypeScript del progetto, non quella dell'editor:
+  // evita che l'IDE segnali errori diversi da quelli della build.
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+
+  // Tailwind: completamento anche dentro cn() e nelle stringhe di classe
+  "tailwindCSS.experimental.classRegex": [
+    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"]
+  ],
+  "files.associations": { "*.css": "tailwindcss" },
+  "css.validate": false,
+
+  "search.exclude": {
+    "**/.next": true,
+    "**/node_modules": true,
+    "**/package-lock.json": true
+  },
+  "files.exclude": { "**/.next": true },
+
+  "[prisma]": { "editor.defaultFormatter": "Prisma.prisma" }
+}

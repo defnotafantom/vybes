@@ -1,0 +1,20 @@
+# Regole di formattazione indipendenti dall'editor.
+# Servono perché chi apre il progetto con WebStorm, Vim o VS Code
+# produca file identici, senza diff sporchi di soli spazi.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 100
+
+[*.md]
+# Nel Markdown due spazi a fine riga significano "a capo": non vanno tolti.
+trim_trailing_whitespace = false
+
+[*.{yml,yaml}]
+indent_size = 2

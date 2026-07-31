@@ -1,0 +1,243 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ────────────────────────────────────────────────────────────
+   Token
+   I colori stanno come terne RGB senza rgb(): così Tailwind può
+   applicarci l'opacità (bg-surface/80) senza duplicare le variabili.
+   ──────────────────────────────────────────────────────────── */
+:root {
+  --bg: 250 250 252;
+  --surface: 255 255 255;
+  --surface-raised: 255 255 255;
+  --fg: 17 17 20;
+  --muted: 106 106 122;
+  --border: 228 228 235;
+
+  --ring: 139 92 246;
+
+  /* Durate: un unico posto da cui rallentare o accelerare tutto */
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --dur-slow: 320ms;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --header-h: 4rem;
+}
+
+.dark {
+  --bg: 10 10 14;
+  --surface: 22 22 28;
+  --surface-raised: 30 30 38;
+  --fg: 244 244 246;
+  --muted: 154 154 170;
+  --border: 42 42 52;
+}
+
+/* ────────────────────────────────────────────────────────────
+   Base
+   ──────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    border-color: rgb(var(--border));
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Impedisce che l'ancora finisca sotto l'header appiccicoso */
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: rgb(var(--bg));
+    color: rgb(var(--fg));
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Titoli: interlinea stretta e tracking negativo, come si aspetta
+     l'occhio dai caratteri grandi */
+  h1, h2, h3 {
+    @apply font-bold tracking-tight;
+    text-wrap: balance;
+  }
+  h1 { line-height: 1.08; }
+  h2 { line-height: 1.15; }
+
+  p, li {
+    text-wrap: pretty;
+  }
+
+  /* Focus visibile: requisito WCAG 2.4.7. Solo da tastiera, così il
+     mouse non lascia aloni ovunque. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background: rgb(var(--ring) / 0.25);
+  }
+
+  /* Scrollbar discreta, coerente col tema */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--border)) transparent;
+  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--border));
+    border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background-color: rgb(var(--muted) / 0.5); background-clip: content-box; }
+
+  img, video { content-visibility: auto; }
+}
+
+/* ────────────────────────────────────────────────────────────
+   Componenti
+   ──────────────────────────────────────────────────────────── */
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .surface {
+    @apply rounded-2xl border bg-surface;
+  }
+
+  .card {
+    @apply surface p-5 shadow-subtle transition-all duration-200 ease-out;
+  }
+
+  /* Sollevamento all'hover: solo dove la card è cliccabile.
+     Il translate è di 2px, non di 8: deve suggerire, non saltare. */
+  .card-interactive {
+    @apply card hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-raised;
+  }
+
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-xl px-4 py-2
+           text-sm font-medium transition-all duration-150 ease-out
+           active:scale-[0.98]
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white shadow-subtle
+           hover:bg-brand-700 hover:shadow-raised
+           focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2;
+  }
+
+  .btn-ghost {
+    @apply btn border bg-surface text-ink
+           hover:border-brand-300 hover:bg-brand-50
+           dark:hover:bg-white/5;
+  }
+
+  .btn-danger {
+    @apply btn border border-red-300 bg-transparent text-red-600
+           hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/40;
+  }
+
+  .input {
+    @apply w-full rounded-xl border bg-transparent px-3.5 py-2.5 text-sm
+           transition-colors duration-150
+           placeholder:text-ink-muted/70
+           hover:border-brand-200
+           focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
+           disabled:opacity-60;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-lg bg-brand-50 px-2 py-0.5
+           text-xs font-medium text-brand-700 transition-colors
+           dark:bg-brand-950/60 dark:text-brand-300;
+  }
+
+  .muted { color: rgb(var(--muted)); }
+
+  .link-underline {
+    @apply relative text-brand-600 no-underline
+           after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current
+           after:transition-all after:duration-200 hover:after:w-full;
+  }
+
+  .prose-vybes p { @apply mb-4 leading-relaxed; }
+
+  .skip-link {
+    @apply absolute left-3 top-3 z-50 -translate-y-24 rounded-lg bg-brand-600 px-4 py-2
+           text-sm font-medium text-white shadow-float transition-transform duration-200
+           focus:translate-y-0;
+  }
+
+  /* Divisore con etichetta al centro, senza markup extra */
+  .divider-text {
+    @apply flex items-center gap-3 text-xs text-ink-muted
+           before:h-px before:flex-1 before:bg-line
+           after:h-px after:flex-1 after:bg-line;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────
+   Utility
+   ──────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Entrata scaglionata: si applica al contenitore, i figli seguono a
+     cascata. Evita di scrivere un delay diverso su ogni elemento. */
+  .stagger > * {
+    animation: fade-up 320ms var(--ease) both;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .stagger > *:nth-child(5) { animation-delay: 160ms; }
+  .stagger > *:nth-child(6) { animation-delay: 200ms; }
+  .stagger > *:nth-child(n + 7) { animation-delay: 240ms; }
+
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+  .shimmer::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--fg) / 0.06),
+      transparent
+    );
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-br from-brand-500 to-brand-700 bg-clip-text text-transparent;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────
+   Preferenze di movimento
+   Non è un dettaglio di cortesia: per chi soffre di disturbi
+   vestibolari le animazioni possono provocare nausea. Qui si
+   azzerano tutte in un colpo solo.
+   ──────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

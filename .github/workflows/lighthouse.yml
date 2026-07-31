@@ -1,0 +1,25 @@
+name: Lighthouse
+
+# Il progetto vive di ricerca organica: una regressione sulle Core Web Vitals
+# è un problema di business, non un dettaglio estetico. Questo workflow la
+# rende visibile prima che arrivi in produzione.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1" # ogni lunedì mattina
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Audit delle pagine chiave
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            https://vybeshub.art/
+            https://vybeshub.art/artisti
+            https://vybeshub.art/citta/milano
+          uploadArtifacts: true
+          temporaryPublicStorage: true

@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Un push che arriva mentre la CI sta girando annulla la precedente:
+# non ha senso finire di verificare codice già superato.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualita:
+    name: Tipi, lint e test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Installa le dipendenze
+        # `ci` invece di `install`: rispetta il lockfile alla lettera, così la
+        # CI verifica esattamente le versioni che finiranno in produzione.
+        run: npm ci
+
+      - name: Genera il client Prisma
+        run: npx prisma generate
+
+      - name: Controllo dei tipi
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Formattazione
+        run: npm run format:check
+
+      - name: Test unitari
+        run: npm test
+
+  build:
+    name: Build di produzione
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npx prisma generate
+
+      - name: Build
+        run: npx next build
+        env:
+          # Valori fittizi: la build non si connette al database, ma la
+          # validazione dell'ambiente pretende che le variabili esistano.
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          DIRECT_URL: postgresql://user:pass@localhost:5432/db
+          AUTH_SECRET: secret-di-test-lungo-abbastanza-per-passare
+          NEXT_PUBLIC_SITE_URL: https://vybeshub.art
+
+  e2e:
+    name: Test end-to-end
+    runs-on: ubuntu-latest
+    # Gli e2e richiedono un database vero: girano solo su main, dove ha senso
+    # spendere qualche minuto in più.
+    if: github.ref == 'refs/heads/main'
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: vybes
+          POSTGRES_DB: vybes
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:vybes@localhost:5432/vybes
+      DIRECT_URL: postgresql://postgres:vybes@localhost:5432/vybes
+      AUTH_SECRET: secret-di-test-lungo-abbastanza-per-passare
+      AUTH_TRUST_HOST: "true"
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      UPLOAD_DRIVER: local
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm run db:seed
+      - run: npx playwright install --with-deps chromium
+
+      - name: Playwright
+        run: npx playwright test --project=chromium
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
