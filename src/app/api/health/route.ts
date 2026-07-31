@@ -20,11 +20,25 @@ export async function GET() {
   let users: number | null = null;
 
   try {
-    await prisma.$queryRaw`SELECT 1`;
-    database = "connected";
+    // Volutamente NON una query raw `SELECT 1`: sembra il test più leggero, ma
+    // crea un prepared statement, e il pooler di Neon (PgBouncer in transaction
+    // mode) non li supporta. Il risultato è un health check che fallisce mentre
+    // l'applicazione funziona benissimo — il peggior tipo di falso allarme.
+    // Un count normale passa dallo stesso percorso delle query vere.
     users = await prisma.user.count();
+    database = "connected";
   } catch (e) {
-    databaseError = e instanceof Error ? e.message.split("\n")[0] : "errore sconosciuto";
+    // Gli errori di Prisma iniziano quasi sempre con una riga vuota: prendendo
+    // ciecamente la prima si ottiene "", che non dice niente a chi debug.
+    if (e instanceof Error) {
+      // Prisma mette il motivo vero dopo l'intestazione "Invalid ... invocation":
+      // collassando gli spazi si ottiene tutto il messaggio su una riga sola.
+      databaseError = e.message.replace(/\s+/g, " ").trim().slice(0, 400);
+      const code = (e as { code?: string }).code;
+      if (code) databaseError = `${code}: ${databaseError}`;
+    } else {
+      databaseError = "errore sconosciuto";
+    }
   }
 
   const healthy = database === "connected" && env.valid;

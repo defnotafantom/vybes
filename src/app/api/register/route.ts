@@ -33,7 +33,7 @@ export async function POST(req: Request) {
         // altrimenti nessuno potrebbe completare la registrazione.
         emailVerified: emailIsConfigured() ? null : new Date(),
       },
-      select: { id: true, email: true, slug: true, role: true },
+      select: { id: true, email: true, slug: true, role: true, emailVerified: true },
     });
 
     const token = await issueToken(user.id, "EMAIL_VERIFY");

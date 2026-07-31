@@ -82,7 +82,7 @@ export function ParticipateButton({
       ) : (
         <div className="space-y-3">
           <label htmlFor="participate-message" className="block text-sm font-medium">
-            Messaggio per l'organizzatore <span className="muted">(facoltativo)</span>
+            Messaggio per l&apos;organizzatore <span className="muted">(facoltativo)</span>
           </label>
           <textarea
             id="participate-message"

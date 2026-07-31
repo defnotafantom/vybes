@@ -127,7 +127,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
 
       {event.status === "CANCELLED" && (
         <p role="alert" className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200">
-          Questo ingaggio è stato annullato dall'organizzatore.
+          Questo ingaggio è stato annullato dall&apos;organizzatore.
         </p>
       )}
 
@@ -160,7 +160,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           </p>
 
           <section className="prose-vybes mt-8 whitespace-pre-line">
-            <h2 className="sr-only">Descrizione dell'ingaggio</h2>
+            <h2 className="sr-only">Descrizione dell&apos;ingaggio</h2>
             {event.description}
           </section>
 
