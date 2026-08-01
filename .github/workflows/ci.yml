@@ -40,6 +40,15 @@ jobs:
       - name: Formattazione
         run: npm run format:check
 
+      # Controlla che ogni pagina dichiari il canonical del proprio percorso.
+      # Nasce da un guasto reale: un file di rotta sovrascritto da una copia
+      # della landing compilava, passava i test e si apriva senza errori —
+      # l'unico sintomo era che ogni profilo artista diceva a Google «la
+      # pagina vera è la home». Nessuno degli altri controlli poteva vederlo,
+      # perché nessuno sa cosa una pagina *dovrebbe* dichiarare.
+      - name: Coerenza dei canonical
+        run: npm run verify:seo
+
       - name: Test unitari
         run: npm test
 

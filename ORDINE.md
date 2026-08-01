@@ -50,8 +50,20 @@ ormai fuori dall'indice da sola, quindi non è più un'urgenza SEO — ma restan
 visibili negli elenchi pubblici, e un visitatore che li incontra capisce di
 essere su un sito vuoto.
 
-**Come.** Da Neon, o con uno script che chieda conferma. Attenzione alle
-cancellazioni a cascata: un utente ha post, partecipazioni, messaggi.
+**Come.** C'è un comando apposta. Senza `--conferma` non cancella niente,
+mostra solo cosa sparirebbe:
+
+```powershell
+npm run user:elimina -- kkkk il-tuo-nome
+npm run user:elimina -- kkkk il-tuo-nome --conferma
+```
+
+Guarda i conteggi prima di confermare: un account di prova ha quasi sempre zero
+di tutto, e un numero alto è il segnale che stai cancellando la persona
+sbagliata. Lo script si rifiuta di toccare account con un ruolo di moderazione.
+
+Attenzione: le pagine sono rigenerate a intervalli, quindi i profili restano
+visibili ancora per un'ora dopo la cancellazione.
 
 ---
 

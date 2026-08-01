@@ -23,8 +23,10 @@
     "typecheck": "tsc --noEmit",
     "user:admin": "tsx scripts/assegna-ruolo-admin.ts",
     "user:crea": "tsx scripts/crea-utente.ts",
+    "user:elimina": "tsx scripts/elimina-account.ts",
     "user:password": "tsx scripts/reimposta-password.ts",
-    "verify": "npm run typecheck && npm run lint && npm test"
+    "verify": "npm run typecheck && npm run lint && npm run verify:seo && npm test",
+    "verify:seo": "node scripts/verifica-canonical.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
