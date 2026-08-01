@@ -685,6 +685,65 @@ segnalato, né da chi ha subito la rimozione, né da chi moderasse dopo.
 
 ---
 
+## ADR-022 · Rimuovere significa nascondere, non cancellare
+
+**Problema.** Accogliere una segnalazione senza toccare il contenuto è teatro:
+la coda si svuota e il materiale resta online. Ma cancellarlo è irreversibile.
+
+**Decisione.** Accogliere può rendere il contenuto non visibile — `isPublic` a
+falso — e la spunta è attiva per impostazione predefinita. Il contenuto resta
+nel database e nell'account di chi l'ha pubblicato.
+
+**Tre ragioni, in ordine di peso.**
+
+1. Una decisione di moderazione si può sbagliare, e il Digital Services Act
+   prevede esplicitamente che sia contestabile. Un contenuto cancellato non si
+   ripristina: il reclamo diventerebbe una formalità senza rimedio.
+2. Se la segnalazione riguarda qualcosa di illecito, il contenuto è anche una
+   prova. Distruggerla è il contrario di ciò che serve.
+3. La sanzione è la visibilità, non l'espropriazione: chi ha pubblicato
+   mantiene accesso al proprio materiale.
+
+**Perché l'oscuramento è separato dall'esito.** Non tutte le segnalazioni
+fondate richiedono una restrizione: una che denuncia un dato sbagliato si
+accoglie e si corregge. Legare le due cose lascerebbe a chi modera solo la
+scelta fra ignorare e nascondere, togliendo la misura intermedia.
+
+**L'eccezione dichiarata.** I commenti non hanno un campo di visibilità, quindi
+l'unica misura possibile è la cancellazione. È un limite dello schema, non una
+scelta, ed è scritto nel codice dove chi modera lo può leggere.
+
+---
+
+## ADR-023 · La motivazione è dovuta anche a chi subisce la rimozione
+
+**Il difetto che questa decisione corregge.** La prima versione del sistema di
+segnalazione inviava la motivazione a chi aveva segnalato, e a nessun altro.
+Sembrava completo: la norma parla di riscontro a chi segnala, e quello c'era.
+
+Non è completo. L'articolo 17 del Digital Services Act impone una «statement of
+reasons» a chi subisce la restrizione — deve sapere cosa è stato rimosso,
+perché, su quale base, e come contestarlo. È l'obbligo più facile da
+dimenticare proprio perché l'attenzione va naturalmente a chi ha segnalato,
+che è la persona con cui si sta interagendo.
+
+**Decisione.** Quando una restrizione viene effettivamente imposta, l'autore
+riceve un'email con il contenuto interessato, il motivo della segnalazione, la
+motivazione della decisione, e l'indicazione esplicita che può contestarla
+rispondendo.
+
+**Il dettaglio che rende la regola corretta.** L'avviso parte solo se la
+restrizione c'è stata davvero. Accogliere una segnalazione senza oscurare non
+impone nulla all'autore, e mandargli un messaggio su un contenuto ancora online
+sarebbe soltanto confusione.
+
+**Perché conta più di quanto sembri.** Rimuovere in silenzio è esattamente il
+comportamento che la norma vieta: chi si vede sparire un contenuto senza
+spiegazione non può capire se ha sbagliato, correggersi, o difendersi da una
+decisione errata.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

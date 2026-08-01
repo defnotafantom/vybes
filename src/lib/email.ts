@@ -141,3 +141,48 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;")
     .replace(/\n/g, "<br>");
 }
+
+/**
+ * Motivazione a chi ha pubblicato il contenuto rimosso — art. 17 DSA.
+ *
+ * È l'obbligo più facile da dimenticare, perché l'attenzione va naturalmente a
+ * chi segnala. Ma il Digital Services Act impone una «statement of reasons»
+ * anche — e soprattutto — a chi subisce la restrizione: deve sapere cosa è
+ * stato rimosso, perché, su quale base, e come contestarlo.
+ *
+ * Rimuovere in silenzio è esattamente il comportamento che la norma vieta:
+ * chi si vede sparire un contenuto senza spiegazione non ha modo di capire se
+ * ha sbagliato, di correggersi, o di difendersi da una decisione errata.
+ */
+export async function sendModerationNoticeEmail(
+  to: string,
+  nome: string,
+  contenuto: string,
+  motivo: string,
+  motivazione: string
+) {
+  const titolo = "Abbiamo rimosso un tuo contenuto";
+  await send({
+    to,
+    subject: `${titolo} — ${SITE.name}`,
+    text:
+      `Ciao ${nome},\n\n` +
+      `abbiamo reso non visibile ${contenuto} in seguito a una segnalazione.\n\n` +
+      `Motivo: ${motivo}\n\nMotivazione: ${motivazione}\n\n` +
+      `Il contenuto non è stato cancellato: resta nel tuo account, semplicemente\n` +
+      `non è più visibile agli altri. Se ritieni che la decisione sia sbagliata,\n` +
+      `rispondi a questa email: la rivediamo.`,
+    html: layout(
+      titolo,
+      `<p>Ciao ${escapeHtml(nome)},</p>
+       <p>abbiamo reso non visibile <strong>${escapeHtml(contenuto)}</strong> in
+       seguito a una segnalazione.</p>
+       <p><strong>Motivo</strong><br>${escapeHtml(motivo)}</p>
+       <p><strong>Motivazione della decisione</strong><br>${escapeHtml(motivazione)}</p>
+       <p>Il contenuto non è stato cancellato: resta nel tuo account, semplicemente
+       non è più visibile agli altri.</p>
+       <p><strong>Se pensi che sia un errore, rispondi a questa email.</strong>
+       Le decisioni di moderazione si possono contestare, e le rivediamo.</p>`
+    ),
+  });
+}

@@ -3,8 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { guard, parseBody, ok, fail, handle } from "@/lib/api";
 import { PERMISSIONS } from "@/lib/permissions";
 import { puo } from "@/lib/moderazione";
-import { STATI } from "@/lib/segnalazioni";
-import { sendReportDecisionEmail } from "@/lib/email";
+import { STATI, MOTIVI, type Motivo, type TipoSegnalabile } from "@/lib/segnalazioni";
+import { oscura } from "@/lib/oscuramento";
+import { sendReportDecisionEmail, sendModerationNoticeEmail } from "@/lib/email";
 
 /**
  * Decisione su una segnalazione.
@@ -24,6 +25,15 @@ import { sendReportDecisionEmail } from "@/lib/email";
 const schema = z.object({
   status: z.enum(STATI),
   decisione: z.string().trim().max(2000).optional(),
+  /**
+   * Se accogliendo si debba anche rendere invisibile il contenuto.
+   *
+   * Separato dall'esito perché non tutte le segnalazioni accolte portano a una
+   * rimozione: una che denuncia un dato errato si accoglie e si corregge, non
+   * si oscura. Legare le due cose toglierebbe a chi modera la misura
+   * intermedia, e resterebbe solo la scelta fra ignorare e nascondere.
+   */
+  oscura: z.boolean().optional(),
 });
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -52,9 +62,27 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
     const prima = await prisma.report.findUnique({
       where: { id },
-      select: { reporterEmail: true, status: true },
+      select: { reporterEmail: true, status: true, targetType: true, targetId: true, reason: true },
     });
     if (!prima) return fail("Segnalazione non trovata", 404);
+
+    // L'oscuramento va tentato prima di registrare la decisione: se fallisce —
+    // contenuto già cancellato dal suo autore, identificativo sbagliato — è
+    // meglio che la segnalazione resti aperta piuttosto che risultare accolta
+    // con un contenuto ancora online.
+    let oscurato: Awaited<ReturnType<typeof oscura>> = null;
+    if (data.oscura && data.status === "ACCOLTA") {
+      try {
+        oscurato = await oscura(prima.targetType as TipoSegnalabile, prima.targetId);
+      } catch (e) {
+        console.error("[segnalazioni] oscuramento fallito", e);
+        return fail(
+          "Il contenuto non è stato trovato: potrebbe essere già stato rimosso dal suo autore. " +
+            "Puoi chiudere la segnalazione senza oscurare.",
+          409
+        );
+      }
+    }
 
     const report = await prisma.report.update({
       where: { id },
@@ -72,17 +100,34 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     // Il riscontro parte alla chiusura e solo se lo stato è davvero cambiato:
     // correggere una decisione già presa non deve produrre una seconda email
     // identica alla prima.
+    //
+    // Registrato ma non rilanciato: se la posta è giù, la decisione resta
+    // comunque salvata. Perdere il riscontro è meglio che perdere la decisione.
     if (chiusa && prima.status !== data.status && prima.reporterEmail) {
       await sendReportDecisionEmail(
         prima.reporterEmail,
         data.status === "ACCOLTA" ? "accolta" : "respinta",
         motivazione!
-        // Registrato ma non rilanciato: se la posta è giù, la decisione resta
-        // comunque salvata. Perdere il riscontro è meglio che perdere la
-        // decisione.
       ).catch((e) => console.error("[segnalazioni] riscontro non inviato", e));
     }
 
-    return ok(report);
+    // Motivazione a chi ha subito la rimozione — art. 17 DSA.
+    //
+    // È l'obbligo più facile da dimenticare, perché l'attenzione va a chi
+    // segnala. Ma la norma impone la spiegazione soprattutto a chi subisce la
+    // restrizione: rimuovere in silenzio è esattamente il comportamento che
+    // vieta. Parte solo se una restrizione c'è stata davvero — accogliere
+    // senza oscurare non impone nulla, e non è dovuta.
+    if (oscurato?.autore) {
+      await sendModerationNoticeEmail(
+        oscurato.autore.email,
+        oscurato.autore.name,
+        oscurato.descrizione,
+        MOTIVI[prima.reason as Motivo]?.label ?? prima.reason,
+        motivazione!
+      ).catch((e) => console.error("[segnalazioni] avviso all'autore non inviato", e));
+    }
+
+    return ok({ ...report, oscurato: Boolean(oscurato) });
   });
 }

@@ -8,6 +8,7 @@ import { portfolioJsonLd } from "@/lib/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PROFILO_PUBBLICO } from "@/lib/visibilita";
+import { Segnala } from "@/components/Segnala";
 
 export const revalidate = 3600;
 
@@ -107,6 +108,9 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
             </a>
           </p>
         )}
+        <div className="mt-12 border-t pt-6">
+          <Segnala targetType="PORTFOLIO" targetId={item.slug} etichetta="Segnala questo lavoro" />
+        </div>
       </article>
     </div>
   );

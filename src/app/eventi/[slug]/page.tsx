@@ -13,6 +13,7 @@ import { ParticipateButton } from "@/components/ParticipateButton";
 import { StaticMap } from "@/components/StaticMap";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Avatar } from "@/components/ui/Avatar";
+import { Segnala } from "@/components/Segnala";
 
 export const revalidate = 900;
 
@@ -325,6 +326,10 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
               longitude={event.longitude}
               label={event.venueName ?? event.city}
             />
+
+            <div className="pt-2">
+              <Segnala targetType="EVENT" targetId={event.slug} etichetta="Segnala questo ingaggio" />
+            </div>
 
             {isPast && (
               <p className="flex items-center gap-2 text-fluid-xs text-ink-faint">

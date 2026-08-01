@@ -20,6 +20,7 @@ import { useToast } from "@/components/Toast";
  */
 export function DecisioneForm({ id, stato }: { id: string; stato: string }) {
   const [decisione, setDecisione] = useState("");
+  const [oscura, setOscura] = useState(true);
   const [inCorso, setInCorso] = useState(false);
   const router = useRouter();
   const toast = useToast();
@@ -35,7 +36,7 @@ export function DecisioneForm({ id, stato }: { id: string; stato: string }) {
       const res = await fetch(`/api/segnalazioni/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, decisione }),
+        body: JSON.stringify({ status, decisione, oscura }),
       });
       const body = await res.json();
 
@@ -45,7 +46,11 @@ export function DecisioneForm({ id, stato }: { id: string; stato: string }) {
       }
 
       toast.push(
-        status === "IN_ESAME" ? "Presa in carico" : "Decisione registrata",
+        status === "IN_ESAME"
+          ? "Presa in carico"
+          : body.data?.oscurato
+            ? "Contenuto rimosso, autore avvisato"
+            : "Decisione registrata",
         "success"
       );
       // La coda è renderizzata sul server: senza il refresh, la segnalazione
@@ -72,7 +77,27 @@ export function DecisioneForm({ id, stato }: { id: string; stato: string }) {
         placeholder="Cosa è stato verificato e su quale base si decide. Viene inviata a chi ha segnalato."
       />
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      {/* Predefinito acceso: chi accoglie una segnalazione quasi sempre vuole
+          anche rimuovere il contenuto, e la casella da spuntare si dimentica.
+          Resta disattivabile per le segnalazioni fondate che non richiedono
+          una restrizione — un dato sbagliato si corregge, non si nasconde. */}
+      <label className="mt-3 flex cursor-pointer items-start gap-2.5 text-fluid-xs">
+        <input
+          type="checkbox"
+          checked={oscura}
+          onChange={(e) => setOscura(e.target.checked)}
+          className="mt-0.5 accent-brand-500"
+        />
+        <span>
+          Rendi il contenuto non visibile accogliendo la segnalazione
+          <span className="block text-ink-faint">
+            Non viene cancellato: resta all&apos;autore, che riceve la
+            motivazione e può contestarla.
+          </span>
+        </span>
+      </label>
+
+      <div className="mt-4 flex flex-wrap gap-2">
         {stato !== "IN_ESAME" && (
           <button
             type="button"
