@@ -4,114 +4,162 @@ import { cn } from "@/lib/cn";
  * Campo d'onda del marchio.
  *
  * Il marchio non è una spirale decorativa: è una vibrazione che si propaga —
- * è letteralmente il nome del prodotto. All'hover cinque pacchetti d'onda
- * partono da dietro di lui e attraversano lo schermo.
+ * è letteralmente il nome del prodotto.
  *
- * Ogni fronte è una sinusoide, non un arco: è la forma con cui si disegna
- * un'onda, e rende leggibile la direzione di marcia. L'oscillazione è
- * trasversale al verso di propagazione, come in un'onda che viaggia su una
- * corda.
+ * ── Perché spirali, e perché è la forma giusta ──
  *
- * L'inviluppo `sin(πt)` smorza l'ampiezza ai due capi del pacchetto: senza,
- * la sinusoide comincerebbe e finirebbe di netto, e si leggerebbe come un
- * frammento ritagliato invece che come un impulso.
+ * Una sorgente ferma che emette a intervalli regolari produce cerchi
+ * concentrici. Ma una sorgente che *ruota* mentre emette produce fronti a
+ * spirale: ogni fronte parte in una direzione diversa dal precedente, e il
+ * risultato è una spirale di Archimede. È la geometria dell'irrigatore da
+ * giardino, del faro, della pulsar.
  *
- * I 72° di sfasamento fra un fronte e l'altro sono 360/5: la simmetria del
- * marchio. Ogni onda parte dalla direzione di una pala, e lungo la corsa
- * ruota ancora un po', così la traiettoria prosegue il verso della spirale
- * invece di contraddirlo.
+ * Il marchio ruota. I suoi fronti d'onda sono spirali per necessità fisica,
+ * non per scelta estetica — ed è anche la ragione per cui la forma delle onde
+ * somiglia a quella del marchio: entrambe nascono dalla stessa rotazione.
  *
- * Viola e ciano si alternano: i due colori del gradiente del progetto,
- * separati nel tempo invece che nello spazio.
+ * ── Perché la rotazione basta ad animare tutto ──
+ *
+ * Qui non si anima nessuna espansione. Le spirali sono disegnate una volta e
+ * ruotano, punto. È l'illusione dell'irrigatore: mentre la spirale gira, ogni
+ * suo punto sembra allontanarsi dal centro, perché la spirale interseca ogni
+ * raggio a distanze che crescono col tempo. Il moto radiale è vero — chi si
+ * mettesse fermo su un raggio vedrebbe i fronti passargli davanti a velocità
+ * costante — e si ottiene con **una sola** trasformazione invece che con dieci
+ * animazioni indipendenti.
+ *
+ * Il tentativo precedente traslava pacchetti sinusoidali rigidi. Era sbagliato
+ * due volte: la sinusoide descrive l'ampiezza *nel tempo*, non la forma nello
+ * spazio, e un pacchetto che si sposta senza deformarsi non è un'onda ma un
+ * proiettile.
+ *
+ * ── Lo smorzamento ──
+ *
+ * L'ampiezza di un'onda circolare decade come 1/√r: l'energia si distribuisce
+ * su una circonferenza che cresce con il raggio, quindi l'intensità va come
+ * 1/r e l'ampiezza come la sua radice. Qui lo fa un gradiente radiale usato
+ * come colore del tratto — nessuna animazione, nessun costo per fotogramma.
  *
  * Componente server: nessuno stato, nessun evento. L'hover lo intercetta il
  * CSS attraverso l'antenato `.brand`, quindi zero JavaScript spedito.
  */
 
-/** Direzioni di emissione: una per pala del marchio. */
-const DIREZIONI = 5;
+/** Bracci: uno per pala del marchio. Sono anche i fronti visibili insieme. */
+const BRACCI = 5;
+/** Raggio a cui nasce la spirale: dentro il marchio, che la nasconde. */
+const R0 = 5;
+/** Raggio a cui esce dal riquadro. */
+const R1 = 50;
 /**
- * Pacchetti in circolo. Sono il doppio delle direzioni perché ognuna emette
- * due volte per giro: con un solo pacchetto per direzione lo schermo resta
- * vuoto per lunghi tratti, dato che ciascuno esce di scena molto prima che il
- * ciclo finisca. Le direzioni restano cinque — la simmetria non cambia,
- * cambia la cadenza.
+ * Giri compiuti da un braccio. Con cinque bracci sfasati di 72°, 1,25 giri
+ * danno fronti distanziati di circa nove unità lungo ogni raggio — la
+ * lunghezza d'onda. Alzarlo li infittisce finché non si leggono più come onde
+ * ma come un retino.
  */
-const PACCHETTI = DIREZIONI * 2;
-
-/** Il pacchetto nasce nel centro: il marchio, disegnato sopra, lo nasconde
- *  finché non ne esce. Farlo cominciare più in là lo staccava dalla sorgente,
- *  e l'onda sembrava comparire dal nulla a mezzo schermo. */
-const R0 = 0;
-/** Lunghezza del pacchetto, in unità del sistema di riferimento. */
-const LUNGHEZZA = 26;
-/** Oscillazioni contenute nel pacchetto. */
-const ONDULAZIONI = 1.7;
-const AMPIEZZA = 4.6;
-/** Durata di un giro completo, in millisecondi. Deve restare allineata con
- *  l'animazione `vybe-propaga` in globals.css. */
-const CICLO = 2800;
-/** Punti campionati: abbastanza per una curva liscia, non tanti da pesare. */
-const CAMPIONI = 36;
+const GIRI = 1.25;
+const CAMPIONI = 120;
 
 /**
- * Un pacchetto d'onda disegnato lungo l'asse x, con il centro del sistema in
- * (50, 50). La rotazione e la corsa gliele dà il CSS: qui c'è solo la forma.
+ * Una spirale di Archimede — raggio proporzionale all'angolo — centrata in
+ * (50, 50). La proporzionalità è ciò che tiene i fronti equidistanti lungo
+ * ogni raggio: è la lunghezza d'onda, e in un mezzo omogeneo è costante.
  */
-function pacchetto(): string {
+function spirale(): string {
   const punti: string[] = [];
-  for (let s = 0; s <= CAMPIONI; s++) {
-    const t = s / CAMPIONI;
-    const inviluppo = Math.sin(Math.PI * t) ** 0.65;
-    const x = 50 + R0 + LUNGHEZZA * t;
-    const y = 50 + AMPIEZZA * inviluppo * Math.sin(2 * Math.PI * ONDULAZIONI * t);
-    punti.push(`${s === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`);
+  const thetaMax = GIRI * 2 * Math.PI;
+
+  for (let i = 0; i <= CAMPIONI; i++) {
+    const theta = (i / CAMPIONI) * thetaMax;
+    const r = R0 + ((R1 - R0) * theta) / thetaMax;
+    punti.push(
+      `${i === 0 ? "M" : "L"}${(50 + r * Math.cos(theta)).toFixed(2)} ` +
+        `${(50 + r * Math.sin(theta)).toFixed(2)}`
+    );
   }
   return punti.join("");
 }
 
-const ONDA = pacchetto();
+const TRACCIATO = spirale();
+
+/**
+ * Le fermate dello smorzamento, condivise dai due gradienti.
+ *
+ * Due gradienti espliciti e non uno con `currentColor`: dentro una fermata,
+ * `currentColor` si risolve sul colore del gradiente stesso, non su quello
+ * dell'elemento che lo usa. Tutti i bracci finirebbero della stessa tinta, e
+ * l'alternanza viola/ciano — i due colori del progetto, separati nello spazio
+ * invece che nel tempo — andrebbe persa.
+ */
+const SMORZAMENTO: [string, number][] = [
+  ["0%", 1],
+  ["18%", 0.74],
+  ["38%", 0.54],
+  ["60%", 0.36],
+  ["82%", 0.17],
+  ["100%", 0],
+];
+
+const TINTE = [
+  { id: "vybe-viola", colore: "#a78bfa" },
+  { id: "vybe-ciano", colore: "#22d3ee" },
+];
 
 export function VybeWaves({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 100 100"
       aria-hidden="true"
-      // 150vmax centrati sul marchio. Il raggio del riquadro arriva così a
-      // 75vmax, appena oltre l'angolo più lontano di qualunque schermo: le
-      // onde escono di scena fuori dalla vista invece di sparire a metà.
+      // 150vmax centrati sul marchio: il raggio del riquadro arriva a 75vmax,
+      // appena oltre l'angolo più lontano di qualunque schermo. Un elemento
+      // <svg> ritaglia il proprio riquadro, quindi il campo va dimensionato
+      // sulla corsa dell'onda e non sul marchio fermo.
       className={cn(
         "pointer-events-none absolute left-1/2 top-1/2 h-[150vmax] w-[150vmax]",
         "-translate-x-1/2 -translate-y-1/2",
         className
       )}
     >
-      {Array.from({ length: PACCHETTI }, (_, k) => (
-        <g
-          key={k}
-          // L'orientamento di partenza sta sul gruppo, la corsa sul tracciato:
-          // due animazioni sulla stessa proprietà `transform` si
-          // sovrascriverebbero a vicenda.
-          //
-          // Le emissioni girano fra le cinque direzioni una alla volta, così
-          // partenze consecutive non escono mai dalla stessa parte.
-          className={cn(
-            "vybe-raggio",
-            k % 2 === 0 ? "text-brand-400" : "text-accent-400"
-          )}
-          style={{ transform: `rotate(${((k % DIREZIONI) * 360) / DIREZIONI}deg)` }}
-        >
-          {/* Sfasamento uniforme sull'intero ciclo, non un ritardo breve: i
-              pacchetti escono di scena, quindi se partissero raggruppati
-              resterebbero lunghi tratti di schermo vuoto fra un gruppo e il
-              successivo. Così ce n'è sempre qualcuno in viaggio. */}
-          <path
-            className="vybe-onda"
-            d={ONDA}
-            style={{ animationDelay: `${Math.round((k * CICLO) / PACCHETTI)}ms` }}
-          />
-        </g>
-      ))}
+      <defs>
+        {TINTE.map((t) => (
+          // `userSpaceOnUse` ancora il gradiente al sistema di coordinate:
+          // resta centrato sulla sorgente mentre le spirali ruotano, così la
+          // dissolvenza dipende da dove si trova il tratto e non da come è
+          // orientato. Con le unità predefinite seguirebbe il riquadro di
+          // ciascun tracciato e ruoterebbe con lui.
+          <radialGradient
+            key={t.id}
+            id={t.id}
+            gradientUnits="userSpaceOnUse"
+            cx="50"
+            cy="50"
+            r="50"
+          >
+            {SMORZAMENTO.map(([offset, opacita]) => (
+              <stop key={offset} offset={offset} stopColor={t.colore} stopOpacity={opacita} />
+            ))}
+          </radialGradient>
+        ))}
+      </defs>
+
+      {/* La rotazione sta qui, su un solo elemento: i bracci sono lo stesso
+          treno d'onda e devono girare insieme. Una trasformazione animata al
+          posto di cinque. */}
+      <g className="vybe-rotore">
+        {Array.from({ length: BRACCI }, (_, i) => (
+          <g
+            key={i}
+            // Sfasamento di 360/5: un quinto di periodo fra un fronte e il
+            // successivo. È posizione di partenza, non animazione.
+            style={{ transform: `rotate(${(i * 360) / BRACCI}deg)`, transformOrigin: "50% 50%" }}
+          >
+            <path
+              className="vybe-onda"
+              d={TRACCIATO}
+              stroke={`url(#${TINTE[i % TINTE.length].id})`}
+            />
+          </g>
+        ))}
+      </g>
     </svg>
   );
 }

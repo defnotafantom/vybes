@@ -111,20 +111,7 @@ marcati "Esclusa per tag noindex", la difesa sta funzionando come previsto.
 
 ---
 
-## 6. Le onde del marchio, versione fisica
-
-Rimandato per scelta. L'implementazione attuale fa traslare un pacchetto
-sinusoidale rigido: la sinusoide però rappresenta l'ampiezza **nel tempo**, non
-la forma nello spazio. Un'onda sonora reale è un fronte di compressione che si
-espande, con ampiezza che decade come 1/√r.
-
-Una resa più onesta: fronti circolari che si espandono a velocità costante,
-modulati in opacità da una sinusoide lungo il raggio — l'oscillazione la si vede
-nell'alternanza chiaro/scuro dei fronti, non in una linea ondulata.
-
----
-
-## 7. Google OAuth
+## 6. Google OAuth
 
 `googleOAuth: false` in produzione. Riduce l'attrito alla registrazione, che su
 una piattaforma a due lati conta. Il codice c'è già: mancano le credenziali.

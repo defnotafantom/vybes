@@ -502,67 +502,68 @@
    compositore senza ricalcolare il layout. */
 /* transform-box: view-box fa sì che le percentuali di transform-origin si
    riferiscano al sistema di coordinate dell'SVG e non al riquadro proprio
-   dell'elemento. Senza, ogni tracciato ruoterebbe attorno al centro di se
-   stesso — che sta già spostato in periferia — invece che attorno al
+   dell'elemento. Senza, ogni braccio ruoterebbe attorno al centro di se
+   stesso — che è spostato rispetto alla sorgente — invece che attorno al
    marchio. */
-.vybe-raggio,
-.vybe-onda {
+.vybe-rotore,
+.vybe-rotore > g {
   transform-box: view-box;
   transform-origin: 50% 50%;
 }
 
 .vybe-onda {
   fill: none;
-  stroke: currentColor;
   stroke-linecap: round;
-  stroke-width: 1.5;
-  /* Lo spessore resta in pixel di schermo invece di essere moltiplicato dalle
-     trasformazioni: un tratto sottile deve restare sottile per tutta la corsa. */
+  stroke-width: 1.6;
+  /* Lo spessore resta in pixel di schermo invece di seguire le trasformazioni:
+     un fronte sottile deve restare sottile fino al bordo. */
   vector-effect: non-scaling-stroke;
+}
+
+/* Il campo è invisibile a riposo e appare all'hover. La dissolvenza dura
+   quasi un secondo: un'onda che compare di scatto sembra un difetto di
+   disegno, una che sale sembra un'emissione che comincia. */
+.vybe-rotore {
   opacity: 0;
+  transition: opacity 900ms var(--ease);
+  /* La rotazione gira sempre, anche da spenta: così all'hover il treno d'onda
+     è già in moto invece di partire da fermo. Il costo è nullo — un'animazione
+     su un elemento a opacità zero non viene disegnata. */
+  animation: vybe-rotazione 14s linear infinite;
 }
 
-/* Anche su focus da tastiera: chi naviga con il Tab vede la stessa
-   risposta di chi passa il mouse. */
-.brand:hover .vybe-onda,
-a:focus-visible .vybe-onda {
-  animation: vybe-propaga 2800ms linear infinite;
+/* Anche su focus da tastiera: chi naviga con il Tab vede la stessa risposta
+   di chi passa il mouse. */
+.brand:hover .vybe-rotore,
+a:focus-visible .vybe-rotore {
+  opacity: 1;
 }
 
-/* Il pacchetto viaggia lungo il proprio asse — `translateX` dopo `rotate`
-   agisce nel sistema già ruotato, quindi la traslazione è radiale — e mentre
-   corre ruota di 30°, così la traiettoria è una spirale che prosegue il verso
-   del marchio.
-
-   Andamento lineare, non ease-out: un fronte d'onda viaggia a velocità
-   costante nel mezzo, non rallenta avvicinandosi al bordo.
-
-   L'opacità scende come 1/√r. Per un'onda circolare l'energia si distribuisce
-   su una circonferenza che cresce con r, quindi l'intensità va come 1/r e
-   l'ampiezza — ciò che si vede — come la sua radice. Le fermate intermedie
-   approssimano quella curva: senza, il CSS interpolerebbe in linea retta e lo
-   smorzamento sembrerebbe una dissolvenza qualunque.
-
-   Solo transform e opacity: le due proprietà che il browser anima sul
-   compositore senza ricalcolare il layout né ridisegnare. */
-@keyframes vybe-propaga {
-  0%   { opacity: 0;    transform: rotate(0deg) translateX(0); }
-  5%   { opacity: 0.95; }
-  12%  { opacity: 0.82; }
-  25%  { opacity: 0.66; }
-  40%  { opacity: 0.54; }
-  60%  { opacity: 0.42; }
-  80%  { opacity: 0.28; }
-  93%  { opacity: 0.12; }
-  100% { opacity: 0;    transform: rotate(30deg) translateX(46px); }
+/* Rotazione costante, andamento lineare.
+ *
+ * Non è una scorciatoia: una sorgente che ruota emette fronti a spirale, e
+ * far ruotare quella spirale riproduce esattamente il moto radiale dei suoi
+ * fronti. È il principio dell'irrigatore da giardino — l'acqua va dritta,
+ * sembra girare.
+ *
+ * Quattordici secondi per giro danno fronti che attraversano lo schermo in
+ * poco meno di tre secondi: abbastanza lenti da leggersi, abbastanza veloci
+ * da non sembrare fermi.
+ *
+ * Una sola proprietà animata, su un solo elemento, e per giunta `transform`:
+ * il browser la gestisce sul compositore senza ricalcolare il layout né
+ * ridisegnare. Lo smorzamento è nei gradienti e non costa un fotogramma. */
+@keyframes vybe-rotazione {
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .brand-float,
   .brand-spin { animation: none; }
   .brand:hover .brand-scale { transform: none; }
-  /* Le onde spariscono del tutto: un fronte che attraversa lo schermo è
+  /* Le onde spariscono del tutto: un campo che ruota su tutto lo schermo è
      esattamente il tipo di movimento che questa preferenza esclude. */
-  .brand:hover .vybe-onda,
-  a:focus-visible .vybe-onda { animation: none; opacity: 0; }
+  .vybe-rotore { animation: none; }
+  .brand:hover .vybe-rotore,
+  a:focus-visible .vybe-rotore { opacity: 0; }
 }
