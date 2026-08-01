@@ -506,7 +506,7 @@
    stesso — che è spostato rispetto alla sorgente — invece che attorno al
    marchio. */
 .vybe-rotore,
-.vybe-rotore > g {
+.vybe-rotore > use {
   transform-box: view-box;
   transform-origin: 50% 50%;
 }
@@ -518,6 +518,10 @@
   /* Lo spessore resta in pixel di schermo invece di seguire le trasformazioni:
      un fronte sottile deve restare sottile fino al bordo. */
   vector-effect: non-scaling-stroke;
+  /* Fronti discreti invece di una linea continua: su cento unità di percorso,
+     tratti da 6 separati da 7. Le estremità tonde li fanno leggere come
+     impulsi e non come segmenti tagliati. */
+  stroke-dasharray: 6 7;
 }
 
 /* Il campo è invisibile a riposo e appare all'hover. La dissolvenza dura
@@ -529,7 +533,7 @@
   /* La rotazione gira sempre, anche da spenta: così all'hover il treno d'onda
      è già in moto invece di partire da fermo. Il costo è nullo — un'animazione
      su un elemento a opacità zero non viene disegnata. */
-  animation: vybe-rotazione 14s linear infinite;
+  animation: vybe-rotazione 10s linear infinite;
 }
 
 /* Anche su focus da tastiera: chi naviga con il Tab vede la stessa risposta
@@ -546,15 +550,21 @@ a:focus-visible .vybe-rotore {
  * fronti. È il principio dell'irrigatore da giardino — l'acqua va dritta,
  * sembra girare.
  *
- * Quattordici secondi per giro danno fronti che attraversano lo schermo in
- * poco meno di tre secondi: abbastanza lenti da leggersi, abbastanza veloci
- * da non sembrare fermi.
+ * Il verso è NEGATIVO, e non è un dettaglio estetico. Su una spirale
+ * r = R0 + kθ, un punto che appare all'angolo α dopo una rotazione φ ha
+ * θ = α − φ, quindi raggio R0 + k(α − φ): con φ crescente il raggio
+ * DIMINUISCE e i fronti convergono verso il centro. Invertendo il verso
+ * si propagano verso l'esterno, che è l'unica direzione in cui un'onda
+ * lascia la propria sorgente.
+ *
+ * Dieci secondi per giro: i fronti attraversano lo schermo in circa due,
+ * abbastanza lenti da seguirli, abbastanza veloci da non sembrare fermi.
  *
  * Una sola proprietà animata, su un solo elemento, e per giunta `transform`:
  * il browser la gestisce sul compositore senza ricalcolare il layout né
  * ridisegnare. Lo smorzamento è nei gradienti e non costa un fotogramma. */
 @keyframes vybe-rotazione {
-  to { transform: rotate(360deg); }
+  to { transform: rotate(-360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {

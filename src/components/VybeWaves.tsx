@@ -57,20 +57,39 @@ const R1 = 50;
  * ma come un retino.
  */
 const GIRI = 1.25;
-const CAMPIONI = 120;
+const CAMPIONI = 140;
+
+/**
+ * Oscillazione radiale sovrapposta alla spirale.
+ *
+ * La spirale è la *traiettoria* del fronte; la sinusoide è l'oscillazione del
+ * mezzo attorno a essa. Sono due cose distinte e in un'onda vera convivono:
+ * il fronte avanza, il mezzo vibra sul posto. Un'onda disegnata come linea
+ * liscia mostra solo la prima metà.
+ *
+ * L'ampiezza cresce col raggio perché a distanza maggiore la stessa
+ * oscillazione angolare copre più spazio: senza, l'ondulazione sparirebbe
+ * proprio dove c'è più posto per vederla.
+ */
+const OSCILLAZIONI = 3.5;
+const AMPIEZZA = 2.6;
 
 /**
  * Una spirale di Archimede — raggio proporzionale all'angolo — centrata in
- * (50, 50). La proporzionalità è ciò che tiene i fronti equidistanti lungo
- * ogni raggio: è la lunghezza d'onda, e in un mezzo omogeneo è costante.
+ * (50, 50), con l'oscillazione sovrapposta.
+ *
+ * La proporzionalità è ciò che tiene i fronti equidistanti lungo ogni raggio:
+ * è la lunghezza d'onda, e in un mezzo omogeneo è costante.
  */
 function spirale(): string {
   const punti: string[] = [];
   const thetaMax = GIRI * 2 * Math.PI;
 
   for (let i = 0; i <= CAMPIONI; i++) {
-    const theta = (i / CAMPIONI) * thetaMax;
-    const r = R0 + ((R1 - R0) * theta) / thetaMax;
+    const t = i / CAMPIONI;
+    const theta = t * thetaMax;
+    const r =
+      R0 + (R1 - R0) * t + AMPIEZZA * t * Math.sin(2 * Math.PI * OSCILLAZIONI * t);
     punti.push(
       `${i === 0 ? "M" : "L"}${(50 + r * Math.cos(theta)).toFixed(2)} ` +
         `${(50 + r * Math.sin(theta)).toFixed(2)}`
@@ -139,6 +158,20 @@ export function VybeWaves({ className }: { className?: string }) {
             ))}
           </radialGradient>
         ))}
+
+        {/*
+          Il tracciato sta qui e non nel disegno: dentro <defs> non viene
+          dipinto, esiste solo per essere richiamato. Ripeterlo per esteso
+          cinque volte costerebbe cinque copie di centoquaranta coordinate —
+          otto kilobyte e mezzo di HTML invece di uno e sette, su una pagina
+          che deve caricare in fretta — per disegnare cinque volte la stessa
+          curva.
+
+          pathLength normalizza la lunghezza a 100, così il tratteggio vale una
+          percentuale del percorso: i fronti restano nello stesso numero
+          comunque cambino i parametri della spirale.
+        */}
+        <path id="vybe-braccio" className="vybe-onda" d={TRACCIATO} pathLength={100} />
       </defs>
 
       {/* La rotazione sta qui, su un solo elemento: i bracci sono lo stesso
@@ -146,18 +179,16 @@ export function VybeWaves({ className }: { className?: string }) {
           posto di cinque. */}
       <g className="vybe-rotore">
         {Array.from({ length: BRACCI }, (_, i) => (
-          <g
+          <use
             key={i}
+            href="#vybe-braccio"
             // Sfasamento di 360/5: un quinto di periodo fra un fronte e il
             // successivo. È posizione di partenza, non animazione.
             style={{ transform: `rotate(${(i * 360) / BRACCI}deg)`, transformOrigin: "50% 50%" }}
-          >
-            <path
-              className="vybe-onda"
-              d={TRACCIATO}
-              stroke={`url(#${TINTE[i % TINTE.length].id})`}
-            />
-          </g>
+            // Lo stroke si eredita nell'albero richiamato, quindi il colore lo
+            // decide chi usa il tracciato e non il tracciato stesso.
+            stroke={`url(#${TINTE[i % TINTE.length].id})`}
+          />
         ))}
       </g>
     </svg>
