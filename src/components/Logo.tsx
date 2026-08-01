@@ -2,72 +2,50 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 
 /**
- * Logo vettoriale.
+ * Logotipo.
  *
- * L'originale usava framer-motion per farlo ruotare all'hover. Qui la stessa
- * cosa la fanno due transizioni CSS: framer-motion pesa circa 50 kB gzip e
- * finirebbe nel bundle di ogni singola pagina, incluse quelle che devono
- * caricarsi in fretta per la SEO. Un logo non vale mezzo megabit.
+ * Solo testo, niente icona. Non è una rinuncia: è la separazione classica fra
+ * marchio completo e logotipo. La spirale vuole spazio per leggersi — nella
+ * barra ne ha trentasei pixel, e a quella misura i suoi filamenti si
+ * impastano in una macchia. Ridurla lì avrebbe indebolito il segno proprio
+ * nel punto in cui compare più spesso.
  *
- * L'onda dentro il marchio richiama la forma d'onda audio: è il segno più
- * riconoscibile per una piattaforma di artisti musicali.
+ * Così la spirale resta l'unico marchio figurativo del progetto, mostrato
+ * dove ha respiro, e la barra porta il nome scritto — che oltretutto è
+ * nitido a qualunque densità di schermo, non costa una richiesta di rete e
+ * non ha bisogno di alcun testo alternativo.
+ *
+ * Il gradiente sulle prime due lettere è lo stesso della spirale: il legame
+ * fra i due si tiene sul colore, non sulla ripetizione della forma.
  */
-export function LogoMark({ className, animated = true }: { className?: string; animated?: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 32 32"
-      className={cn("h-8 w-8", className)}
-      role="img"
-      aria-label="Vybes"
-    >
-      <defs>
-        <linearGradient id="vybes-mark" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#8b5cf6" />
-          <stop offset="100%" stopColor="#5b21b6" />
-        </linearGradient>
-      </defs>
-
-      <rect width="32" height="32" rx="8" fill="url(#vybes-mark)" />
-
-      {/* Forma d'onda: le barre centrali sono più alte, come in un livello audio */}
-      <g
-        fill="white"
-        className={cn(animated && "origin-center transition-transform duration-500 ease-out")}
-      >
-        <rect x="7" y="14" width="2.5" height="4" rx="1.25" opacity="0.75" />
-        <rect x="11.5" y="10" width="2.5" height="12" rx="1.25" opacity="0.9" />
-        <rect x="16" y="7" width="2.5" height="18" rx="1.25" />
-        <rect x="20.5" y="11" width="2.5" height="10" rx="1.25" opacity="0.9" />
-        <rect x="25" y="14.5" width="2.5" height="3" rx="1.25" opacity="0.75" />
-      </g>
-    </svg>
-  );
-}
-
 export function Logo({
   href = "/",
-  withText = true,
   className,
 }: {
   href?: string | null;
-  withText?: boolean;
   className?: string;
 }) {
   const content = (
-    <span className={cn("group inline-flex items-center gap-2", className)}>
-      <LogoMark className="h-8 w-8 transition-transform duration-300 ease-out group-hover:scale-105 group-hover:-rotate-3" />
-      {withText && (
-        <span className="text-lg font-bold tracking-tight">
-          <span className="text-brand-600">Vy</span>bes
-        </span>
+    <span
+      className={cn(
+        "brand inline-flex items-baseline text-fluid-lg font-bold tracking-tight",
+        className
       )}
+    >
+      <span className="text-gradient">Vy</span>bes
     </span>
   );
 
   if (!href) return content;
 
   return (
-    <Link href={href} className="rounded-lg transition-opacity hover:opacity-90">
+    <Link
+      href={href}
+      // Il risalto all'hover è una transizione di luminosità, non un ciclo:
+      // la barra è presente su ogni pagina e un marchio che si muove mentre
+      // si legge è una distrazione permanente.
+      className="logo-link rounded-lg"
+    >
       {content}
     </Link>
   );

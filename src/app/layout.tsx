@@ -70,7 +70,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="it" suppressHydrationWarning className={inter.variable}>
+    <html lang="it" suppressHydrationWarning className={`dark ${inter.variable}`}>
       <head>
         <ThemeScript />
         {/* Preconnessione anticipata al CDN delle tile della mappa */}
@@ -106,7 +106,7 @@ function SiteHeader() {
       style={{ borderColor: "rgb(var(--border))", background: "rgb(var(--bg) / 0.85)" }}
     >
       <div className="container-page flex h-16 items-center justify-between gap-4">
-<Logo />
+        <Logo />
         <nav aria-label="Navigazione principale" className="hidden gap-6 text-sm md:flex">
           <Link href="/artisti" className="link-underline text-ink hover:text-brand-600">Artisti</Link>
           <Link href="/eventi" className="link-underline text-ink hover:text-brand-600">Ingaggi</Link>
