@@ -14,9 +14,15 @@ export type ArtistCardData = {
   isVerified: boolean;
 };
 
-export function ArtistCard({ artist, priority = false }: { artist: ArtistCardData; priority?: boolean }) {
+export function ArtistCard({
+  artist,
+  priority = false,
+}: {
+  artist: ArtistCardData;
+  priority?: boolean;
+}) {
   return (
-    <article className="card-interactive group">
+    <article className="card-glow card-interactive group">
       <Link href={`/artisti/${artist.slug}`} className="flex items-start gap-4">
         <Avatar
           name={artist.name}
@@ -25,26 +31,31 @@ export function ArtistCard({ artist, priority = false }: { artist: ArtistCardDat
           priority={priority}
           className="transition-transform duration-250 ease-out group-hover:scale-105"
         />
-        <div className="min-w-0">
-          <h3 className="flex items-center gap-1 truncate font-semibold transition-colors group-hover:text-brand-600">
+
+        <div className="min-w-0 flex-1">
+          <h3 className="flex items-center gap-1.5 truncate text-fluid-base font-semibold transition-colors group-hover:text-brand-400">
             {artist.name}
-{artist.isVerified && <VerifiedBadge />}
+            {artist.isVerified && <VerifiedBadge />}
           </h3>
-          {artist.headline && <p className="line-clamp-2 text-sm muted">{artist.headline}</p>}
-          <p className="mt-2 flex flex-wrap gap-2 text-xs muted">
-            {artist.city && (
-              <span className="inline-flex items-center gap-0.5">
-                <MapPin className="h-3 w-3" aria-hidden="true" />
-                {artist.city}
-              </span>
-            )}
+
+          {artist.headline && (
+            <p className="mt-1 line-clamp-2 text-fluid-sm text-ink-muted">{artist.headline}</p>
+          )}
+
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-fluid-xs">
             {artist.disciplines.slice(0, 2).map((d) => (
               <span key={d} className="chip">
                 {d}
               </span>
             ))}
-            <span>Lv. {artist.level}</span>
-          </p>
+            {artist.city && (
+              <span className="inline-flex items-center gap-1 text-ink-faint">
+                <MapPin className="h-3 w-3" aria-hidden="true" />
+                {artist.city}
+              </span>
+            )}
+            <span className="tabular-nums text-ink-faint">Lv. {artist.level}</span>
+          </div>
         </div>
       </Link>
     </article>

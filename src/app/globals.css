@@ -2,242 +2,567 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ────────────────────────────────────────────────────────────
-   Token
-   I colori stanno come terne RGB senza rgb(): così Tailwind può
-   applicarci l'opacità (bg-surface/80) senza duplicare le variabili.
-   ──────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════
+   TOKEN
+   I colori sono terne RGB nude, senza rgb(): così Tailwind può
+   applicarci l'opacità (bg-surface/80) senza dover dichiarare
+   una variabile per ogni livello di trasparenza.
+   ════════════════════════════════════════════════════════════ */
 :root {
   --bg: 250 250 252;
+  --bg-deep: 244 244 248;
   --surface: 255 255 255;
   --surface-raised: 255 255 255;
-  --fg: 17 17 20;
-  --muted: 106 106 122;
-  --border: 228 228 235;
+  --surface-sunken: 246 246 250;
+
+  --fg: 15 15 20;
+  --muted: 96 96 112;
+  /* Tarato sul caso peggiore, --surface-sunken: 4.59:1 lì, 4.75:1 sul fondo.
+     Il valore precedente (148) si fermava a 2.86:1 e falliva il criterio AA:
+     --faint veste etichette da 13px, quindi rientra nel testo normale, che
+     richiede 4.5:1 e non 3:1. */
+  --faint: 111 111 124;
+
+  --border: 228 228 236;
+  --border-strong: 208 208 220;
 
   --ring: 139 92 246;
 
-  /* Durate: un unico posto da cui rallentare o accelerare tutto */
   --dur-fast: 120ms;
-  --dur: 200ms;
-  --dur-slow: 320ms;
+  --dur: 220ms;
+  --dur-slow: 380ms;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   --header-h: 4rem;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 3px rgb(0 0 0 / 0.06);
+  --shadow-card-hover: 0 2px 4px rgb(0 0 0 / 0.04), 0 6px 16px rgb(0 0 0 / 0.08);
 }
 
 .dark {
-  --bg: 10 10 14;
-  --surface: 22 22 28;
-  --surface-raised: 30 30 38;
-  --fg: 244 244 246;
-  --muted: 154 154 170;
-  --border: 42 42 52;
+  /* Il fondo non è nero puro ma virato al viola: il nero assoluto su schermo
+     crea un contrasto talmente netto da affaticare, e toglie ogni possibilità
+     di stratificare le superfici. */
+  --bg: 9 8 14;
+  --bg-deep: 6 5 10;
+  --surface: 20 18 28;
+  --surface-raised: 28 25 38;
+  --surface-sunken: 14 13 20;
+
+  --fg: 245 243 250;
+  --muted: 160 156 178;
+  /* Tarato sul caso peggiore, --surface-raised: 4.50:1 lì, 5.20:1 sul fondo.
+     Col valore precedente (112) si scendeva a 3.42:1 dentro le schede
+     sollevate — proprio dove --faint compare più spesso. */
+  --faint: 132 127 153;
+
+  --border: 39 36 52;
+  --border-strong: 56 52 74;
+
+  --ring: 167 139 250;
+
+  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  --shadow-card-hover: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 8px 28px rgb(0 0 0 / 0.5);
 }
 
-/* ────────────────────────────────────────────────────────────
-   Base
-   ──────────────────────────────────────────────────────────── */
 @layer base {
-  * {
-    border-color: rgb(var(--border));
-  }
+  * { border-color: rgb(var(--border)); }
 
   html {
     scroll-behavior: smooth;
-    /* Impedisce che l'ancora finisca sotto l'header appiccicoso */
-    scroll-padding-top: calc(var(--header-h) + 1rem);
+    scroll-padding-top: calc(var(--header-h) + 1.5rem);
     -webkit-tap-highlight-color: transparent;
+    color-scheme: light;
   }
+  html.dark { color-scheme: dark; }
 
   body {
     background-color: rgb(var(--bg));
     color: rgb(var(--fg));
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    font-feature-settings: "kern", "liga", "calt";
   }
 
-  /* Titoli: interlinea stretta e tracking negativo, come si aspetta
-     l'occhio dai caratteri grandi */
-  h1, h2, h3 {
-    @apply font-bold tracking-tight;
-    text-wrap: balance;
+  /* Grana appena percettibile: su fondi scuri e ampi il colore piatto produce
+     banding visibile, e un rumore leggerissimo lo maschera. È un SVG inline
+     da poche centinaia di byte, non un'immagine. */
+  .dark body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
   }
-  h1 { line-height: 1.08; }
-  h2 { line-height: 1.15; }
 
-  p, li {
-    text-wrap: pretty;
-  }
+  h1, h2, h3, h4 { @apply font-bold; text-wrap: balance; }
+  p, li { text-wrap: pretty; }
 
-  /* Focus visibile: requisito WCAG 2.4.7. Solo da tastiera, così il
-     mouse non lascia aloni ovunque. */
+  /* Focus visibile: requisito WCAG 2.4.7. Solo da tastiera. */
   :focus-visible {
     outline: 2px solid rgb(var(--ring));
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
-  :focus:not(:focus-visible) {
-    outline: none;
-  }
+  :focus:not(:focus-visible) { outline: none; }
 
-  ::selection {
-    background: rgb(var(--ring) / 0.25);
-  }
+  ::selection { background: rgb(var(--ring) / 0.3); color: rgb(var(--fg)); }
 
-  /* Scrollbar discreta, coerente col tema */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: rgb(var(--border)) transparent;
-  }
+  * { scrollbar-width: thin; scrollbar-color: rgb(var(--border-strong)) transparent; }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: rgb(var(--border));
+    background: rgb(var(--border-strong));
     border-radius: 99px;
     border: 3px solid transparent;
     background-clip: content-box;
   }
-  ::-webkit-scrollbar-thumb:hover { background-color: rgb(var(--muted) / 0.5); background-clip: content-box; }
 
   img, video { content-visibility: auto; }
 }
 
-/* ────────────────────────────────────────────────────────────
-   Componenti
-   ──────────────────────────────────────────────────────────── */
 @layer components {
-  .container-page {
-    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
-  }
+  .container-page { @apply relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8; }
+  .container-narrow { @apply relative z-10 mx-auto w-full max-w-3xl px-4 sm:px-6; }
 
-  .surface {
-    @apply rounded-2xl border bg-surface;
-  }
+  .surface { @apply rounded-2xl border bg-surface; box-shadow: var(--shadow-card); }
+  .card { @apply surface p-5 transition-all duration-250 ease-out; }
 
-  .card {
-    @apply surface p-5 shadow-subtle transition-all duration-200 ease-out;
-  }
+  /* Sollevamento all'hover: due pixel, non otto. Deve suggerire che
+     l'elemento è cliccabile, non farlo saltare. */
+  .card-interactive { @apply card cursor-pointer hover:-translate-y-0.5 hover:border-brand-400/50; }
+  .card-interactive:hover { box-shadow: var(--shadow-card-hover); }
 
-  /* Sollevamento all'hover: solo dove la card è cliccabile.
-     Il translate è di 2px, non di 8: deve suggerire, non saltare. */
-  .card-interactive {
-    @apply card hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-raised;
+  .card-glow { @apply card relative overflow-hidden; }
+  .card-glow::before {
+    content: "";
+    @apply pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-400;
+    background: radial-gradient(600px circle at 50% 0%, rgb(139 92 246 / 0.12), transparent 40%);
   }
+  .card-glow:hover::before { @apply opacity-100; }
 
   .btn {
-    @apply inline-flex select-none items-center justify-center gap-2 rounded-xl px-4 py-2
-           text-sm font-medium transition-all duration-150 ease-out
-           active:scale-[0.98]
-           disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-xl px-4 py-2.5
+           text-fluid-sm font-semibold transition-all duration-150 ease-out
+           active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
   }
-
   .btn-primary {
-    @apply btn bg-brand-600 text-white shadow-subtle
-           hover:bg-brand-700 hover:shadow-raised
+    @apply btn bg-brand-600 text-white hover:bg-brand-500 hover:shadow-glow-brand
            focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2;
   }
-
+  .btn-accent { @apply btn bg-accent-500 text-[#04222a] hover:bg-accent-400 hover:shadow-glow-accent; }
   .btn-ghost {
-    @apply btn border bg-surface text-ink
-           hover:border-brand-300 hover:bg-brand-50
-           dark:hover:bg-white/5;
+    @apply btn border bg-surface text-ink hover:border-brand-400/60 hover:bg-brand-500/[0.07];
   }
-
   .btn-danger {
-    @apply btn border border-red-300 bg-transparent text-red-600
-           hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/40;
+    @apply btn border border-red-400/40 bg-transparent text-red-500 hover:bg-red-500/10;
   }
 
   .input {
-    @apply w-full rounded-xl border bg-transparent px-3.5 py-2.5 text-sm
-           transition-colors duration-150
-           placeholder:text-ink-muted/70
-           hover:border-brand-200
-           focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
-           disabled:opacity-60;
+    @apply w-full rounded-xl border bg-surface-sunken px-4 py-3 text-fluid-sm
+           transition-all duration-150 placeholder:text-ink-faint
+           hover:border-line-strong
+           focus:border-brand-500 focus:bg-surface focus:outline-none
+           focus:ring-4 focus:ring-brand-500/[0.15] disabled:opacity-60;
   }
 
   .chip {
-    @apply inline-flex items-center gap-1 rounded-lg bg-brand-50 px-2 py-0.5
-           text-xs font-medium text-brand-700 transition-colors
-           dark:bg-brand-950/60 dark:text-brand-300;
+    @apply inline-flex items-center gap-1 rounded-lg bg-brand-500/10 px-2.5 py-1
+           text-fluid-xs font-semibold text-brand-700 transition-colors
+           dark:bg-brand-400/[0.12] dark:text-brand-300;
   }
+  .chip-accent { @apply chip bg-accent-500/10 text-accent-700 dark:bg-accent-400/[0.12] dark:text-accent-300; }
+  .chip-gold { @apply chip bg-gold-500/[0.12] text-gold-600 dark:bg-gold-400/[0.12] dark:text-gold-300; }
 
   .muted { color: rgb(var(--muted)); }
+  .faint { color: rgb(var(--faint)); }
 
   .link-underline {
-    @apply relative text-brand-600 no-underline
-           after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current
-           after:transition-all after:duration-200 hover:after:w-full;
+    @apply relative text-brand-600 no-underline dark:text-brand-400
+           after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0
+           after:bg-current after:transition-all after:duration-250 hover:after:w-full;
   }
 
-  .prose-vybes p { @apply mb-4 leading-relaxed; }
+  .prose-vybes p { @apply mb-5 text-fluid-base leading-relaxed; }
 
   .skip-link {
     @apply absolute left-3 top-3 z-50 -translate-y-24 rounded-lg bg-brand-600 px-4 py-2
-           text-sm font-medium text-white shadow-float transition-transform duration-200
+           text-fluid-sm font-semibold text-white transition-transform duration-200
            focus:translate-y-0;
   }
 
-  /* Divisore con etichetta al centro, senza markup extra */
   .divider-text {
-    @apply flex items-center gap-3 text-xs text-ink-muted
-           before:h-px before:flex-1 before:bg-line
-           after:h-px after:flex-1 after:bg-line;
+    @apply flex items-center gap-3 text-fluid-xs text-ink-faint
+           before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line;
   }
+
+  /* Etichetta di sezione: piccola, maiuscoletto, distanziata. Costruisce
+     gerarchia senza aggiungere peso visivo. */
+  /* brand-600 e non brand-500 sul tema chiaro: il 500 si ferma a 4.06:1,
+     sotto la soglia AA per un testo di 13px. Il 600 arriva a 5.47:1. */
+  .eyebrow {
+    @apply text-fluid-xs font-bold uppercase tracking-[0.14em] text-brand-600 dark:text-brand-400;
+  }
+
+  /* ── Barra dei filtri ────────────────────────────────────────────────
+     Sotto i 640px le pillole scorrono in orizzontale invece di andare a
+     capo: quattordici categorie mandate a capo occupano mezzo schermo e
+     spingono i risultati sotto la piega. I margini negativi fanno arrivare
+     lo scorrimento fino al bordo, così il taglio dell'ultima pillola
+     comunica che ce n'è dell'altra. La barra di scorrimento è nascosta ma
+     il contenitore resta focalizzabile da tastiera. */
+  .filters {
+    @apply -mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1
+           sm:mx-0 sm:flex-wrap sm:px-0;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+
+  .filter {
+    @apply inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border
+           px-4 py-2 text-fluid-xs font-semibold text-ink-muted
+           transition-all duration-200 ease-out hover:-translate-y-0.5
+           hover:border-line-strong hover:text-ink;
+  }
+
+  /* Lo stato attivo è marcato con aria-current, non con una classe:
+     l'attributo serve già al lettore di schermo, quindi lo stile si
+     aggancia lì invece di duplicare l'informazione. */
+  .filter[aria-current="true"] {
+    @apply border-transparent bg-brand-600 text-white hover:text-white;
+    box-shadow: 0 6px 20px -8px rgb(139 92 246 / 0.8);
+  }
+  .filter[aria-current="true"]:hover { @apply border-transparent; }
 }
 
-/* ────────────────────────────────────────────────────────────
-   Utility
-   ──────────────────────────────────────────────────────────── */
 @layer utilities {
-  /* Entrata scaglionata: si applica al contenitore, i figli seguono a
-     cascata. Evita di scrivere un delay diverso su ogni elemento. */
-  .stagger > * {
-    animation: fade-up 320ms var(--ease) both;
+  /* Mesh di gradienti per l'hero: due macchie radiali sfocate in deriva
+     lentissima. Nessuna immagine, nessun JavaScript. */
+  .mesh-hero { @apply pointer-events-none absolute inset-0 overflow-hidden; }
+  .mesh-hero::before,
+  .mesh-hero::after { content: ""; @apply absolute rounded-full blur-[100px] animate-drift; }
+  .mesh-hero::before {
+    @apply -left-[10%] -top-[30%] h-[60vh] w-[60vw];
+    background: radial-gradient(circle, rgb(139 92 246 / 0.35), transparent 70%);
   }
-  .stagger > *:nth-child(1) { animation-delay: 0ms; }
-  .stagger > *:nth-child(2) { animation-delay: 40ms; }
-  .stagger > *:nth-child(3) { animation-delay: 80ms; }
-  .stagger > *:nth-child(4) { animation-delay: 120ms; }
-  .stagger > *:nth-child(5) { animation-delay: 160ms; }
-  .stagger > *:nth-child(6) { animation-delay: 200ms; }
-  .stagger > *:nth-child(n + 7) { animation-delay: 240ms; }
-
-  .shimmer {
-    @apply relative overflow-hidden;
-  }
-  .shimmer::after {
-    content: "";
-    @apply absolute inset-0 -translate-x-full animate-shimmer;
-    background-image: linear-gradient(
-      90deg,
-      transparent,
-      rgb(var(--fg) / 0.06),
-      transparent
-    );
+  .mesh-hero::after {
+    @apply -right-[5%] top-[10%] h-[50vh] w-[45vw];
+    background: radial-gradient(circle, rgb(34 211 238 / 0.22), transparent 70%);
+    animation-delay: -8s;
   }
 
   .text-gradient {
-    @apply bg-gradient-to-br from-brand-500 to-brand-700 bg-clip-text text-transparent;
+    @apply bg-gradient-to-br from-brand-400 via-brand-500 to-accent-400 bg-clip-text text-transparent;
+  }
+
+  .stagger > * { animation: fade-up 380ms var(--ease) both; }
+  .stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger > *:nth-child(2) { animation-delay: 50ms; }
+  .stagger > *:nth-child(3) { animation-delay: 100ms; }
+  .stagger > *:nth-child(4) { animation-delay: 150ms; }
+  .stagger > *:nth-child(5) { animation-delay: 200ms; }
+  .stagger > *:nth-child(6) { animation-delay: 250ms; }
+  .stagger > *:nth-child(n + 7) { animation-delay: 300ms; }
+
+  .shimmer { @apply relative overflow-hidden; }
+  .shimmer::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    background-image: linear-gradient(90deg, transparent, rgb(var(--fg) / 0.07), transparent);
+  }
+
+  .grid-lines {
+    background-image:
+      linear-gradient(rgb(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--border) / 0.5) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse at center, black, transparent 75%);
   }
 }
 
-/* ────────────────────────────────────────────────────────────
-   Preferenze di movimento
-   Non è un dettaglio di cortesia: per chi soffre di disturbi
-   vestibolari le animazioni possono provocare nausea. Qui si
-   azzerano tutte in un colpo solo.
-   ──────────────────────────────────────────────────────────── */
+/* Non è cortesia: per chi soffre di disturbi vestibolari le animazioni
+   possono provocare nausea vera. */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+/* ════════════════════════════════════════════════════════════
+   EFFETTI DELLA LANDING
+   Confinati qui perché costano: sulle pagine che portano
+   traffico si resta leggeri.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Rivelazione allo scorrimento ──
+   animation-timeline: view() lega l'animazione alla posizione
+   dell'elemento nella finestra, non al tempo. È CSS nativo: nessuna
+   libreria, nessun observer in JavaScript, tutto sul compositore.
+
+   Il blocco @supports è essenziale: dove la proprietà non esiste
+   (Safari e Firefox, per ora) la regola non viene applicata affatto
+   e il contenuto resta semplicemente visibile. Senza questa guardia,
+   metà dei visitatori vedrebbe una pagina bianca. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 30%;
+    }
+    .reveal-scale {
+      animation: reveal-scale linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
+  }
+}
+
+@keyframes reveal-in {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes reveal-scale {
+  from { opacity: 0; transform: scale(0.94) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Nastro scorrevole ──
+   Il contenuto è duplicato nel markup e la traccia trasla del 50%:
+   quando arriva a metà, la seconda copia è esattamente dove stava
+   la prima e il ciclo riparte senza stacco. */
+.marquee {
+  @apply relative flex overflow-hidden;
+  mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+}
+.marquee__track {
+  @apply flex shrink-0 items-center gap-8 pr-8;
+  animation: marquee 48s linear infinite;
+}
+.marquee:hover .marquee__track { animation-play-state: paused; }
+@keyframes marquee {
+  to { transform: translateX(-100%); }
+}
+
+/* ── Equalizzatore ──
+   Il motivo grafico del progetto: barre di altezza diversa che
+   pulsano fuori fase. Ogni barra ha il proprio ritardo, così il
+   movimento sembra irregolare invece che sincronizzato. */
+.eq__bar {
+  transform-origin: center bottom;
+  animation: eq 1.4s ease-in-out infinite alternate;
+}
+@keyframes eq {
+  from { transform: scaleY(0.35); }
+  to { transform: scaleY(1); }
+}
+
+/* ── Riflettore che segue il cursore ──
+   Le coordinate arrivano da due variabili CSS aggiornate dal
+   componente client. Aggiornare una variabile costa molto meno che
+   ricalcolare stili: il browser ridipinge solo il gradiente. */
+.spotlight::after {
+  content: "";
+  @apply pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-600;
+  background: radial-gradient(
+    420px circle at var(--px, 50%) var(--py, 50%),
+    rgb(139 92 246 / 0.14),
+    transparent 65%
+  );
+}
+.spotlight:hover::after { @apply opacity-100; }
+
+/* ── Griglia bento ──
+   Celle di dimensioni diverse su una griglia regolare: rompe la
+   monotonia delle tre colonne uguali senza inventare un layout
+   nuovo per ogni sezione. */
+.bento {
+  @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4;
+  grid-auto-rows: minmax(140px, auto);
+}
+.bento__wide { @apply sm:col-span-2; }
+.bento__tall { @apply row-span-2; }
+.bento__hero { @apply sm:col-span-2 lg:col-span-2 row-span-2; }
+
+/* Bordo che si accende all'hover, disegnato con un gradiente su una
+   maschera: un bordo sfumato non si può fare con border-color. */
+.border-glow {
+  @apply relative;
+}
+.border-glow::before {
+  content: "";
+  @apply pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-400;
+  padding: 1px;
+  background: linear-gradient(135deg, rgb(139 92 246 / 0.6), rgb(34 211 238 / 0.35), transparent 60%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.border-glow:hover::before { @apply opacity-100; }
+/* ════════════════════════════════════════════════════════════
+   MARCHIO DELL'HERO — versione con immagine
+
+   Riproduce in CSS le animazioni che l'originale otteneva con
+   framer-motion: fluttuazione continua, rotazione all'hover, scala,
+   alone. Cinquanta kilobyte risparmiati su ogni pagina.
+
+   Ogni livello possiede UNA sola trasformazione — fluttuare, scalare,
+   ruotare — perché due animazioni sullo stesso `transform` si
+   sovrascriverebbero a vicenda. Da qui i tre elementi annidati.
+   ════════════════════════════════════════════════════════════ */
+.brand-float {
+  animation: brand-float 4.5s ease-in-out infinite;
+}
+@keyframes brand-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+.brand-scale {
+  transition: transform 400ms var(--ease);
+}
+.brand:hover .brand-scale {
+  transform: scale(1.08);
+}
+
+/* La rotazione è sempre attiva ma in pausa: all'hover riparte, e
+   togliendo il mouse si ferma dov'è invece di scattare a zero. Un
+   ritorno brusco è proprio ciò che l'originale evitava con
+   un'animazione inversa di 1,5 secondi; qui il fermo è più elegante e
+   costa una riga. */
+.brand-spin {
+  animation: brand-spin 9s linear infinite;
+  animation-play-state: paused;
+}
+.brand:hover .brand-spin {
+  animation-play-state: running;
+}
+@keyframes brand-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Alone: acceso solo all'hover, con i colori del progetto invece
+   dell'azzurro dell'originale. */
+.brand-glow::after {
+  content: "";
+  @apply pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[130%] w-[130%]
+         -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 blur-3xl
+         transition-all duration-600;
+  background: radial-gradient(circle, rgb(139 92 246 / 0.5), rgb(34 211 238 / 0.2) 55%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0.8);
+}
+.brand:hover .brand-glow::after {
+  @apply opacity-100;
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+/* ── Risalto del logotipo nella barra ──
+   Nessun ciclo: la barra è su ogni pagina e un marchio che si muove mentre
+   si legge è una distrazione permanente. Solo una transizione all'hover,
+   che alza luminosità e saturazione.
+
+   Il filtro sta sul link e non sul testo perché il gradiente è ritagliato
+   sulle lettere (`bg-clip-text`): applicarlo più in basso, sull'elemento
+   trasparente, non avrebbe nulla su cui agire. */
+.logo-link {
+  transition: filter 250ms var(--ease);
+}
+.logo-link:hover,
+.logo-link:focus-visible {
+  filter: brightness(1.18) saturate(1.12);
+}
+
+/* ── Propagazione ──
+   Il marchio è una vibrazione: all'hover la emette. Cinque fronti partono
+   dal centro, uno ogni 180ms, ciascuno orientato a 72° dal precedente — la
+   simmetria della spirale.
+
+   La differenza rispetto a un cerchio che si allarga sta nella rotazione
+   simultanea: mentre il raggio cresce, il fronte ruota di 155°. Il
+   risultato è una traiettoria a spirale che prosegue il verso del marchio
+   invece di contraddirlo.
+
+   Andamento lineare, non ease-out: un fronte d'onda viaggia a velocità
+   costante nel mezzo, non rallenta avvicinandosi al bordo. È il
+   comportamento fisico, ed è anche quello che fa leggere il movimento come
+   propagazione e non come apparizione.
+
+   L'opacità scende come 1/√r. Per un'onda circolare l'energia si distribuisce
+   su una circonferenza che cresce con r, quindi l'intensità va come 1/r e
+   l'ampiezza — ciò che si vede — come la sua radice. Le fermate intermedie
+   approssimano quella curva: senza, il CSS interpolerebbe in linea retta e
+   lo smorzamento sembrerebbe una dissolvenza qualunque.
+
+   Tutto su transform e opacity, le due proprietà che il browser anima sul
+   compositore senza ricalcolare il layout. */
+/* transform-box: view-box fa sì che le percentuali di transform-origin si
+   riferiscano al sistema di coordinate dell'SVG e non al riquadro proprio
+   dell'elemento. Senza, ogni tracciato ruoterebbe attorno al centro di se
+   stesso — che sta già spostato in periferia — invece che attorno al
+   marchio. */
+.vybe-raggio,
+.vybe-onda {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+
+.vybe-onda {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.5;
+  /* Lo spessore resta in pixel di schermo invece di essere moltiplicato dalle
+     trasformazioni: un tratto sottile deve restare sottile per tutta la corsa. */
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+}
+
+/* Anche su focus da tastiera: chi naviga con il Tab vede la stessa
+   risposta di chi passa il mouse. */
+.brand:hover .vybe-onda,
+a:focus-visible .vybe-onda {
+  animation: vybe-propaga 2800ms linear infinite;
+}
+
+/* Il pacchetto viaggia lungo il proprio asse — `translateX` dopo `rotate`
+   agisce nel sistema già ruotato, quindi la traslazione è radiale — e mentre
+   corre ruota di 30°, così la traiettoria è una spirale che prosegue il verso
+   del marchio.
+
+   Andamento lineare, non ease-out: un fronte d'onda viaggia a velocità
+   costante nel mezzo, non rallenta avvicinandosi al bordo.
+
+   L'opacità scende come 1/√r. Per un'onda circolare l'energia si distribuisce
+   su una circonferenza che cresce con r, quindi l'intensità va come 1/r e
+   l'ampiezza — ciò che si vede — come la sua radice. Le fermate intermedie
+   approssimano quella curva: senza, il CSS interpolerebbe in linea retta e lo
+   smorzamento sembrerebbe una dissolvenza qualunque.
+
+   Solo transform e opacity: le due proprietà che il browser anima sul
+   compositore senza ricalcolare il layout né ridisegnare. */
+@keyframes vybe-propaga {
+  0%   { opacity: 0;    transform: rotate(0deg) translateX(0); }
+  5%   { opacity: 0.95; }
+  12%  { opacity: 0.82; }
+  25%  { opacity: 0.66; }
+  40%  { opacity: 0.54; }
+  60%  { opacity: 0.42; }
+  80%  { opacity: 0.28; }
+  93%  { opacity: 0.12; }
+  100% { opacity: 0;    transform: rotate(30deg) translateX(46px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-float,
+  .brand-spin { animation: none; }
+  .brand:hover .brand-scale { transform: none; }
+  /* Le onde spariscono del tutto: un fronte che attraversa lo schermo è
+     esattamente il tipo di movimento che questa preferenza esclude. */
+  .brand:hover .vybe-onda,
+  a:focus-visible .vybe-onda { animation: none; opacity: 0; }
 }
