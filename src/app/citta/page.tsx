@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/PageHero";
 import { JsonLd } from "@/components/JsonLd";
 import { itemListJsonLd } from "@/lib/jsonld";
 
@@ -45,9 +46,11 @@ export default async function CittaIndexPage() {
   const byRegion: Record<string, CityRow[]> = {};
   for (const c of cities) (byRegion[c.region] ??= []).push(c);
 
+  const totalArtists = [...artistBy.values()].reduce((a, b) => a + b, 0);
+  const totalEvents = [...eventBy.values()].reduce((a, b) => a + b, 0);
+
   return (
-    <div className="container-page py-10">
-      <Breadcrumbs items={[{ name: "Città", path: "/citta" }]} />
+    <>
       <JsonLd
         data={itemListJsonLd(
           cities.map((c) => ({ name: c.name, path: `/citta/${c.slug}` })),
@@ -55,31 +58,91 @@ export default async function CittaIndexPage() {
         )}
       />
 
-      <h1 className="text-3xl font-bold sm:text-4xl">Artisti e ingaggi città per città</h1>
-      <p className="mt-3 max-w-2xl muted">
-        Ogni città ha la sua pagina con i profili attivi in zona e le opportunità aperte.
-        Scegli la tua per iniziare.
-      </p>
+      <PageHero
+        breadcrumbs={[{ name: "Città", path: "/citta" }]}
+        eyebrow="Directory locale"
+        title="Artisti e ingaggi"
+        highlight="città per città"
+        lead="Chi cerca un artista lo cerca quasi sempre vicino a casa. Ogni città ha la sua pagina, con i profili attivi in zona e le opportunità aperte nei dintorni."
+        stats={[
+          { label: "Città coperte", value: cities.length },
+          { label: "Regioni", value: Object.keys(byRegion).length },
+          { label: "Artisti in directory", value: totalArtists },
+          { label: "Ingaggi aperti", value: totalEvents },
+        ]}
+      />
 
-      <div className="mt-10 space-y-10">
+      <div className="container-page space-y-16 py-14">
         {Object.entries(byRegion).map(([region, list]) => (
           <section key={region}>
-            <h2 className="text-lg font-bold">{region}</h2>
-            <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {list.map((c) => (
-                <li key={c.slug}>
-                  <Link href={`/citta/${c.slug}`} className="card block hover:border-brand-400">
-                    <span className="font-semibold">{c.name}</span>
-                    <span className="mt-1 block text-sm muted">
-                      {artistBy.get(c.slug) ?? 0} artisti · {eventBy.get(c.slug) ?? 0} ingaggi aperti
-                    </span>
-                  </Link>
-                </li>
-              ))}
+            {/* Il titolo di regione resta agganciato in alto mentre si scorre
+                la sua sezione: con venti regioni, senza questo si perde la
+                cognizione di dove ci si trova nell'elenco. */}
+            <h2
+              className="sticky top-16 z-10 -mx-4 px-4 py-3 text-fluid-lg font-bold backdrop-blur-md
+                         sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+              // I margini negativi replicano esattamente il padding di
+              // .container-page, così lo sfondo sfocato arriva ai bordi e le
+              // schede non spuntano ai lati mentre scorrono sotto.
+              style={{ background: "rgb(var(--bg) / 0.82)" }}
+            >
+              {region}
+              <span className="ml-3 text-fluid-xs font-medium text-ink-faint">
+                {list.length} città
+              </span>
+            </h2>
+
+            <ul className="stagger mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {list.map((c) => {
+                const artists = artistBy.get(c.slug) ?? 0;
+                const events = eventBy.get(c.slug) ?? 0;
+
+                return (
+                  <li key={c.slug}>
+                    <Link
+                      href={`/citta/${c.slug}`}
+                      className="card-interactive border-glow group flex h-full flex-col justify-between"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-fluid-lg font-bold tracking-tight transition-colors group-hover:text-brand-400">
+                          {c.name}
+                        </span>
+                        <ArrowUpRight
+                          className="h-4 w-4 shrink-0 translate-y-0.5 text-ink-faint opacity-0 transition-all duration-250 group-hover:translate-y-0 group-hover:text-brand-400 group-hover:opacity-100"
+                          aria-hidden="true"
+                        />
+                      </div>
+
+                      {/* Due numeri affiancati invece di una riga di testo:
+                          il confronto tra città si fa con l'occhio. */}
+                      <dl className="mt-5 flex gap-6">
+                        <div>
+                          <dd className="text-fluid-lg font-bold tabular-nums">{artists}</dd>
+                          <dt className="text-fluid-xs uppercase tracking-wider text-ink-faint">
+                            artisti
+                          </dt>
+                        </div>
+                        <div>
+                          <dd
+                            className={`text-fluid-lg font-bold tabular-nums ${
+                              events > 0 ? "text-accent-400" : ""
+                            }`}
+                          >
+                            {events}
+                          </dd>
+                          <dt className="text-fluid-xs uppercase tracking-wider text-ink-faint">
+                            ingaggi
+                          </dt>
+                        </div>
+                      </dl>
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         ))}
       </div>
-    </div>
+    </>
   );
 }

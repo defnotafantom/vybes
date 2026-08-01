@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
 import { DISCIPLINES, disciplineBySlug } from "@/lib/constants";
 import { ArtistCard } from "@/components/ArtistCard";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/PageHero";
 import { Pagination } from "@/components/Pagination";
 import { EmptyState } from "@/components/EmptyState";
 import { JsonLd } from "@/components/JsonLd";
@@ -53,7 +54,7 @@ export default async function ArtistiPage({ searchParams }: { searchParams: Prom
     ...(sp.citta ? { citySlug: sp.citta } : {}),
   };
 
-  const [artists, total] = await Promise.all([
+  const [artists, total, verified, cities] = await Promise.all([
     prisma.user.findMany({
       where,
       orderBy: [{ reputation: "desc" }, { updatedAt: "desc" }],
@@ -65,65 +66,111 @@ export default async function ArtistiPage({ searchParams }: { searchParams: Prom
       },
     }),
     prisma.user.count({ where }),
+    prisma.user.count({ where: { ...where, isVerified: true } }),
+    // Quante città distinte sono rappresentate: è il numero che dice a un
+    // organizzatore se la piattaforma copre la sua zona.
+    prisma.user.groupBy({ by: ["citySlug"], where: { ...where, citySlug: { not: null } } }),
   ]);
 
-  const heading = discipline ? `${discipline.plural} in Italia` : "Artisti in Italia";
+  const heading = discipline ? discipline.plural : "Artisti";
+  const listName = discipline ? `${discipline.plural} in Italia` : "Artisti in Italia";
   const basePath = discipline ? `/artisti?disciplina=${discipline.slug}` : "/artisti";
 
   return (
-    <div className="container-page py-10">
-      <Breadcrumbs
-        items={
+    <>
+      <PageHero
+        breadcrumbs={
           discipline
             ? [{ name: "Artisti", path: "/artisti" }, { name: discipline.plural, path: basePath }]
             : [{ name: "Artisti", path: "/artisti" }]
         }
+        eyebrow="Directory"
+        title={heading}
+        highlight="in Italia"
+        lead={
+          <>
+            Profili pubblici con portfolio, città e disponibilità. Si contattano
+            direttamente: nessuna agenzia in mezzo, nessuna commissione. Se cerchi
+            nella tua zona parti dalla{" "}
+            <Link href="/citta" className="link-underline">
+              directory per città
+            </Link>
+            .
+          </>
+        }
+        stats={[
+          { label: discipline ? discipline.plural : "Profili pubblici", value: total },
+          { label: "Identità verificate", value: verified },
+          { label: "Città rappresentate", value: cities.length },
+        ]}
+        filters={
+          <nav aria-label="Filtra per disciplina" className="filters">
+            <Link href="/artisti" className="filter" aria-current={!discipline}>
+              Tutti
+            </Link>
+            {DISCIPLINES.map((d) => (
+              <Link
+                key={d.slug}
+                href={`/artisti?disciplina=${d.slug}`}
+                className="filter"
+                aria-current={discipline?.slug === d.slug}
+              >
+                {d.plural}
+              </Link>
+            ))}
+          </nav>
+        }
       />
 
-      <h1 className="text-3xl font-bold sm:text-4xl">{heading}</h1>
-      <p className="mt-3 max-w-2xl muted">
-        {total} profili pubblici. Filtra per disciplina o consulta la{" "}
-        <Link href="/citta" className="text-brand-600 hover:underline">directory per città</Link>.
-      </p>
-
-      <nav aria-label="Filtra per disciplina" className="mt-6 flex flex-wrap gap-2">
-        <Link href="/artisti" className={discipline ? "btn-ghost" : "btn-primary"}>Tutti</Link>
-        {DISCIPLINES.map((d) => (
-          <Link
-            key={d.slug}
-            href={`/artisti?disciplina=${d.slug}`}
-            className={discipline?.slug === d.slug ? "btn-primary" : "btn-ghost"}
-          >
-            {d.plural}
-          </Link>
-        ))}
-      </nav>
-
-      {artists.length === 0 ? (
-        <div className="mt-10">
+      <div className="container-page py-14">
+        {artists.length === 0 ? (
           <EmptyState
             title="Nessun artista trovato"
             body="Prova a rimuovere i filtri o esplora le altre discipline."
             ctaLabel="Vedi tutti gli artisti"
             ctaHref="/artisti"
           />
-        </div>
-      ) : (
-        <>
-          <JsonLd
-            data={itemListJsonLd(
-              artists.map((a) => ({ name: a.name, path: `/artisti/${a.slug}` })),
-              heading
-            )}
-          />
-          <div className="stagger mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {artists.map((a, i) => (
-              <ArtistCard key={a.slug} priority={i < 3} artist={{ ...a, disciplines: fromCsv(a.disciplines) }} />
-            ))}
-          </div>
-          <Pagination page={page} totalPages={Math.ceil(total / PER_PAGE)} basePath={basePath} />
-        </>
-      )}
-    </div>
+        ) : (
+          <>
+            <JsonLd
+              data={itemListJsonLd(
+                artists.map((a) => ({ name: a.name, path: `/artisti/${a.slug}` })),
+                listName
+              )}
+            />
+
+            <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {artists.map((a, i) => (
+                <ArtistCard
+                  key={a.slug}
+                  // Solo le prime tre schede sono sopra la piega: caricare in
+                  // priorità anche le altre ventuno ruberebbe banda all'LCP.
+                  priority={i < 3}
+                  artist={{ ...a, disciplines: fromCsv(a.disciplines) }}
+                />
+              ))}
+            </div>
+
+            <Pagination page={page} totalPages={Math.ceil(total / PER_PAGE)} basePath={basePath} />
+          </>
+        )}
+
+        {/* Uscite laterali in fondo all'elenco: chi arriva da una ricerca
+            generica e non trova il profilo giusto ha comunque dove andare,
+            invece di tornare indietro. */}
+        <section className="mt-20 border-t pt-14">
+          <p className="eyebrow">Cerchi vicino a te?</p>
+          <h2 className="mt-2 text-fluid-xl">Sfoglia per città</h2>
+          <p className="mt-3 max-w-2xl text-fluid-sm text-ink-muted">
+            Ogni città ha la sua pagina, con gli artisti attivi in zona e gli
+            ingaggi aperti nei dintorni.
+          </p>
+          <Link href="/citta" className="btn-ghost mt-6 inline-flex">
+            <MapPin className="h-4 w-4" aria-hidden="true" />
+            Apri la directory locale
+          </Link>
+        </section>
+      </div>
+    </>
   );
 }
