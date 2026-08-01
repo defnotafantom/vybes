@@ -56,6 +56,7 @@ export async function GET() {
         rateLimitBackend: redisIsConfigured() ? "redis" : "memory",
         envValid: env.valid,
         envErrors: env.errors,
+        envFatal: env.fatal,
         envWarnings: env.warnings,
       },
       runtime: {
