@@ -562,6 +562,50 @@ proprio il contesto in cui il testo è meno leggibile.
 
 ---
 
+## ADR-018 · Un profilo entra nell'indice solo se ha qualcosa da dire
+
+**Problema.** La difesa anti thin-content copriva le pagine di elenco — le
+combinazioni città×disciplina, centinaia, quasi tutte vuote all'inizio — ma non
+i profili individuali. Per finire in sitemap bastava registrarsi e verificare
+l'email.
+
+Si è visto in produzione. Fra i nove profili dichiarati a Google c'erano `kkkk`
+e `il-tuo-nome`: account di prova, pagine senza una riga di contenuto,
+presentate come indicizzabili proprio sul tipo di pagina su cui poggia tutta la
+strategia di ricerca. Per un dominio nuovo è il danno peggiore: la valutazione
+iniziale si costruisce su ciò che trova la prima scansione.
+
+**Decisione.** Una soglia in `src/lib/profile-quality.ts`. Un profilo è
+indicizzabile se dichiara almeno una disciplina **e** ha una biografia di
+almeno centoventi caratteri **oppure** almeno un lavoro nel portfolio.
+
+**Perché quelle due condizioni.** La disciplina serve perché senza di essa la
+pagina non risponde a nessuna ricerca reale: nessuno cerca "un artista", si
+cerca "un chitarrista a Bologna". La seconda condizione è la definizione
+operativa di thin content — la pagina deve offrire qualcosa che il risultato di
+ricerca non mostri già da sé. Un nome e una città stanno interamente nello
+snippet: aprire la pagina non aggiunge niente.
+
+**Perché biografia *oppure* portfolio, non entrambe.** Un musicista si racconta
+scrivendo, un fotografo mostrando. Pretendere tutte e due escluderebbe metà
+delle discipline per un requisito formale.
+
+**Perché non cancellare i due account e basta.** Sarebbe una pulizia da rifare
+ogni settimana, che dipende da qualcuno che se ne ricordi. Una regola nel codice
+non si dimentica.
+
+**Perché sitemap e noindex insieme.** La sitemap è un suggerimento: Google
+arriva comunque dai link interni, dall'elenco degli artisti, dalle pagine di
+città. Solo il `noindex` sulla pagina è vincolante. Resta `follow`, così i link
+in uscita continuano a trasmettere valore: il profilo è povero, non ostile.
+
+**La parte che non è tecnica.** La regola compare in dashboard, con l'elenco di
+cosa manca e quanto. Un filtro silenzioso che penalizza senza spiegare è la
+versione peggiore di una regola giusta — e per l'artista è anche l'informazione
+più utile che la piattaforma possa dargli.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

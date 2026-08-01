@@ -12,6 +12,7 @@ import { EventCard } from "@/components/EventCard";
 import { fromCsv } from "@/lib/slug";
 import { disciplineBySlug } from "@/lib/constants";
 import { levelProgress } from "@/lib/levels";
+import { isProfileIndexable } from "@/lib/profile-quality";
 import { FollowButton } from "@/components/FollowButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge, VerifiedBadge } from "@/components/ui/Badge";
@@ -19,15 +20,36 @@ import { Badge, VerifiedBadge } from "@/components/ui/Badge";
 export const revalidate = 3600;
 export const dynamicParams = true; // i profili nuovi vengono generati on-demand
 
-/** Pre-genera i profili più consultati; il resto arriva via ISR. */
+/**
+ * Pre-genera i profili più consultati; il resto arriva via ISR.
+ *
+ * Solo quelli che superano la soglia di qualità: pre-generare una pagina
+ * significa pagarla in tempo di build su ogni rilascio, e un profilo vuoto
+ * non ripaga quel costo — non è indicizzabile e quasi nessuno lo apre. Resta
+ * comunque raggiungibile, generato su richiesta al primo accesso.
+ */
 export async function generateStaticParams() {
   const top = await prisma.user.findMany({
     where: { isPublic: true },
     orderBy: { reputation: "desc" },
     take: 200,
-    select: { slug: true },
+    select: {
+      slug: true,
+      bio: true,
+      disciplines: true,
+      _count: { select: { portfolioItems: { where: { isPublic: true } } } },
+    },
   });
-  return top.map((u) => ({ slug: u.slug }));
+
+  return top
+    .filter((u) =>
+      isProfileIndexable({
+        bio: u.bio,
+        disciplines: u.disciplines,
+        portfolioCount: u._count.portfolioItems,
+      })
+    )
+    .map((u) => ({ slug: u.slug }));
 }
 
 async function getArtist(slug: string) {
@@ -82,6 +104,16 @@ export async function generateMetadata({
     type: "profile",
     modifiedTime: artist.updatedAt,
     images: [{ url: absoluteUrl(`/artisti/${artist.slug}/opengraph-image`), alt: artist.name }],
+    // Escluderlo dalla sitemap non basta: la sitemap è un suggerimento, e
+    // Google arriva comunque dai link interni — dall'elenco degli artisti,
+    // dalle pagine di città. Il noindex sulla pagina è l'unica istruzione
+    // vincolante. Restano `follow`, così i link in uscita continuano a
+    // trasmettere valore: il profilo è povero, non ostile.
+    noindex: !isProfileIndexable({
+      bio: artist.bio,
+      disciplines: artist.disciplines,
+      portfolioCount: artist.portfolioItems.length,
+    }),
   });
 }
 

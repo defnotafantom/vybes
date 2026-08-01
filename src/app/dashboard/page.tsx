@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Feed } from "@/components/Feed";
 import { levelProgress } from "@/lib/levels";
+import { missingForIndex } from "@/lib/profile-quality";
+import { Search } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -14,8 +16,15 @@ export default async function DashboardPage() {
     prisma.user.findUnique({
       where: { id: userId },
       select: {
-        name: true, experience: true, reputation: true, slug: true,
-        _count: { select: { followers: true, posts: true } },
+        name: true, experience: true, reputation: true, slug: true, isPublic: true,
+        bio: true, disciplines: true,
+        _count: {
+          select: {
+            followers: true,
+            posts: true,
+            portfolioItems: { where: { isPublic: true } },
+          },
+        },
       },
     }),
     prisma.quest.findMany({
@@ -27,6 +36,18 @@ export default async function DashboardPage() {
   const progress = levelProgress(me?.experience ?? 0);
   const pending = openQuests.filter((q) => !q.progress[0]?.completedAt);
 
+  // Un profilo sotto la soglia non compare sui motori di ricerca. La regola
+  // è nel codice, ma chi la subisce deve poterla vedere e soprattutto sapere
+  // come uscirne: un filtro silenzioso che penalizza senza spiegare è la
+  // versione peggiore di una regola giusta.
+  const gaps = me
+    ? missingForIndex({
+        bio: me.bio,
+        disciplines: me.disciplines,
+        portfolioCount: me._count.portfolioItems,
+      })
+    : [];
+
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <div>
@@ -35,6 +56,33 @@ export default async function DashboardPage() {
       </div>
 
       <aside className="space-y-6">
+        {me?.isPublic && gaps.length > 0 && (
+          <div className="card border-gold-500/40 bg-gold-500/[0.06]">
+            <h2 className="flex items-center gap-2 font-semibold">
+              <Search className="h-4 w-4 text-gold-400" aria-hidden="true" />
+              Non compari su Google
+            </h2>
+            <p className="mt-2 text-fluid-sm text-ink-muted">
+              Il profilo è pubblico, ma troppo scarno perché i motori di ricerca
+              lo mostrino. Chi ti cerca per nome ti trova; chi cerca la tua
+              disciplina no.
+            </p>
+            <ul className="mt-3 space-y-2 text-fluid-sm">
+              {gaps.map((g) => (
+                <li key={g} className="flex gap-2">
+                  <span aria-hidden="true" className="text-gold-400">
+                    →
+                  </span>
+                  {g}
+                </li>
+              ))}
+            </ul>
+            <Link href="/dashboard/profilo" className="btn-ghost mt-4 inline-flex">
+              Completa il profilo
+            </Link>
+          </div>
+        )}
+
         <div className="card">
           <h2 className="font-semibold">Livello {progress.level}</h2>
           <div
