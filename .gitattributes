@@ -1,0 +1,20 @@
+# Normalizzazione delle fine riga.
+#
+# Senza questo file, salvare da un editor Windows converte l'intero file a
+# CRLF e git lo segnala come riscritto da capo: tre file risultavano modificati
+# in centosessanta righe quando il contenuto era identico. Diff illeggibili,
+# e un conflitto garantito appena il progetto viene aperto anche altrove.
+#
+# `text=auto eol=lf` dice a git di riconoscere da solo cosa è testo e di
+# archiviarlo sempre con LF, lasciando all'editor la libertà di usare quello
+# che preferisce in locale.
+* text=auto eol=lf
+
+# File binari: nessuna conversione, o si corrompono.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary

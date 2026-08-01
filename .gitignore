@@ -11,3 +11,6 @@ public/uploads/*
 .env.local
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Cache incrementale di TypeScript: locale alla macchina, non condivisibile.
+*.tsbuildinfo
