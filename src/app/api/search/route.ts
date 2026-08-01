@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { searchSchema } from "@/lib/validations";
 import { guard, ok, fail, handle } from "@/lib/api";
 import { fromCsv } from "@/lib/slug";
+import { PROFILO_PUBBLICO } from "@/lib/visibilita";
 
 /** Ricerca trasversale usata dalla barra di ricerca e dall'autocomplete. */
 export async function GET(req: Request) {
@@ -23,7 +24,7 @@ export async function GET(req: Request) {
       want("artists")
         ? prisma.user.findMany({
             where: {
-              isPublic: true,
+              ...PROFILO_PUBBLICO,
               OR: [{ name: { contains: q, mode: "insensitive" } },
                 { headline: { contains: q, mode: "insensitive" } },
                 { city: { contains: q, mode: "insensitive" } },],

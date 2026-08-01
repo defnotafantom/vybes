@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { JsonLd } from "@/components/JsonLd";
 import { itemListJsonLd } from "@/lib/jsonld";
 import { fromCsv } from "@/lib/slug";
+import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 
 export const revalidate = 600;
 const PER_PAGE = 24;
@@ -48,8 +49,7 @@ export default async function ArtistiPage({ searchParams }: { searchParams: Prom
   const discipline = sp.disciplina ? disciplineBySlug(sp.disciplina) : undefined;
 
   const where = {
-    isPublic: true,
-    role: "ARTIST",
+    ...ARTISTA_PUBBLICO,
     ...(discipline ? { disciplines: { contains: discipline.slug } } : {}),
     ...(sp.citta ? { citySlug: sp.citta } : {}),
   };

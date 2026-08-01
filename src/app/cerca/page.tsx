@@ -5,6 +5,7 @@ import { buildMetadata } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SearchForm } from "@/components/SearchForm";
 import { fromCsv } from "@/lib/slug";
+import { PROFILO_PUBBLICO } from "@/lib/visibilita";
 
 // La pagina risultati non va indicizzata: contenuto duplicato e infinito.
 export const metadata: Metadata = buildMetadata({
@@ -29,7 +30,7 @@ export default async function SearchPage({
       ? await Promise.all([
           prisma.user.findMany({
             where: {
-              isPublic: true,
+              ...PROFILO_PUBBLICO,
               OR: [
                 { name: { contains: term, mode: "insensitive" } },
                 { headline: { contains: term, mode: "insensitive" } },

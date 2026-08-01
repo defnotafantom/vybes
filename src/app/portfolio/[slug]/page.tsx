@@ -7,12 +7,13 @@ import { buildMetadata } from "@/lib/seo";
 import { portfolioJsonLd } from "@/lib/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PROFILO_PUBBLICO } from "@/lib/visibilita";
 
 export const revalidate = 3600;
 
 async function getItem(slug: string) {
   return prisma.portfolioItem.findFirst({
-    where: { slug, isPublic: true, user: { isPublic: true } },
+    where: { slug, isPublic: true, user: PROFILO_PUBBLICO },
     include: { user: { select: { slug: true, name: true, image: true, city: true, headline: true } } },
   });
 }

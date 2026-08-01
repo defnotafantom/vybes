@@ -16,6 +16,7 @@ import { isProfileIndexable } from "@/lib/profile-quality";
 import { FollowButton } from "@/components/FollowButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge, VerifiedBadge } from "@/components/ui/Badge";
+import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 
 export const revalidate = 3600;
 export const dynamicParams = true; // i profili nuovi vengono generati on-demand
@@ -30,7 +31,7 @@ export const dynamicParams = true; // i profili nuovi vengono generati on-demand
  */
 export async function generateStaticParams() {
   const top = await prisma.user.findMany({
-    where: { isPublic: true },
+    where: ARTISTA_PUBBLICO,
     orderBy: { reputation: "desc" },
     take: 200,
     select: {
@@ -52,10 +53,18 @@ export async function generateStaticParams() {
     .map((u) => ({ slug: u.slug }));
 }
 
+/**
+ * La pagina resta raggiungibile anche con l'email non ancora confermata —
+ * chi si è appena iscritto deve poter vedere il proprio profilo mentre aspetta
+ * il messaggio — ma non compare in nessun elenco e non entra nell'indice.
+ * Restituire 404 a chi ha appena finito la registrazione sarebbe punire la
+ * persona sbagliata per un problema di posta.
+ */
 async function getArtist(slug: string) {
   return prisma.user.findFirst({
     where: { slug, isPublic: true },
     select: {
+      emailVerified: true,
       id: true, slug: true, name: true, headline: true, bio: true, image: true, cover: true,
       city: true, citySlug: true, region: true, disciplines: true, website: true,
       instagram: true, spotify: true, youtube: true, level: true, experience: true,
@@ -109,11 +118,16 @@ export async function generateMetadata({
     // dalle pagine di città. Il noindex sulla pagina è l'unica istruzione
     // vincolante. Restano `follow`, così i link in uscita continuano a
     // trasmettere valore: il profilo è povero, non ostile.
-    noindex: !isProfileIndexable({
-      bio: artist.bio,
-      disciplines: artist.disciplines,
-      portfolioCount: artist.portfolioItems.length,
-    }),
+    noindex:
+      // Email non confermata: il profilo non è ancora una presenza reale, e
+      // con le registrazioni aperte indicizzarlo significherebbe regalare una
+      // pagina su un dominio vero a chiunque abbia un indirizzo usa e getta.
+      !artist.emailVerified ||
+      !isProfileIndexable({
+        bio: artist.bio,
+        disciplines: artist.disciplines,
+        portfolioCount: artist.portfolioItems.length,
+      }),
   });
 }
 

@@ -12,6 +12,7 @@ import { Spotlight } from "@/components/Spotlight";
 import { BrandHero } from "@/components/BrandHero";
 import { Avatar } from "@/components/ui/Avatar";
 import { fromCsv } from "@/lib/slug";
+import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 
 // Rigenerata ogni 10 minuti: HTML statico servito dalla CDN, dati freschi.
 export const revalidate = 600;
@@ -52,7 +53,7 @@ const FAQ = [
 export default async function HomePage() {
   const [featuredArtists, upcomingEvents, stats, cities] = await Promise.all([
     prisma.user.findMany({
-      where: { isPublic: true, role: "ARTIST" },
+      where: ARTISTA_PUBBLICO,
       orderBy: [{ reputation: "desc" }, { experience: "desc" }],
       take: 6,
       select: {
@@ -85,7 +86,7 @@ export default async function HomePage() {
       },
     }),
     Promise.all([
-      prisma.user.count({ where: { isPublic: true, role: "ARTIST" } }),
+      prisma.user.count({ where: ARTISTA_PUBBLICO }),
       prisma.event.count({ where: { isPublic: true, status: "PUBLISHED" } }),
       prisma.city.count(),
     ]),

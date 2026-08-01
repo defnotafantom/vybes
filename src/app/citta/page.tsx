@@ -6,6 +6,7 @@ import { buildMetadata } from "@/lib/seo";
 import { PageHero } from "@/components/PageHero";
 import { JsonLd } from "@/components/JsonLd";
 import { itemListJsonLd } from "@/lib/jsonld";
+import { PROFILO_PUBBLICO } from "@/lib/visibilita";
 
 export const revalidate = 86400;
 
@@ -24,7 +25,7 @@ export default async function CittaIndexPage() {
   const [artistCounts, eventCounts] = await Promise.all([
     prisma.user.groupBy({
       by: ["citySlug"],
-      where: { isPublic: true, citySlug: { not: null } },
+      where: { ...PROFILO_PUBBLICO, citySlug: { not: null } },
       _count: { _all: true },
     }),
     prisma.event.groupBy({

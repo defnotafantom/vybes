@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { DISCIPLINES, MIN_ITEMS_FOR_INDEX } from "@/lib/constants";
 import { renderUrlset, xmlResponse, type SitemapUrl } from "@/lib/sitemap-xml";
 import { fromCsv } from "@/lib/slug";
+import { PROFILO_PUBBLICO, ARTISTA_PUBBLICO } from "@/lib/visibilita";
 
 export const revalidate = 86400;
 
@@ -20,7 +21,7 @@ export async function GET() {
     prisma.city.findMany({ select: { slug: true } }),
     prisma.user.groupBy({
       by: ["citySlug"],
-      where: { isPublic: true, role: "ARTIST", citySlug: { not: null } },
+      where: { ...ARTISTA_PUBBLICO, citySlug: { not: null } },
       _count: { _all: true },
     }),
     prisma.event.groupBy({
@@ -30,7 +31,7 @@ export async function GET() {
     }),
     // Serve a sapere quali coppie città×disciplina hanno davvero profili.
     prisma.user.findMany({
-      where: { isPublic: true, role: "ARTIST", citySlug: { not: null } },
+      where: { ...ARTISTA_PUBBLICO, citySlug: { not: null } },
       select: { citySlug: true, disciplines: true },
     }),
   ]);

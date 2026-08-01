@@ -12,6 +12,7 @@ import { fromCsv } from "@/lib/slug";
 import { StaticMap } from "@/components/StaticMap";
 import { JsonLd } from "@/components/JsonLd";
 import { faqJsonLd } from "@/lib/jsonld";
+import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 
 export const revalidate = 3600;
 
@@ -50,7 +51,7 @@ export default async function CityHubPage({ params }: { params: Promise<{ citta:
 
   const [artists, events, artistTotal, eventTotal] = await Promise.all([
     prisma.user.findMany({
-      where: { isPublic: true, citySlug: city.slug, role: "ARTIST" },
+      where: { ...ARTISTA_PUBBLICO, citySlug: city.slug },
       orderBy: { reputation: "desc" },
       take: 6,
       select: {
@@ -67,7 +68,7 @@ export default async function CityHubPage({ params }: { params: Promise<{ citta:
         startsAt: true, city: true, venueName: true, isPaid: true, feeMin: true, feeMax: true,
       },
     }),
-    prisma.user.count({ where: { isPublic: true, citySlug: city.slug, role: "ARTIST" } }),
+    prisma.user.count({ where: { ...ARTISTA_PUBBLICO, citySlug: city.slug } }),
     prisma.event.count({
       where: { isPublic: true, status: "PUBLISHED", citySlug: city.slug, startsAt: { gte: new Date() } },
     }),

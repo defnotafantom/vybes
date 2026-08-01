@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { renderUrlset, xmlResponse } from "@/lib/sitemap-xml";
 import { isProfileIndexable } from "@/lib/profile-quality";
+import { PROFILO_PUBBLICO } from "@/lib/visibilita";
 
 export const revalidate = 3600;
 
 export async function GET() {
   const artists = await prisma.user.findMany({
-    where: { isPublic: true, emailVerified: { not: null } },
+    where: PROFILO_PUBBLICO,
     select: {
       slug: true,
       updatedAt: true,

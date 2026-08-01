@@ -10,6 +10,7 @@ import { DISCIPLINES, disciplineBySlug, MIN_ITEMS_FOR_INDEX } from "@/lib/consta
 import { fromCsv } from "@/lib/slug";
 import { JsonLd } from "@/components/JsonLd";
 import { itemListJsonLd } from "@/lib/jsonld";
+import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -23,7 +24,7 @@ export async function generateStaticParams() {
   const cities = await prisma.city.findMany({ select: { slug: true } });
   const populated = await prisma.user.groupBy({
     by: ["citySlug"],
-    where: { isPublic: true, role: "ARTIST", citySlug: { not: null } },
+    where: { ...ARTISTA_PUBBLICO, citySlug: { not: null } },
     _count: { _all: true },
   });
   const withArtists = new Set(populated.map((p) => p.citySlug));
@@ -48,8 +49,7 @@ export async function generateMetadata({
   // sarebbe thin content, e i link interni verso di essa restano utili.
   const count = await prisma.user.count({
     where: {
-      isPublic: true,
-      role: "ARTIST",
+      ...ARTISTA_PUBBLICO,
       citySlug: city.slug,
       disciplines: { contains: d.slug },
     },
@@ -80,8 +80,7 @@ export default async function CityDisciplinePage({
 
   const artists = await prisma.user.findMany({
     where: {
-      isPublic: true,
-      role: "ARTIST",
+      ...ARTISTA_PUBBLICO,
       citySlug: city.slug,
       disciplines: { contains: d.slug },
     },

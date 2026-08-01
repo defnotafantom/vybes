@@ -11,6 +11,7 @@ import { DISCIPLINES } from "@/lib/constants";
 import { fromCsv } from "@/lib/slug";
 import { JsonLd } from "@/components/JsonLd";
 import { itemListJsonLd } from "@/lib/jsonld";
+import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 
 export const revalidate = 3600;
 const PER_PAGE = 24;
@@ -53,7 +54,7 @@ export default async function CityArtistsPage({
   if (!city) notFound();
 
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
-  const where = { isPublic: true, citySlug: city.slug, role: "ARTIST" };
+  const where = { ...ARTISTA_PUBBLICO, citySlug: city.slug };
 
   const [artists, total] = await Promise.all([
     prisma.user.findMany({
