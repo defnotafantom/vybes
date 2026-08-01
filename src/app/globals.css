@@ -477,103 +477,83 @@
   filter: brightness(1.18) saturate(1.12);
 }
 
-/* ── Propagazione ──
-   Il marchio è una vibrazione: all'hover la emette. Cinque fronti partono
-   dal centro, uno ogni 180ms, ciascuno orientato a 72° dal precedente — la
-   simmetria della spirale.
+/* ════════════════════════════════════════════════════════════
+   CARICA ED ESPLOSIONE
 
-   La differenza rispetto a un cerchio che si allarga sta nella rotazione
-   simultanea: mentre il raggio cresce, il fronte ruota di 155°. Il
-   risultato è una traiettoria a spirale che prosegue il verso del marchio
-   invece di contraddirlo.
+   Tenendo premuto il marchio, questo cresce; oltre la soglia scoppia e
+   schizza il fondo di inchiostro.
+   ════════════════════════════════════════════════════════════ */
 
-   Andamento lineare, non ease-out: un fronte d'onda viaggia a velocità
-   costante nel mezzo, non rallenta avvicinandosi al bordo. È il
-   comportamento fisico, ed è anche quello che fa leggere il movimento come
-   propagazione e non come apparizione.
-
-   L'opacità scende come 1/√r. Per un'onda circolare l'energia si distribuisce
-   su una circonferenza che cresce con r, quindi l'intensità va come 1/r e
-   l'ampiezza — ciò che si vede — come la sua radice. Le fermate intermedie
-   approssimano quella curva: senza, il CSS interpolerebbe in linea retta e
-   lo smorzamento sembrerebbe una dissolvenza qualunque.
-
-   Tutto su transform e opacity, le due proprietà che il browser anima sul
-   compositore senza ricalcolare il layout. */
-/* transform-box: view-box fa sì che le percentuali di transform-origin si
-   riferiscano al sistema di coordinate dell'SVG e non al riquadro proprio
-   dell'elemento. Senza, ogni braccio ruoterebbe attorno al centro di se
-   stesso — che è spostato rispetto alla sorgente — invece che attorno al
-   marchio. */
-.vybe-rotore,
-.vybe-rotore > use {
-  transform-box: view-box;
-  transform-origin: 50% 50%;
+/* Il pulsante non deve sembrare un pulsante: niente riquadro, niente sfondo.
+   Il marchio è già l'affordance — quello che manca è solo il cursore giusto.
+   `touch-action: none` impedisce al browser di interpretare la pressione come
+   inizio di uno scorrimento e di annullare l'evento a metà carica. */
+.brand-innesco {
+  all: unset;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.brand-innesco:focus-visible {
+  outline: 2px solid rgb(var(--ring));
+  outline-offset: 12px;
+  border-radius: 999px;
 }
 
-.vybe-onda {
-  fill: none;
-  stroke-linecap: round;
-  stroke-width: 1.6;
-  /* Lo spessore resta in pixel di schermo invece di seguire le trasformazioni:
-     un fronte sottile deve restare sottile fino al bordo. */
-  vector-effect: non-scaling-stroke;
-  /* Fronti discreti invece di una linea continua: su cento unità di percorso,
-     tratti da 6 separati da 7. Le estremità tonde li fanno leggere come
-     impulsi e non come segmenti tagliati. */
-  stroke-dasharray: 6 7;
+/* La crescita è lenta e con andamento accelerato: parte quasi impercettibile
+   e stringe alla fine, così la sensazione è di qualcosa che si comprime prima
+   di cedere invece di gonfiarsi a velocità costante.
+
+   La durata combacia con CARICA_PIENA in BrandHero.tsx: se le due si
+   scollassero, l'esplosione arriverebbe mentre il marchio sta ancora
+   crescendo. */
+.brand-carica {
+  transform: scale(1.42);
+  transition: transform 900ms cubic-bezier(0.6, 0, 0.9, 0.35);
 }
 
-/* Il campo è invisibile a riposo e appare all'hover. La dissolvenza dura
-   quasi un secondo: un'onda che compare di scatto sembra un difetto di
-   disegno, una che sale sembra un'emissione che comincia. */
-.vybe-rotore {
-  opacity: 0;
-  transition: opacity 900ms var(--ease);
-  /* La rotazione gira sempre, anche da spenta: così all'hover il treno d'onda
-     è già in moto invece di partire da fermo. Il costo è nullo — un'animazione
-     su un elemento a opacità zero non viene disegnata. */
-  animation: vybe-rotazione 10s linear infinite;
+/* Il volo di una macchia: parte piccola dal centro, arriva oltre misura e
+   rientra — l'inerzia della vernice che si schianta — poi resta, e infine
+   svanisce.
+
+   Le percentuali sono sbilanciate in avanti apposta: l'impatto occupa il primo
+   dodicesimo del tempo, il resto è permanenza e dissolvenza. Uno schizzo che
+   impiega mezzo secondo ad arrivare non è uno schizzo. */
+.macchia {
+  transform-origin: center;
+  /* `translate` è una proprietà a sé e non entra in conflitto con il
+     `transform` animato: senza, la centratura verrebbe sovrascritta dai
+     keyframes al primo fotogramma. */
+  translate: -50% -50%;
+  /* Sul fondo scuro l'inchiostro pieno stacca come un ritaglio incollato
+     sopra: la fusione additiva lo fa leggere come vernice che sta *sulla*
+     pagina, e lascia trasparire la mesh e la griglia sotto. */
+  mix-blend-mode: screen;
+  animation: macchia-scoppio 2600ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Anche su focus da tastiera: chi naviga con il Tab vede la stessa risposta
-   di chi passa il mouse. */
-.brand:hover .vybe-rotore,
-a:focus-visible .vybe-rotore {
-  opacity: 1;
-}
-
-/* Rotazione costante, andamento lineare.
- *
- * Non è una scorciatoia: una sorgente che ruota emette fronti a spirale, e
- * far ruotare quella spirale riproduce esattamente il moto radiale dei suoi
- * fronti. È il principio dell'irrigatore da giardino — l'acqua va dritta,
- * sembra girare.
- *
- * Il verso è NEGATIVO, e non è un dettaglio estetico. Su una spirale
- * r = R0 + kθ, un punto che appare all'angolo α dopo una rotazione φ ha
- * θ = α − φ, quindi raggio R0 + k(α − φ): con φ crescente il raggio
- * DIMINUISCE e i fronti convergono verso il centro. Invertendo il verso
- * si propagano verso l'esterno, che è l'unica direzione in cui un'onda
- * lascia la propria sorgente.
- *
- * Dieci secondi per giro: i fronti attraversano lo schermo in circa due,
- * abbastanza lenti da seguirli, abbastanza veloci da non sembrare fermi.
- *
- * Una sola proprietà animata, su un solo elemento, e per giunta `transform`:
- * il browser la gestisce sul compositore senza ricalcolare il layout né
- * ridisegnare. Lo smorzamento è nei gradienti e non costa un fotogramma. */
-@keyframes vybe-rotazione {
-  to { transform: rotate(-360deg); }
+@keyframes macchia-scoppio {
+  0%   { opacity: 0;    transform: scale(0.05) rotate(var(--rot, 0deg)); }
+  8%   { opacity: 0.9;  transform: scale(1.12) rotate(var(--rot, 0deg)); }
+  14%  { opacity: 0.85; transform: scale(1) rotate(var(--rot, 0deg)); }
+  68%  { opacity: 0.85; transform: scale(1) rotate(var(--rot, 0deg)); }
+  100% { opacity: 0;    transform: scale(1.06) rotate(var(--rot, 0deg)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .brand-float,
   .brand-spin { animation: none; }
   .brand:hover .brand-scale { transform: none; }
-  /* Le onde spariscono del tutto: un campo che ruota su tutto lo schermo è
-     esattamente il tipo di movimento che questa preferenza esclude. */
-  .vybe-rotore { animation: none; }
-  .brand:hover .vybe-rotore,
-  a:focus-visible .vybe-rotore { opacity: 0; }
+  /* La carica resta, ridotta a un accenno: è la risposta a un comando
+     deliberato, e toglierla del tutto farebbe sembrare il pulsante rotto.
+     Sparisce invece il volo delle macchie, che è il movimento ampio e
+     involontario che questa preferenza esclude: compaiono e se ne vanno. */
+  .brand-carica { transform: scale(1.06); transition-duration: 200ms; }
+  .macchia { animation: macchia-quieta 2600ms linear both; }
+}
+
+@keyframes macchia-quieta {
+  0%, 100% { opacity: 0; }
+  10%, 70% { opacity: 0.7; }
 }
