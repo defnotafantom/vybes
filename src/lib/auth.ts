@@ -22,7 +22,33 @@ export class EmailNonVerificataError extends CredentialsSignin {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 },
+  /**
+   * Sessione scorrevole: trenta giorni di durata, rinnovata al più una volta
+   * al giorno. Chi usa il sito con regolarità non viene mai disconnesso; chi
+   * sparisce per un mese sì, ed è il comportamento giusto per un cookie che
+   * resta su un computer eventualmente condiviso.
+   *
+   * `updateAge` è esplicito anche se coincide con il valore predefinito:
+   * senza, il rinnovo sembra un caso e non una scelta. A zero il cookie verrebbe
+   * riscritto a ogni richiesta — un costo inutile e una scrittura in più su
+   * ogni risposta.
+   *
+   * Se le sessioni cadono prima dei trenta giorni, la causa non è qui.
+   * Le tre reali, in ordine di frequenza:
+   *
+   * 1. Il cookie spezzato in più parti e non riconosciuto dal middleware —
+   *    difetto corretto in src/middleware.ts, vedi il commento lì.
+   * 2. Un cambio di AUTH_SECRET: invalida tutte le sessioni in un colpo solo,
+   *    ed è previsto dopo una rotazione delle credenziali.
+   * 3. Un cambio di dominio. I cookie di `www.vybeshub.art` non vengono
+   *    inviati a `vybeshub.art`: chi era autenticato prima dell'inversione del
+   *    redirect si è ritrovato disconnesso una volta sola.
+   */
+  session: {
+    strategy: "jwt",
+    maxAge: 60 * 60 * 24 * 30,
+    updateAge: 60 * 60 * 24,
+  },
   pages: { signIn: "/accedi", error: "/accedi" },
   trustHost: true,
   providers: [

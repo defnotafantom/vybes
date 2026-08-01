@@ -2,27 +2,66 @@ import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * Protegge l'area privata e normalizza gli URL.
- * Il controllo è sulla presenza del cookie di sessione: la verifica
- * crittografica avviene comunque lato server nelle pagine e nelle API,
- * qui serve solo a evitare un round trip inutile.
+ *
+ * Il controllo è sulla sola presenza del cookie di sessione: la verifica
+ * crittografica avviene comunque lato server nelle pagine e nelle API, qui
+ * serve a evitare un viaggio inutile al server per chi non è autenticato.
+ * Il middleware gira sul runtime edge, dove non c'è modo di verificare la
+ * firma senza appesantire ogni richiesta.
  */
-const SESSION_COOKIES = ["authjs.session-token", "__Secure-authjs.session-token"];
+
+/**
+ * I nomi base del cookie di sessione. `__Secure-` è il prefisso che Auth.js
+ * usa su HTTPS: il browser rifiuta di accettare un cookie con quel prefisso su
+ * connessione non cifrata, ed è per questo che in sviluppo il nome è nudo.
+ */
+const COOKIE_SESSIONE = ["authjs.session-token", "__Secure-authjs.session-token"];
+
+/**
+ * Il cookie di sessione può essere spezzato in più parti.
+ *
+ * Quando il token supera i quattromila byte — il limite che i browser
+ * impongono a un singolo cookie — Auth.js lo divide in `...session-token.0`,
+ * `.1`, e così via. Cercare il nome esatto in quel caso non trova niente, e il
+ * middleware conclude che l'utente non è autenticato: viene rimandato al login
+ * pur avendo una sessione valida.
+ *
+ * È esattamente il sintomo di una sessione che «scade» senza motivo, e non
+ * scade affatto. Succede in modo intermittente perché la dimensione del token
+ * dipende da cosa contiene — un'immagine di profilo di Google ha un URL lungo,
+ * un nome lungo pesa, e si passa la soglia senza accorgersene.
+ *
+ * Il controllo per prefisso copre entrambe le forme.
+ */
+function haSessione(req: NextRequest): boolean {
+  return req.cookies
+    .getAll()
+    .some((c) => COOKIE_SESSIONE.some((base) => c.name === base || c.name.startsWith(`${base}.`)));
+}
 
 export function middleware(req: NextRequest) {
   const { pathname, search, origin } = req.nextUrl;
 
-  // Canonicalizzazione: niente slash finale (tranne la root).
-  if (pathname.length > 1 && pathname.endsWith("/")) {
+  // Canonicalizzazione: niente slash finale, tranne la root.
+  //
+  // Le rotte API restano fuori: un 308 su una POST costringe il client a
+  // rifare la richiesta, e non tutti i client rimandano il corpo. Meglio
+  // lasciare che una chiamata con lo slash di troppo fallisca in modo
+  // evidente piuttosto che silenziosamente a metà.
+  if (pathname.length > 1 && pathname.endsWith("/") && !pathname.startsWith("/api/")) {
     return NextResponse.redirect(new URL(pathname.slice(0, -1) + search, origin), 308);
   }
 
-  if (pathname.startsWith("/dashboard")) {
-    const hasSession = SESSION_COOKIES.some((c) => req.cookies.has(c));
-    if (!hasSession) {
-      const url = new URL("/accedi", origin);
-      url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
-    }
+  if (pathname.startsWith("/dashboard") && !haSessione(req)) {
+    const url = new URL("/accedi", origin);
+    // Con la query, non solo il percorso. È il difetto che rompeva l'azione
+    // più importante del sito: chi non è autenticato clicca «Contatta» su un
+    // profilo, arriva a /dashboard/messaggi/nuovo?a=nome-artista, viene
+    // mandato al login, e dopo l'accesso torna su /dashboard/messaggi/nuovo
+    // senza più sapere chi voleva contattare — quindi finisce nell'elenco
+    // vuoto dei messaggi. Un utente nuovo lo legge come «non funziona».
+    url.searchParams.set("next", pathname + search);
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();

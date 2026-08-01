@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarDays, MapPin, Users, Wallet } from "lucide-react";
+import { CalendarDays, MapPin, MessageSquare, Users, Wallet } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { buildMetadata, absoluteUrl } from "@/lib/seo";
@@ -197,6 +197,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
               ) : (
                 <ParticipateButton
                   eventId={event.id}
+                  eventSlug={event.slug}
                   disabled={isPast || event.status !== "PUBLISHED"}
                   initialStatus={myParticipation?.status ?? null}
                   isAuthenticated={Boolean(session?.user?.id)}
@@ -275,6 +276,21 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                   {event.organizer.name}
                 </span>
               </Link>
+
+              {/* Una volta confermato, la piattaforma non serve più a trovarsi
+                  ma a mettersi d'accordo: data, orario, compenso. Senza questo
+                  collegamento l'artista riceveva la notifica «sei stato
+                  confermato» e poi doveva cercarsi da solo il profilo
+                  dell'organizzatore per scrivergli. */}
+              {myParticipation?.status === "ACCEPTED" && (
+                <Link
+                  href={`/dashboard/messaggi/nuovo?a=${event.organizer.slug}`}
+                  className="btn-primary mt-4 w-full"
+                >
+                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                  Scrivi all&apos;organizzatore
+                </Link>
+              )}
             </div>
 
             {event.capacity && (

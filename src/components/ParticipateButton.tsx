@@ -6,11 +6,14 @@ import { PARTICIPATION_STATUS } from "@/lib/constants";
 
 export function ParticipateButton({
   eventId,
+  eventSlug,
   initialStatus,
   disabled,
   isAuthenticated,
 }: {
   eventId: string;
+  /** Serve solo a riportare qui chi deve prima accedere. */
+  eventSlug: string;
   initialStatus: string | null;
   disabled: boolean;
   isAuthenticated: boolean;
@@ -23,8 +26,15 @@ export function ParticipateButton({
   const [pending, startTransition] = useTransition();
 
   if (!isAuthenticated) {
+    // Torna a QUESTO ingaggio, non all'elenco. Chi arriva da una ricerca,
+    // legge l'annuncio giusto e clicca per candidarsi, dopo il login si
+    // ritrovava davanti a tutti gli ingaggi d'Italia e doveva ricominciare a
+    // cercare quello che aveva appena letto.
     return (
-      <a href={`/accedi?next=/eventi`} className="btn-primary w-full">
+      <a
+        href={`/accedi?next=${encodeURIComponent(`/eventi/${eventSlug}`)}`}
+        className="btn-primary w-full"
+      >
         Accedi per candidarti
       </a>
     );

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { buildMetadata } from "@/lib/seo";
 import { GoogleSignIn } from "@/components/GoogleSignIn";
 import { LoginForm } from "@/components/LoginForm";
+import { destinazioneSicura } from "@/lib/destinazione";
 
 export const metadata: Metadata = buildMetadata({
   title: "Accedi",
@@ -19,6 +20,10 @@ export default async function LoginPage({
   const sp = await searchParams;
   const googleEnabled = Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET);
 
+  // `next` arriva dall'URL, quindi da chiunque: va convalidato prima di
+  // finire in un reindirizzamento. Vedi src/lib/destinazione.ts.
+  const dopoAccesso = destinazioneSicura(sp.next);
+
   return (
     <div className="container-page flex justify-center py-16">
       <div className="w-full max-w-md">
@@ -34,8 +39,8 @@ export default async function LoginPage({
         )}
 
         <div className="mt-8">
-          {googleEnabled && <GoogleSignIn next={sp.next ?? "/dashboard"} />}
-          <LoginForm next={sp.next ?? "/dashboard"} initialError={sp.error ? "Credenziali non valide" : null} />
+          {googleEnabled && <GoogleSignIn next={dopoAccesso} />}
+          <LoginForm next={dopoAccesso} initialError={sp.error ? "Credenziali non valide" : null} />
         </div>
       </div>
     </div>
