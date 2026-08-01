@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { DISCIPLINES, MIN_ITEMS_FOR_INDEX } from "@/lib/constants";
 import { renderUrlset, xmlResponse, type SitemapUrl } from "@/lib/sitemap-xml";
 import { fromCsv } from "@/lib/slug";
-import { PROFILO_PUBBLICO, ARTISTA_PUBBLICO } from "@/lib/visibilita";
+import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 
 export const revalidate = 86400;
 
