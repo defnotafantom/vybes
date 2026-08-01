@@ -606,6 +606,85 @@ più utile che la piattaforma possa dargli.
 
 ---
 
+## ADR-019 · Le segnalazioni puntano a tipo + id, non a una relazione
+
+**Problema.** Una segnalazione può riguardare un profilo, un post, un elemento
+di portfolio, un ingaggio o un commento. Cinque tipi diversi, una sola coda.
+
+**Decisione.** `targetType` (stringa) più `targetId` (stringa), senza chiave
+esterna verso le tabelle segnalate.
+
+**L'alternativa e perché è peggiore.** Cinque colonne nullable con cinque
+chiavi esterne darebbero integrità referenziale, ma nello schema non si può
+esprimere «esattamente una valorizzata»: servirebbe un vincolo `CHECK` scritto
+a mano, che Prisma non genera e che quindi si scriverebbe una volta e si
+dimenticherebbe alla migrazione successiva. In cambio si otterrebbero join che
+qui non servono mai — la coda mostra un link, non i dati del contenuto.
+
+**Cosa si perde davvero.** Il database non impedisce di inserire un
+`targetId` inesistente, e cancellando un contenuto la segnalazione resta
+orfana. Il secondo effetto è però voluto: se un profilo viene cancellato dopo
+essere stato segnalato, la traccia della segnalazione deve sopravvivere alla
+cancellazione, perché è quella che documenta *perché* è stato rimosso. Con una
+chiave esterna in cascata sparirebbe proprio la prova.
+
+**Il compromesso pratico.** `targetUrl` conserva l'indirizzo pubblico del
+contenuto al momento della segnalazione. Se poi sparisce, resta scritto cosa
+si stava guardando.
+
+---
+
+## ADR-020 · Il ruolo di moderazione si legge dal database, non dalla sessione
+
+**Problema.** La sessione è un JWT firmato: quello che contiene resta valido
+fino alla scadenza. Mettere `adminRole` nel token significa che revocare un
+moderatore non ha effetto finché il suo token non scade — ore, nel caso
+migliore.
+
+**Decisione.** `role` (artista o organizzatore) resta nel token; `adminRole` si
+legge dal database a ogni verifica.
+
+**Il criterio.** Un dato che descrive *chi sei* può stare nel token: cambia di
+rado e non concede poteri. Un dato che descrive *cosa puoi fare sui contenuti
+altrui* no. Il costo è una lettura su chiave primaria, ed è il prezzo giusto
+per una revoca che ha effetto subito.
+
+**Effetto collaterale utile.** `hasPermission` esisteva da tempo e non era
+invocata da nessuna parte — la terza funzione orfana trovata in questo
+progetto, dopo `getEnv()` e la cancellazione dell'account promessa
+dall'informativa. Ora ha un chiamante.
+
+---
+
+## ADR-021 · Segnalare non richiede un account
+
+**Problema.** Il Digital Services Act impone un meccanismo di «notice and
+action» accessibile a chiunque. Riservarlo agli iscritti sarebbe più comodo:
+meno spam, un'identità dietro ogni segnalazione, nessuna rotta pubblica in
+scrittura.
+
+**Decisione.** La rotta accetta segnalazioni anonime. L'email di chi segnala è
+facoltativa e serve solo a ricevere l'esito.
+
+**Perché.** Chi arriva da una ricerca, incappa in un contenuto illecito e non
+ha alcun rapporto con la piattaforma è la persona *meno* disposta a registrarsi
+e la *più* attendibile: non ha dissapori in corso con nessuno. Obbligare
+all'account significa ricevere meno segnalazioni proprio dalla fonte migliore.
+
+**Il prezzo, e come si paga.** Una rotta pubblica in scrittura è un bersaglio.
+La difesa è il limite di richieste: sei all'ora per indirizzo — abbastanza per
+segnalare un profilo e i suoi contenuti in una sessione, poco per sommergere la
+coda. La risposta è sempre la stessa a prescindere dall'esito: dire «già
+segnalato» trasformerebbe la rotta in uno strumento per sondare cosa è sotto
+esame.
+
+**Il vincolo che il codice impone.** La motivazione è obbligatoria per chiudere
+una segnalazione. La norma chiede un trattamento «non arbitrario»: una
+decisione senza motivo scritto non è verificabile da nessuno — né da chi ha
+segnalato, né da chi ha subito la rimozione, né da chi moderasse dopo.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

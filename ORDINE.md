@@ -10,11 +10,11 @@ verde. Scelta di apertura: **registrazioni aperte a chiunque**.
 
 ## Cosa cambia con le registrazioni aperte
 
-Le prime tre voci di questo elenco esistono per quella scelta. Una piattaforma
+Le prime voci di questo elenco esistono per quella scelta. Una piattaforma
 a inviti può rimandarle; una aperta no, perché il primo giorno in cui chiunque
 può iscriversi è anche il primo in cui chiunque può abusarne.
 
-Tre cose sono già state chiuse in preparazione:
+Cinque cose sono già state chiuse in preparazione:
 
 - **Cancellazione ed esportazione dei dati** (artt. 17 e 20 GDPR). L'informativa
   le prometteva da prima che esistessero.
@@ -22,40 +22,47 @@ Tre cose sono già state chiuse in preparazione:
   richiedeva solo la sitemap: chiunque poteva comparire nella directory con un
   indirizzo mai verificato.
 - **Un profilo entra nell'indice solo se ha contenuto reale** (ADR-018).
+- **Meccanismo di segnalazione** aperto anche a chi non ha un account, con coda
+  di moderazione, motivazione obbligatoria e riscontro automatico a chi segnala
+  (ADR-019, 020, 021). Il Digital Services Act lo impone a chiunque ospiti
+  contenuti caricati da terzi, indipendentemente dalla dimensione.
+- **Termini di servizio** completi, con l'elenco di ciò che non si può
+  pubblicare generato dagli stessi motivi usati dalla moderazione: termini e
+  moderazione che divergono sono il modo più semplice per rimuovere contenuti
+  in base a una regola che da nessuna parte è scritta.
 
 ---
 
-## 1. Meccanismo di segnalazione
+## 1. Applicare la migrazione delle segnalazioni ⚠️
 
-**Perché è il primo.** Il Digital Services Act impone a chi ospita contenuti
-caricati dagli utenti di offrire un modo per segnalare contenuti illeciti, e di
-dare riscontro a chi segnala. Non è proporzionato alla dimensione: vale anche
-per una piattaforma con dieci utenti. Con le registrazioni aperte, il primo
-contenuto problematico può arrivare il primo giorno.
+**Il codice c'è, il database no.** Il modello `Report` è nello schema e la
+migrazione è scritta, ma non è stata applicata: l'ambiente in cui è nata non ha
+accesso al database, e Prisma non può girarci.
 
-**Cosa serve.** Un pulsante «segnala» su profili, post, portfolio ed eventi;
-una tabella delle segnalazioni; una coda visibile a chi ha il ruolo di
-moderatore — che nello schema esiste già ma non ha ancora un'interfaccia — e la
-possibilità di oscurare un contenuto. Più una risposta automatica a chi segnala.
+Finché non la applichi, **il progetto non compila**: ventidue errori di tipo,
+tutti perché `prisma.report` non esiste ancora nel client generato. Non sono
+difetti del codice, spariscono tutti insieme.
 
-**Chi lo fa.** Io, è codice.
+Due comandi, nel tuo terminale:
+
+```powershell
+npx prisma migrate deploy
+npx prisma generate
+```
+
+Poi verifica che sia tornato tutto a posto:
+
+```powershell
+npm run verify
+```
+
+Se `migrate deploy` si lamenta di una deriva, fermati e chiedimi: la migrazione
+è scritta a mano seguendo le convenzioni di nome di Prisma proprio per evitarlo,
+ma è l'unico punto in cui non ho potuto verificare da solo.
 
 ---
 
-## 2. Termini di servizio
-
-Come l'informativa, oggi sono uno scheletro. Con le registrazioni aperte
-servono davvero: definiscono cosa è vietato caricare, cosa succede a chi lo fa,
-e che Vybes non è parte del contratto fra artista e organizzatore — punto non
-banale, visto che la piattaforma mette in contatto persone che si scambiano
-denaro.
-
-**Chi lo fa.** Io scrivo la struttura e i contenuti; i tuoi dati da titolare e
-la revisione legale restano tuoi.
-
----
-
-## 3. Upstash Redis
+## 2. Upstash Redis
 
 La salute in produzione riporta `rateLimitBackend: "memory"`: il limite di
 richieste vale per singola istanza serverless, quindi il limite reale è il
@@ -70,7 +77,7 @@ di account.
 
 ---
 
-## 4. I tuoi dati da titolare, e un legale
+## 3. I tuoi dati da titolare, e un legale
 
 Sulla pagina privacy i riferimenti mancanti sono evidenziati in giallo: si
 vedono apposta. Servono nome o ragione sociale, indirizzo, codice fiscale o
@@ -81,7 +88,7 @@ creare un problema legale invece che tecnico.
 
 ---
 
-## 5. Riempire Milano
+## 4. Riempire Milano
 
 **Perché conta più di tutto il resto, ma viene dopo.** Ogni altra voce migliora
 qualcosa che già funziona; questa stabilisce se il progetto ha ragione di
@@ -102,7 +109,7 @@ Chiedi consenso scritto per testo e immagini.
 
 ---
 
-## 6. Cancellare gli account di prova
+## 5. Cancellare gli account di prova
 
 `kkkk` e `il-tuo-nome` esistono in produzione. La soglia di qualità li tiene
 fuori dall'indice, ma restano negli elenchi pubblici e chi li incontra capisce
@@ -119,7 +126,7 @@ cancellando la persona sbagliata.
 
 ---
 
-## 7. Search Console
+## 6. Search Console
 
 Solo ora, e non prima. Un dominio nuovo viene valutato su ciò che la prima
 scansione trova: presentarsi con pagine vuote significa farsi misurare nel
@@ -131,7 +138,7 @@ Profili marcati «Esclusa per tag noindex» sono la difesa che funziona.
 
 ---
 
-## 8. Rifinire l'esplosione del marchio
+## 7. Rifinire l'esplosione del marchio
 
 Non è una priorità: l'effetto funziona, va reso quello che era stato pensato.
 
@@ -144,7 +151,7 @@ Le forme delle macchie restano come sono.
 
 ---
 
-## 9. Google OAuth
+## 8. Google OAuth
 
 `googleOAuth: false` in produzione. Riduce l'attrito alla registrazione, che su
 una piattaforma a due lati conta. Il codice c'è: mancano le credenziali.

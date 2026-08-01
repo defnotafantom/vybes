@@ -17,6 +17,7 @@ import { FollowButton } from "@/components/FollowButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge, VerifiedBadge } from "@/components/ui/Badge";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
+import { Segnala } from "@/components/Segnala";
 
 export const revalidate = 3600;
 export const dynamicParams = true; // i profili nuovi vengono generati on-demand
@@ -360,6 +361,11 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                 </ul>
               </div>
             )}
+            {/* In fondo e in piccolo: trovabile da chi lo cerca, non
+                proposto a chi non lo cerca. */}
+            <div className="pt-2">
+              <Segnala targetType="USER" targetId={artist.slug} etichetta="Segnala questo profilo" />
+            </div>
           </aside>
         </div>
       </div>

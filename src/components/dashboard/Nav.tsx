@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Trophy,
   UserRound,
+  Flag,
   Menu,
   X,
 } from "lucide-react";
@@ -24,6 +25,21 @@ const ITEMS = [
   { href: "/dashboard/profilo", label: "Profilo", icon: UserRound },
 ] as const;
 
+/**
+ * La coda di moderazione compare solo a chi ha il ruolo.
+ *
+ * È una voce di menu, non un controllo di accesso: la pagina si difende da
+ * sola. Nasconderla serve a non mostrare a tutti una porta che quasi nessuno
+ * può aprire — mostrarla e basta inviterebbe a provarci.
+ */
+const MODERAZIONE = { href: "/dashboard/moderazione", label: "Segnalazioni", icon: Flag } as const;
+
+type Voce = { href: string; label: string; icon: typeof Home; exact?: boolean };
+
+function voci(puoModerare: boolean): Voce[] {
+  return puoModerare ? [...ITEMS, MODERAZIONE] : [...ITEMS];
+}
+
 function useIsActive() {
   const pathname = usePathname();
   return (href: string, exact?: boolean) =>
@@ -31,14 +47,15 @@ function useIsActive() {
 }
 
 /** Colonna laterale su desktop, con indicatore della sezione corrente. */
-export function DashboardSidebar() {
+export function DashboardSidebar({ puoModerare = false }: { puoModerare?: boolean }) {
   const isActive = useIsActive();
+  const items = voci(puoModerare);
 
   return (
     <nav aria-label="Sezioni dell'area personale" className="hidden lg:block">
       <ul className="sticky top-24 space-y-1">
-        {ITEMS.map((item) => {
-          const active = isActive(item.href, "exact" in item ? item.exact : false);
+        {items.map((item) => {
+          const active = isActive(item.href, item.exact);
           const Icon = item.icon;
           return (
             <li key={item.href}>
@@ -71,9 +88,10 @@ export function DashboardSidebar() {
  * Qui diventa un pannello a scomparsa che si chiude da solo al cambio di
  * pagina — dimenticarlo aperto è l'errore classico di questi menu.
  */
-export function DashboardMobileNav() {
+export function DashboardMobileNav({ puoModerare = false }: { puoModerare?: boolean }) {
   const pathname = usePathname();
   const isActive = useIsActive();
+  const items = voci(puoModerare);
   const [open, setOpen] = useState(false);
 
   useEffect(() => setOpen(false), [pathname]);
@@ -90,7 +108,7 @@ export function DashboardMobileNav() {
     };
   }, [open]);
 
-  const current = ITEMS.find((i) => isActive(i.href, "exact" in i ? i.exact : false));
+  const current = items.find((i) => isActive(i.href, i.exact));
 
   return (
     <div className="lg:hidden">
@@ -129,8 +147,8 @@ export function DashboardMobileNav() {
               </button>
             </div>
             <ul className="mt-1">
-              {ITEMS.map((item) => {
-                const active = isActive(item.href, "exact" in item ? item.exact : false);
+              {items.map((item) => {
+                const active = isActive(item.href, item.exact);
                 const Icon = item.icon;
                 return (
                   <li key={item.href}>

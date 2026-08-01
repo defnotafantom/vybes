@@ -5,6 +5,8 @@ import { ExternalLink } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { NotificationBell } from "@/components/NotificationBell";
 import { DashboardSidebar, DashboardMobileNav } from "@/components/dashboard/Nav";
+import { puo } from "@/lib/moderazione";
+import { PERMISSIONS } from "@/lib/permissions";
 import { Avatar } from "@/components/ui/Avatar";
 import { RoleBadge } from "@/components/ui/Badge";
 
@@ -14,6 +16,10 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/dashboard");
+
+  // Il ruolo si legge dal database a ogni caricamento, non dalla sessione: una
+  // revoca deve sparire dal menu subito, non alla scadenza del token.
+  const puoModerare = await puo(session.user.id, PERMISSIONS.CONTENT_MODERATE);
 
   return (
     <div className="container-page py-8">
@@ -39,11 +45,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
 
       <div className="mb-6 lg:hidden">
-        <DashboardMobileNav />
+        <DashboardMobileNav puoModerare={puoModerare} />
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[200px_1fr]">
-        <DashboardSidebar />
+        <DashboardSidebar puoModerare={puoModerare} />
         <div className="min-w-0">{children}</div>
       </div>
     </div>

@@ -76,6 +76,8 @@ model User {
   followers      Follow[]        @relation("Following")
   following      Follow[]        @relation("Follower")
   tokens         VerificationToken[]
+  reportsInviati Report[]        @relation("SegnalazioniInviate")
+  reportsDecisi  Report[]        @relation("SegnalazioniDecise")
 
   // Copre la query principale della directory locale:
   // "artisti pubblici di <citta>, ordinati per reputazione".
@@ -386,4 +388,57 @@ model Notification {
   actor     User? @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([recipientId, readAt, createdAt])
+}
+
+// ------------------------------------------------------------ SEGNALAZIONI
+
+/// Segnalazione di un contenuto.
+///
+/// Il Digital Services Act impone a chi ospita contenuti caricati dagli utenti
+/// un meccanismo di "notice and action": chiunque deve poter segnalare un
+/// contenuto illecito, e chi segnala ha diritto a un riscontro sulla decisione.
+/// L'obbligo non e' proporzionato alla dimensione della piattaforma.
+///
+/// `reporterId` e' opzionale perche' la segnalazione deve essere possibile
+/// anche senza account: la norma non la riserva agli iscritti, e chi si imbatte
+/// in un contenuto illecito arrivando da una ricerca non ha motivo di
+/// registrarsi per segnalarlo.
+///
+/// L'oggetto segnalato e' identificato da tipo + id invece che da una relazione
+/// per ciascun tipo. La scelta e' discussa in ADR-019: in sintesi, cinque
+/// chiavi esterne nullable renderebbero impossibile esprimere nello schema il
+/// vincolo "esattamente una valorizzata", e la relazione servirebbe solo a fare
+/// join che qui non servono mai.
+model Report {
+  id         String  @id @default(cuid())
+  targetType String  // USER | POST | PORTFOLIO | EVENT | COMMENT
+  targetId   String
+  /// URL pubblico del contenuto al momento della segnalazione: se poi viene
+  /// rimosso, resta comunque traccia di cosa si stava guardando.
+  targetUrl  String?
+
+  reason  String  // ILLEGALE | ODIO | MOLESTIE | SPAM | SESSUALE | MINORI | PROPRIETA_INTELLETTUALE | IMPERSONAZIONE | ALTRO
+  details String?
+
+  reporterId    String?
+  /// Serve a dare riscontro a chi segnala senza essere iscritto.
+  reporterEmail String?
+
+  status     String    @default("APERTA") // APERTA | IN_ESAME | ACCOLTA | RESPINTA
+  /// Motivazione della decisione, dovuta a chi ha segnalato e a chi ha subito
+  /// la rimozione. Una moderazione che non spiega non e' verificabile.
+  decisione  String?
+  decisaDaId String?
+  decisaIl   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reporter User? @relation("SegnalazioniInviate", fields: [reporterId], references: [id], onDelete: SetNull)
+  decisaDa User? @relation("SegnalazioniDecise", fields: [decisaDaId], references: [id], onDelete: SetNull)
+
+  /// La coda si apre sempre sulle aperte, in ordine di arrivo.
+  @@index([status, createdAt])
+  /// Per contare quante segnalazioni pesano su uno stesso contenuto.
+  @@index([targetType, targetId])
 }

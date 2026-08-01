@@ -93,3 +93,51 @@ export async function sendPasswordResetEmail(to: string, name: string, token: st
     ),
   });
 }
+
+/**
+ * Riscontro a chi ha segnalato un contenuto.
+ *
+ * Il Digital Services Act chiede che la decisione su una segnalazione sia
+ * comunicata a chi l'ha inviata, con la motivazione. Non basta averla presa:
+ * senza comunicazione, chi ha segnalato non ha modo di sapere se il sistema
+ * funziona, e la norma parla esplicitamente di trattamento «non arbitrario».
+ *
+ * Va anche detto che la decisione si può contestare: è l'altra metà
+ * dell'obbligo, e senza un indirizzo a cui rispondere resterebbe teorica.
+ */
+export async function sendReportDecisionEmail(
+  to: string,
+  esito: "accolta" | "respinta",
+  motivazione: string
+) {
+  const titolo = `La tua segnalazione è stata ${esito}`;
+  await send({
+    to,
+    subject: `${titolo} — ${SITE.name}`,
+    text:
+      `Abbiamo esaminato la segnalazione che ci hai inviato.\n\n` +
+      `Esito: ${esito}\n\nMotivazione:\n${motivazione}\n\n` +
+      `Se ritieni che la decisione sia sbagliata, rispondi a questa email.`,
+    html: layout(
+      titolo,
+      `<p>Abbiamo esaminato la segnalazione che ci hai inviato.</p>
+       <p><strong>Motivazione</strong><br>${escapeHtml(motivazione)}</p>
+       <p>Se ritieni che la decisione sia sbagliata, rispondi a questa email: la
+       rivediamo.</p>`
+    ),
+  });
+}
+
+/**
+ * La motivazione è testo scritto da una persona e finisce dentro dell'HTML.
+ * Chi modera è affidabile, ma «affidabile» non è una garanzia tecnica: basta
+ * un apice o un minore per rompere il messaggio, e un tag per fare peggio.
+ */
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/\n/g, "<br>");
+}
