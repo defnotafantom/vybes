@@ -475,6 +475,93 @@ fretta.
 
 ---
 
+## ADR-015 · La validazione dell'ambiente distingue fatale da avviso
+
+**Problema.** Una variabile d'ambiente mancante si manifesta tardi e male: non
+al deploy, ma alla prima richiesta che ne ha bisogno, sotto forma di errore
+incomprensibile dentro una libreria di terze parti. È successo davvero:
+`AUTH_SECRET` non impostato su Vercel faceva rispondere 500 a ogni rotta
+renderizzata dal server, mentre le pagine pre-generate continuavano a tornare
+200. Una diagnosi che è costata tempo.
+
+**Decisione.** Uno schema Zod in `src/lib/env.ts`, invocato una sola volta al
+boot del server tramite `src/instrumentation.ts` — il punto di aggancio che
+Next.js esegue prima di servire qualunque richiesta.
+
+**Perché due livelli e non uno.** Le variabili non hanno tutte lo stesso peso.
+Senza `DATABASE_URL` o `AUTH_SECRET` l'applicazione non può funzionare: il
+processo deve morire subito e rumorosamente, perché un deploy fallito è meglio
+di un deploy che risponde 500. Senza il token di Vercel Blob invece si perde
+solo il caricamento delle immagini: bloccare l'avvio per questo significherebbe
+impedire un deploy d'emergenza per una funzione secondaria. Quindi
+`crossChecks()` restituisce `{ fatal, warnings }`: i primi fermano il boot, i
+secondi finiscono nei log e in `/api/health`.
+
+**Il precedente da cui viene.** La prima versione dei documenti prometteva
+questa validazione, ma `getEnv()` non era chiamato da nessuna parte. Il codice
+c'era, non veniva eseguito. Vale come promemoria: una funzione di controllo mai
+invocata è peggio dell'assenza del controllo, perché produce fiducia falsa.
+
+---
+
+## ADR-016 · Sentry solo lato server
+
+**Problema.** L'installazione predefinita di Sentry aggiunge tre file di
+configurazione: server, edge e client. Il terzo porta lo SDK dentro il bundle
+del browser. Il primo caricamento è passato da 103 a 191 kB — quasi il doppio,
+su ogni pagina, incluse le duecento della directory locale.
+
+**Decisione.** Rimosso `instrumentation-client.ts`. Restano server ed edge, che
+girano su Vercel e non vengono scaricati da nessuno. Bundle tornato a 104 kB.
+
+**Cosa si perde.** Gli errori JavaScript che avvengono solo nel browser — un
+gestore di eventi che esplode, una libreria che fallisce su un browser vecchio.
+
+**Perché il compromesso regge, qui.** Le pagine che portano traffico sono
+statiche o rigenerate: quasi tutto ciò che può rompersi si rompe sul server, ed
+è lì che Sentry guarda. Le parti veramente interattive — chat, dashboard,
+caricamenti — stanno dietro autenticazione, hanno pochi utenti e sono coperte
+dai test end-to-end. Ottantasette kilobyte su ogni visita anonima, per
+monitorare le sessioni autenticate, è uno scambio sbagliato.
+
+**Quando lo cambierei.** Nel momento in cui l'area privata diventasse la parte
+principale del prodotto. Allora il client Sentry andrebbe caricato in modo
+differito e solo dopo il login, non nel bundle comune.
+
+---
+
+## ADR-017 · Il contrasto si calcola, non si guarda
+
+**Problema.** Su un tema scuro il testo secondario tende a essere impostato "a
+occhio" finché sembra abbastanza leggero. È un metodo che fallisce in modo
+sistematico, perché la percezione dipende dal monitor, dalla luce della stanza e
+dall'aver appena guardato quel colore per dieci minuti.
+
+**Decisione.** I token `--fg`, `--muted` e `--faint` sono verificati con la
+formula di contrasto WCAG contro *tutte* le superfici su cui possono comparire,
+non solo contro lo sfondo principale, e tarati sul caso peggiore.
+
+**Cosa ha trovato la verifica.** Tre valori scelti a occhio non passavano il
+livello AA:
+
+| Coppia | Prima | Dopo |
+|---|---|---|
+| `--faint` su fondo chiaro | 2.86:1 | 4.75:1 |
+| `--faint` su `--surface-raised` (scuro) | 3.42:1 | 4.50:1 |
+| `.eyebrow` in `brand-500` su fondo chiaro | 4.06:1 | 5.47:1 (`brand-600`) |
+
+**Il dettaglio che si sbaglia più spesso.** La soglia di 3:1 vale per il testo
+grande — almeno 24px, o 18.66px in grassetto. `--faint` veste etichette da 13px,
+quindi ricade nel testo normale e la soglia è 4.5:1. Applicare 3:1 perché "è
+testo secondario" è l'errore che rende un'interfaccia non conforme pur avendo
+fatto il controllo.
+
+**Perché il caso peggiore e non lo sfondo.** `--faint` compare più spesso dentro
+le schede che sul fondo pagina. Tarare sul fondo avrebbe certificato conforme
+proprio il contesto in cui il testo è meno leggibile.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:
