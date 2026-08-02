@@ -41,16 +41,32 @@ const FORMATO = /^e2e-\d+-[a-z0-9]+@example\.com$/;
 const conferma = process.argv.includes("--conferma");
 
 async function main() {
+  // ── Perché non si filtra su `emailVerified: null` ──
+  //
+  // La prima versione lo faceva, dando per scontato che un account creato dai
+  // test non potesse avere l'email confermata. È falso, e in modo pericoloso:
+  // quando `RESEND_API_KEY` non è configurata la verifica viene disattivata e
+  // la registrazione marca l'indirizzo come già confermato, per non lasciare
+  // chi si iscrive in un limbo da cui non può uscire.
+  //
+  // Il risultato è che gli account dei test risultano **verificati e
+  // pubblici**, quindi compaiono nella directory con slug come
+  // `prova-percorso-7` — e lo script scritto per rimuoverli non li vedeva
+  // nemmeno, perché cercava l'esatto contrario.
+  //
   // Il filtro grossolano lo fa il database, quello preciso l'espressione
   // regolare: `startsWith` in SQL non sa esprimere il formato completo, e
   // fidarsi solo di quello significherebbe cancellare più del dovuto.
   const candidati = await prisma.user.findMany({
-    where: { email: { startsWith: "e2e-" }, emailVerified: null },
+    where: { email: { startsWith: "e2e-" } },
     select: {
       id: true,
       email: true,
       name: true,
       adminRole: true,
+      slug: true,
+      isPublic: true,
+      emailVerified: true,
       createdAt: true,
       _count: { select: { posts: true, portfolioItems: true, participations: true } },
     },
@@ -75,9 +91,13 @@ async function main() {
 
   for (const u of daCancellare) {
     const roba = u._count.posts + u._count.portfolioItems + u._count.participations;
+    // Se è pubblico va detto: significa che è finito nella directory, e non
+    // è un residuo invisibile ma una pagina che qualcuno può aver aperto.
+    const pubblico = u.isPublic && u.emailVerified ? `  ← pubblico su /artisti/${u.slug}` : "";
     console.log(
       `${u.email.padEnd(42)} ${u.createdAt.toISOString().slice(0, 10)}` +
-        (roba > 0 ? `  ⚠ ${roba} contenuti collegati` : "")
+        (roba > 0 ? `  ⚠ ${roba} contenuti collegati` : "") +
+        pubblico
     );
   }
 
@@ -90,6 +110,16 @@ async function main() {
 
   const { count } = await prisma.user.deleteMany({ where: { id: { in: daCancellare.map((u) => u.id) } } });
   console.log(`\n${count} account rimossi.`);
+
+  // Le pagine che li mostravano sono generate staticamente e rigenerate ogni
+  // ora: senza questo avviso resterebbero servite dalla cache, e chi controlla
+  // subito dopo penserebbe che la cancellazione non abbia funzionato.
+  if (daCancellare.some((u) => u.isPublic && u.emailVerified)) {
+    console.log(
+      "\nAlcuni erano pubblici: gli elenchi sono in cache e possono mostrarli\n" +
+        "ancora per un'ora. Per svuotarla subito, un redeploy su Vercel."
+    );
+  }
 }
 
 main()
