@@ -38,10 +38,18 @@ Cinque cose sono già state chiuse in preparazione:
 **Tredici commit da mandare su.** Nel tuo terminale:
 
 ```powershell
-npm run verify          # tipi, lint, canonical, unit test
-npm run test:e2e        # ora installa anche WebKit: la prima volta ci mette qualche minuto
+npm run verify            # tipi, lint, canonical, unit test
+npm run test:e2e:setup    # UNA VOLTA SOLA, e di nuovo dopo ogni aggiornamento di Playwright
+npm run test:e2e
 git push origin main
 ```
+
+**`test:e2e:setup` non è opzionale.** Playwright tiene i browser fuori da
+`node_modules`, in una cartella di sistema versionata a parte: quando il
+pacchetto si aggiorna, i binari scaricati prima non valgono più e *tutti* i
+test falliscono con «Executable doesn't exist», compresi quelli su Chromium
+che prima passavano. Non è un problema del progetto, è come funziona
+Playwright — ma vederselo arrivare addosso su 156 test sembra un disastro.
 
 Poi Vercel distribuisce da solo.
 
