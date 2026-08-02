@@ -12,6 +12,8 @@ import { JsonLd } from "@/components/JsonLd";
 import { itemListJsonLd } from "@/lib/jsonld";
 import { fromCsv } from "@/lib/slug";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
+import { Suspense } from "react";
+import { SkeletonArtisti } from "@/components/SkeletonArtisti";
 
 export const revalidate = 600;
 const PER_PAGE = 24;
@@ -43,8 +45,30 @@ export async function generateMetadata({
   });
 }
 
+/**
+ * Il confine di Suspense sta qui, e non in un `loading.tsx`.
+ *
+ * Un file `loading.tsx` in questa cartella avvolgerebbe anche
+ * `/artisti/[slug]`, e un profilo con un confine sopra di sé non può più
+ * rispondere 404: lo scheletro parte prima che `notFound()` scatti, e con il
+ * primo byte se ne va anche il codice di stato. Vedi `SkeletonArtisti`.
+ *
+ * La chiave sui parametri serve perché il fallback ricompaia quando si cambia
+ * disciplina o pagina: senza, React riusa il confine già risolto e l'elenco
+ * resta immobile finché i nuovi dati non arrivano — che è peggio di uno
+ * scheletro, perché sembra che il clic non abbia funzionato.
+ */
 export default async function ArtistiPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
+
+  return (
+    <Suspense key={`${sp.disciplina ?? ""}-${sp.citta ?? ""}-${sp.page ?? "1"}`} fallback={<SkeletonArtisti />}>
+      <Elenco sp={sp} />
+    </Suspense>
+  );
+}
+
+async function Elenco({ sp }: { sp: Search }) {
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const discipline = sp.disciplina ? disciplineBySlug(sp.disciplina) : undefined;
 

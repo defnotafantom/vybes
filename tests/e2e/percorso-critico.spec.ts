@@ -77,6 +77,35 @@ test.describe("la destinazione non può portare fuori dal sito", () => {
     "/javascript:alert(1)",
   ];
 
+  /**
+   * ── Come questo test era sbagliato ──
+   *
+   * Le prime due asserzioni non verificavano niente.
+   *
+   *   expect(new URL(page.url()).host).toBe(new URL(page.url()).host);
+   *
+   * confronta un valore con sé stesso: passa sempre, anche a difesa
+   * completamente rotta. Ed è passata inosservata perché una riga verde non si
+   * rilegge.
+   *
+   *   expect(page.url()).not.toContain("vybes-fake.example");
+   *
+   * falliva sempre, per il motivo opposto: il parametro `next` sta nell'URL
+   * perché ce l'abbiamo messo noi due righe sopra. Stava chiedendo alla pagina
+   * di cancellare il proprio indirizzo.
+   *
+   * Il difetto comune è di aver verificato **l'indirizzo scritto nella barra**
+   * invece di *dove si finisce davvero*, che è esattamente l'errore che questo
+   * file, in cima, dichiara di non voler più fare.
+   *
+   * ── Cosa verifica adesso ──
+   *
+   * Che il browser resti sul nostro dominio, che l'esca non diventi la
+   * destinazione di nessun collegamento della pagina, e che il modulo non la
+   * porti con sé come campo nascosto. La regola in sé — quali valori sono
+   * accettabili — è coperta dai test unitari di `destinazione.ts`, dove si può
+   * esercitare ogni caso limite senza un browser.
+   */
   for (const esca of esche) {
     test(`«${esca}» non diventa la destinazione`, async ({ page }) => {
       await page.goto(`/accedi?next=${encodeURIComponent(esca)}`);
@@ -85,9 +114,22 @@ test.describe("la destinazione non può portare fuori dal sito", () => {
       // non rompersi. Un errore sarebbe comunque un difetto.
       await expect(page.getByRole("heading", { name: /accedi/i })).toBeVisible();
 
-      // E il dominio deve restare il nostro.
-      expect(new URL(page.url()).host).toBe(new URL(page.url()).host);
-      expect(page.url()).not.toContain("vybes-fake.example");
+      // Siamo rimasti sul nostro dominio, non su quello dell'esca.
+      const atteso = new URL(page.url()).host;
+      expect(atteso).toBe(new URL(test.info().project.use.baseURL!).host);
+
+      // E nessun collegamento della pagina punta all'esca: se la destinazione
+      // finisse in un `href`, basterebbe un clic per uscire.
+      const fuori = await page
+        .locator('a[href*="vybes-fake.example"], form[action*="vybes-fake.example"]')
+        .count();
+      expect(fuori, "l'esca è finita in un link o in un modulo").toBe(0);
+
+      // Né in un campo nascosto, che il modulo invierebbe al posto nostro.
+      const nascosti = await page
+        .locator('input[type=hidden][value*="vybes-fake.example"]')
+        .count();
+      expect(nascosti, "l'esca è finita in un campo nascosto").toBe(0);
     });
   }
 });

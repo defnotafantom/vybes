@@ -1063,6 +1063,50 @@ raccolti sul traffico vero.
 
 ---
 
+## ADR-028 · Un `loading.tsx` si applica anche dove non deve
+
+**Contesto.** La suite segnalava che `/artisti/uno-slug-inventato` risponde
+`200` invece di `404`. Misurato in produzione: stato 200, titolo «Profilo non
+trovato», e nel corpo servito «Caricamento in corso».
+
+La causa è una regola di Next che non si vede leggendo il file: un
+`loading.tsx` non vale per la pagina accanto a cui sta, ma per **tutto il
+segmento** — `/artisti` e ogni suo figlio, `/artisti/[slug]` compreso. Con un
+confine di Suspense sopra di sé, la pagina del profilo comincia a inviare lo
+scheletro prima di sapere se il profilo esiste; con il primo byte parte anche
+il codice di stato, e quando `notFound()` scatta il 200 è già stato spedito.
+
+È un *soft 404*, ed è un difetto SEO proprio su questo progetto: Google li
+tratta come pagine di bassa qualità, e con le registrazioni aperte ogni
+indirizzo sbagliato ne produceva uno. Il danno era in parte contenuto dal
+`noindex` che `generateMetadata` mette già quando il profilo non esiste — ma
+un `noindex` chiede di non indicizzare, mentre un 404 dice che la pagina non
+c'è: sono due affermazioni diverse, e ai crawler che non sono Google conta
+solo la seconda.
+
+**Decisione.** Il confine si dichiara dove serve. `loading.tsx` diventa un
+componente normale, `SkeletonArtisti`, usato come `fallback` di un
+`<Suspense>` **dentro** la pagina dell'elenco. Il profilo non ha più confini
+sopra di sé e può rispondere 404 prima di scrivere qualunque cosa.
+
+Il `<Suspense>` porta una chiave costruita sui parametri di ricerca: senza,
+React riusa il confine già risolto quando si cambia disciplina, l'elenco resta
+immobile finché i nuovi dati non arrivano, e sembra che il clic non abbia
+funzionato.
+
+**Conseguenze.** Ogni futuro `loading.tsx` va valutato per il sottoalbero che
+copre, non per la pagina accanto a cui si trova. La regola pratica: va bene
+solo in una cartella che non ha rotte figlie, o dove tutte le figlie possono
+permettersi di rispondere 200.
+
+**Cosa insegna.** È lo stesso schema di quasi tutti i difetti di questo
+progetto: la comodità che non chiede di pensare. `loading.tsx` esiste proprio
+per non dover decidere dove mettere il confine — e il prezzo è che il confine
+finisce anche dove fa danno, in silenzio, senza un errore di tipo né un
+avviso.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

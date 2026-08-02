@@ -1,6 +1,23 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:3000";
+/**
+ * Porta 3100, non 3000.
+ *
+ * `reuseExistingServer` faceva riusare a Playwright un server già in ascolto
+ * sulla porta di sviluppo. Con `npm run dev` aperto in un'altra finestra —
+ * cioè quasi sempre, mentre si lavora — la suite non testava il build di
+ * produzione ma il server di sviluppo, che compila ogni rotta al primo
+ * accesso: il primo `goto` su una pagina mai visitata può superare i trenta
+ * secondi, e i test cominciano a fallire per lentezza invece che per difetti.
+ *
+ * Sono fallimenti particolarmente costosi perché sembrano veri: un clic che
+ * «non naviga» e una pagina che «non si carica» si leggono come regressioni,
+ * e si perde tempo a cercarle nel codice.
+ *
+ * Con una porta dedicata i due mondi non si toccano mai: il server di sviluppo
+ * resta dov'è, e i test costruiscono e avviano il proprio.
+ */
+const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:3100";
 
 /**
  * Su quali telefoni gira davvero la suite.
@@ -68,7 +85,7 @@ export default defineConfig({
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
-        command: "npm run build && npm run start",
+        command: "npm run build && npm run start -- -p 3100",
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,

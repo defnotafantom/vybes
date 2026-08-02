@@ -14,3 +14,11 @@ public/uploads/*
 
 # Cache incrementale di TypeScript: locale alla macchina, non condivisibile.
 *.tsbuildinfo
+
+# Esiti di Playwright: rigenerati a ogni esecuzione, con dentro screenshot e
+# tracce. Erano finiti nel repository perché non li aveva mai esclusi nessuno.
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+e2e.txt
