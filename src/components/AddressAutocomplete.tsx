@@ -104,8 +104,11 @@ export function AddressAutocomplete({
         <ul
           id="address-results"
           role="listbox"
-          className="absolute z-20 mt-1 max-h-64 w-full origin-top animate-scale-in overflow-y-auto rounded-xl border shadow-float"
-          style={{ background: "rgb(var(--card))", borderColor: "rgb(var(--border))" }}
+          // `bg-surface-raised` e non `var(--card)`: quella variabile non è
+          // mai esistita, quindi l'elenco dei suggerimenti restava trasparente
+          // sopra il modulo. Qui pesa il doppio — è il campo indirizzo di chi
+          // sta pubblicando un ingaggio, cioè l'azione per cui esiste il sito.
+          className="absolute z-20 mt-1 max-h-64 w-full origin-top animate-scale-in overflow-y-auto rounded-xl border bg-surface-raised shadow-float"
         >
           {results.map((r, i) => (
             <li key={`${r.latitude}-${r.longitude}-${i}`} role="option" aria-selected={i === highlight}>

@@ -13,6 +13,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { NavProgress } from "@/components/NavProgress";
 import { Logo } from "@/components/Logo";
+import { NavPubblica } from "@/components/NavPubblica";
 import "./globals.css";
 
 const inter = Inter({
@@ -107,12 +108,7 @@ function SiteHeader() {
     >
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Logo />
-        <nav aria-label="Navigazione principale" className="hidden gap-6 text-sm md:flex">
-          <Link href="/artisti" className="link-underline text-ink hover:text-brand-600">Artisti</Link>
-          <Link href="/eventi" className="link-underline text-ink hover:text-brand-600">Ingaggi</Link>
-          <Link href="/citta" className="link-underline text-ink hover:text-brand-600">Città</Link>
-          <Link href="/mappa" className="link-underline text-ink hover:text-brand-600">Mappa</Link>
-        </nav>
+        <NavPubblica />
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <Link href="/accedi" className="btn-ghost hidden sm:inline-flex">Accedi</Link>

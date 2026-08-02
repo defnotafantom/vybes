@@ -162,6 +162,42 @@ test.describe("i documenti legali esistono e sono leggibili", () => {
   }
 });
 
+test.describe("il sito è navigabile dal telefono", () => {
+  // Difetto trovato con la stessa lente: la navigazione pubblica esisteva solo
+  // da 768px in su. Sotto, il sito non aveva un modo di andare da nessuna
+  // parte — e chi arriva da Google arriva quasi sempre da telefono.
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("dal telefono si raggiungono tutte le sezioni", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByRole("button", { name: /apri il menu/i }).click();
+    const menu = page.getByRole("dialog", { name: /menu/i });
+    await expect(menu).toBeVisible();
+
+    for (const voce of ["Artisti", "Ingaggi", "Città", "Mappa", "Cerca"]) {
+      await expect(menu.getByRole("link", { name: voce, exact: true })).toBeVisible();
+    }
+    // Sotto i 640px «Accedi» spariva dall'intestazione: chi tornava sul sito
+    // vedeva solo l'invito a iscriversi di nuovo.
+    await expect(menu.getByRole("link", { name: /accedi/i })).toBeVisible();
+  });
+
+  test("il menu porta davvero dove dice", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /apri il menu/i }).click();
+    await page.getByRole("dialog").getByRole("link", { name: "Artisti", exact: true }).click();
+    await expect(page).toHaveURL(/\/artisti$/);
+  });
+
+  test("si chiude con Escape", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /apri il menu/i }).click();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toBeHidden();
+  });
+});
+
 test.describe("segnalare un contenuto è possibile senza account", () => {
   test("il modulo si apre e chiede un motivo", async ({ page }) => {
     // Il Digital Services Act non riserva la segnalazione agli iscritti: chi

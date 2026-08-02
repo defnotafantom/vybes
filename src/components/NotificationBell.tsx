@@ -36,6 +36,36 @@ export function NotificationBell() {
     return () => clearInterval(timer);
   }, []);
 
+  /**
+   * Segna come letta quella aperta.
+   *
+   * Mancava, e rendeva il contatore inutile: si potevano aprire tutte le
+   * notifiche una per una e il numero rosso restava lì, finché non si trovava
+   * «segna tutte come lette». Un indicatore che non cala smette di significare
+   * qualcosa, e si impara a ignorarlo.
+   *
+   * Lo stato locale si aggiorna subito senza aspettare la risposta: la
+   * navigazione parte nello stesso istante, e un contatore che cala mezzo
+   * secondo dopo il cambio pagina non lo vede nessuno. Se la chiamata
+   * fallisce, il prossimo aggiornamento periodico rimette le cose a posto.
+   */
+  function segnaLetta(id: string, giaLetta: boolean) {
+    if (giaLetta) return;
+
+    setUnread((n) => Math.max(0, n - 1));
+    setItems((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n))
+    );
+
+    fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: [id] }),
+    }).catch(() => {
+      /* il prossimo giro di aggiornamento riallinea */
+    });
+  }
+
   async function markAllRead() {
     await fetch("/api/notifications", { method: "PATCH", body: JSON.stringify({}) });
     setUnread(0);
@@ -62,8 +92,12 @@ export function NotificationBell() {
 
       {open && (
         <div
-          className="absolute right-0 z-50 mt-2 max-h-96 w-80 origin-top-right animate-scale-in overflow-y-auto rounded-2xl border p-2 shadow-float"
-          style={{ background: "rgb(var(--card))", borderColor: "rgb(var(--border))" }}
+          // `bg-surface-raised` e non uno stile in linea con `var(--card)`:
+          // quella variabile non è mai esistita, quindi lo sfondo era una
+          // dichiarazione non valida e il pannello restava trasparente. Su un
+          // fondo scuro significa testo su testo, illeggibile — su ogni pagina
+          // e per ogni utente autenticato.
+          className="absolute right-0 z-50 mt-2 max-h-96 w-80 origin-top-right animate-scale-in overflow-y-auto rounded-2xl border bg-surface-raised p-2 shadow-float"
         >
           <div className="flex items-center justify-between px-2 py-1">
             <p className="text-sm font-semibold">Notifiche</p>
@@ -81,7 +115,10 @@ export function NotificationBell() {
                 <li key={n.id}>
                   <Link
                     href={n.entityUrl ?? "/dashboard"}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      segnaLetta(n.id, Boolean(n.readAt));
+                      setOpen(false);
+                    }}
                     className={`block rounded-lg px-2 py-2 text-sm hover:bg-brand-50 dark:hover:bg-white/5 ${
                       n.readAt ? "muted" : "font-medium"
                     }`}
