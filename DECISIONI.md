@@ -1180,6 +1180,84 @@ quello deliberato.
 
 ---
 
+## ADR-030 · Il filtro sui caricamenti lascia passare quando non sa
+
+**Contesto.** Con le registrazioni aperte a chiunque, un account nuovo può
+caricare fino a quindici megabyte di qualunque cosa, e il file finisce su un
+dominio indicizzato con un indirizzo pubblico. Il Digital Services Act è
+coperto sul lato **reattivo** — chiunque può segnalare, c'è una coda, ogni
+decisione porta una motivazione (ADR-019, 020, 023). Ma il reattivo interviene
+*dopo*: il contenuto è già online, e su un dominio giovane basta poco per
+rovinarne la reputazione.
+
+**Decisione.** Una classificazione automatica prima del salvataggio, con tre
+scelte che vanno tutte contro l'istinto.
+
+**Il controllo sta prima che il file esista.** Sarebbe più semplice salvare e
+poi controllare l'URL — il servizio accetta anche quello. Ma un contenuto
+respinto non deve avere un indirizzo pubblico nemmeno per i pochi secondi che
+servono a controllarlo: quei secondi bastano a farlo raggiungere da chi sa
+dove guardare.
+
+**Se il servizio non risponde, il file passa.** Sembra la scelta debole. È la
+stessa di ADR-011 sul rate limiter: un componente accessorio che va giù non
+deve rendere inutilizzabile il prodotto. Un fornitore in avaria bloccherebbe
+*ogni* caricamento del sito, trasformando un disservizio di terzi in un guasto
+nostro — e il contenuto resta comunque segnalabile.
+
+**Le soglie sono alte, non basse.** I classificatori restituiscono
+probabilità, non verdetti, e una soglia bassa blocca le fotografie di danza
+contemporanea, che qui sono contenuto legittimo e frequente. Fra i due errori,
+su una piattaforma di artisti, il falso positivo è più costoso: bloccare il
+lavoro di qualcuno che ha appena accettato di iscriversi è il modo più rapido
+di perderlo, e non torna. Il falso negativo resta segnalabile da chiunque.
+
+**Il parsing della risposta è difensivo.** La forma dei dati appartiene a un
+servizio esterno e può cambiare senza preavviso: un campo mancante vale «non
+lo so» e quindi lascia passare — non «zero», che darebbe lo stesso risultato
+ma per caso, e che smetterebbe di funzionare in silenzio il giorno in cui il
+fornitore rinomina una chiave.
+
+**Conseguenze.** Due variabili facoltative. Senza, i caricamenti non vengono
+classificati e `/api/health` lo dichiara: la mancanza non è silenziosa, ed è
+la differenza fra una scelta e una dimenticanza.
+
+**Cosa non copre, e va detto.** Solo le immagini: video e audio costano molto
+di più da analizzare e sono una frazione dei caricamenti. Non riconosce il
+diritto d'autore, che è un problema diverso e non automatizzabile a questo
+livello. Non sostituisce la moderazione umana — alza la soglia d'ingresso, e
+basta.
+
+---
+
+## ADR-031 · I dati del titolare stanno nel codice, non nell'ambiente
+
+**Contesto.** I riferimenti del titolare del trattamento erano segnaposto
+dentro il testo di `/privacy` e `/termini`: due pagine, quattro punti diversi,
+evidenziati in giallo. Il rischio non era dimenticarne uno — era compilarne
+tre su quattro e credersi a posto, perché il giallo residuo sta a metà di una
+pagina lunga che nessuno rilegge.
+
+**Decisione.** Un file solo, `src/lib/titolare.ts`, con cinque campi. Le
+pagine lo leggono, e l'avviso «da completare» compare e sparisce da solo
+secondo `titolareCompleto()`.
+
+**Perché non variabili d'ambiente**, che sarebbe la scelta istintiva. Due
+motivi. Questi dati non sono un segreto: compaiono per intero su una pagina
+pubblica, ed è esattamente il loro scopo. E sono un **contenuto legale
+versionato** — sapere da quando l'informativa dichiarava un certo titolare è
+il genere di cosa che serve proprio quando c'è una contestazione, e la
+cronologia di git è l'unico posto in cui quella risposta esiste. Una variabile
+su Vercel si cambia senza lasciare traccia di quando e di cosa c'era prima.
+
+**Conseguenze.** Compilare quel file richiede un commit e un deploy, che per
+un dato che cambia una volta ogni anni è il costo giusto. L'avviso resta
+finché anche un solo campo è vuoto: un titolare senza indirizzo o senza
+contatto non è identificabile, e un'informativa che non identifica il titolare
+non è opponibile a nessuno.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

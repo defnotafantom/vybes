@@ -33,6 +33,8 @@ const schema = z.object({
   BLOB_READ_WRITE_TOKEN: z.string().optional(),
 
   // ---- Redis (facoltativo: senza, il rate limit vale per istanza)
+  SIGHTENGINE_USER: z.string().optional(),
+  SIGHTENGINE_SECRET: z.string().optional(),
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
@@ -93,6 +95,9 @@ function crossChecks(env: Env): { fatal: string[]; warnings: string[] } {
   }
   if (env.RESEND_API_KEY && !env.EMAIL_FROM) {
     warnings.push('RESEND_API_KEY è impostata ma manca EMAIL_FROM (es. "Vybes <no-reply@dominio>")');
+  }
+  if (Boolean(env.SIGHTENGINE_USER) !== Boolean(env.SIGHTENGINE_SECRET)) {
+    warnings.push("SIGHTENGINE_USER e SIGHTENGINE_SECRET vanno impostate entrambe o nessuna");
   }
   if (Boolean(env.UPSTASH_REDIS_REST_URL) !== Boolean(env.UPSTASH_REDIS_REST_TOKEN)) {
     warnings.push("UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN vanno impostate entrambe o nessuna");

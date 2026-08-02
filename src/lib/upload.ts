@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import path from "node:path";
+import { moderaImmagine } from "@/lib/moderazione-immagini";
 
 export const MAX_FILE_BYTES = 15 * 1024 * 1024; // 15 MB
 
@@ -48,6 +49,17 @@ export async function storeFile(file: File, folder = "misc"): Promise<UploadResu
   // Il MIME dichiarato dal client non e' affidabile: si verifica il contenuto.
   if (!matchesMagicBytes(buffer, file.type)) {
     throw new Error("Il contenuto del file non corrisponde al tipo dichiarato");
+  }
+
+  // Il controllo va qui, prima che il file esista da qualche parte: un
+  // contenuto respinto non deve avere un indirizzo pubblico nemmeno per i
+  // pochi secondi che servirebbero a controllarlo dopo averlo salvato.
+  const esito = await moderaImmagine(buffer, file.type);
+  if (!esito.ammesso) {
+    throw new Error(
+      `Questo file non può essere pubblicato: ${esito.motivo}. ` +
+        "Se pensi sia un errore, scrivici."
+    );
   }
 
   const filename = `${randomUUID()}.${meta.ext}`;

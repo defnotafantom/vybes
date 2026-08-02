@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { envReport } from "@/lib/env";
 import { emailIsConfigured } from "@/lib/email";
 import { redisIsConfigured } from "@/lib/redis";
+import { moderazioneImmaginiConfigurata } from "@/lib/moderazione-immagini";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,9 @@ export async function GET() {
         email: emailIsConfigured(),
         // "memory" significa: limite per istanza, non globale.
         rateLimitBackend: redisIsConfigured() ? "redis" : "memory",
+        // Falso significa che i caricamenti non vengono classificati: con le
+        // registrazioni aperte è un'informazione operativa, non un dettaglio.
+        moderazioneImmagini: moderazioneImmaginiConfigurata(),
         envValid: env.valid,
         envErrors: env.errors,
         envFatal: env.fatal,

@@ -177,14 +177,53 @@ di account.
 
 ---
 
-## 3. I tuoi dati da titolare, e un legale
+## 3. I tuoi dati da titolare, e un legale ⚠
 
-Sulla pagina privacy i riferimenti mancanti sono evidenziati in giallo: si
-vedono apposta. Servono nome o ragione sociale, indirizzo, codice fiscale o
-partita IVA, e un indirizzo email per l'esercizio dei diritti.
+**È il vero blocco all'apertura.** La pagina `/privacy` è online e
+indicizzata, e dichiara di sé: «Da completare prima dell'apertura al
+pubblico». Un'informativa senza titolare non identifica chi risponde del
+trattamento, quindi non è opponibile a nessuno — e intanto stai raccogliendo
+email e password di persone reali.
+
+**Ora si compila in un posto solo:** `src/lib/titolare.ts`. Cinque campi.
+L'avviso giallo su privacy e termini sparisce da solo quando sono tutti
+pieni, e ricompare se qualcuno ne svuota uno.
+
+```ts
+export const TITOLARE = {
+  nome: "",        // nome e cognome, o ragione sociale
+  indirizzo: "",   // via, numero, CAP, città, provincia
+  fiscale: "",     // partita IVA, oppure codice fiscale
+  email: "",       // meglio dedicato: finisce su una pagina indicizzata
+  foro: "",        // città del foro competente nei termini
+} as const;
+```
 
 Poi il testo va letto da un avvocato. È l'unica voce di questo elenco che può
 creare un problema legale invece che tecnico.
+
+---
+
+## 3-bis. Moderazione delle immagini
+
+Il codice c'è, mancano due variabili. Senza, i caricamenti non vengono
+classificati: chiunque si registri può mettere qualsiasi cosa su un dominio
+indicizzato, e la difesa resta solo reattiva — le segnalazioni, che
+intervengono quando il contenuto è già online.
+
+Registrazione gratuita su **sightengine.com**, poi Dashboard → *API
+credentials*. Due variabili su Vercel:
+
+```
+SIGHTENGINE_USER
+SIGHTENGINE_SECRET
+```
+
+Verifica: `/api/health` deve riportare `moderazioneImmagini: true`.
+
+Se il servizio non risponde o va in timeout, i caricamenti passano lo stesso —
+è deliberato: un guasto di terzi non deve diventare un guasto nostro, e il
+contenuto resta comunque segnalabile.
 
 ---
 

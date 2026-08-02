@@ -4,6 +4,7 @@ import { buildMetadata } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SITE } from "@/lib/constants";
 import { MOTIVI, MOTIVI_VALIDI } from "@/lib/segnalazioni";
+import { TITOLARE, titolareCompleto } from "@/lib/titolare";
 
 export const metadata: Metadata = buildMetadata({
   title: "Termini di servizio",
@@ -48,20 +49,42 @@ export default function TerminiPage() {
         <h1 className="text-fluid-2xl">Termini di servizio</h1>
         <p className="mt-3 text-fluid-xs text-ink-faint">In vigore dal {AGGIORNATI}</p>
 
-        <p className="mt-6 rounded-xl border border-gold-500/40 bg-gold-500/[0.06] p-4 text-fluid-sm">
-          <strong>Da completare prima dell&apos;apertura al pubblico.</strong> I
-          riferimenti del gestore e il foro competente vanno inseriti con dati
-          reali, e il testo va rivisto da un legale. Tutto il resto descrive il
-          funzionamento effettivo della piattaforma.
-        </p>
+        {/* Compare e sparisce da solo secondo `src/lib/titolare.ts`: vedi la
+            nota in quel file. */}
+        {!titolareCompleto() && (
+          <p className="mt-6 rounded-xl border border-gold-500/40 bg-gold-500/[0.06] p-4 text-fluid-sm">
+            <strong>Da completare prima dell&apos;apertura al pubblico.</strong>{" "}
+            I riferimenti del gestore e il foro competente vanno inseriti con
+            dati reali, e il testo va rivisto da un legale. Tutto il resto
+            descrive il funzionamento effettivo della piattaforma.
+          </p>
+        )}
 
         <Sezione titolo="Chi gestisce Vybes">
-          <p>
-            <Manca>Nome e cognome o ragione sociale, indirizzo, partita IVA o codice fiscale</Manca>
-          </p>
-          <p>
-            Contatto: <Manca>indirizzo email</Manca>
-          </p>
+          {titolareCompleto() ? (
+            <>
+              <p>
+                {TITOLARE.nome}
+                <br />
+                {TITOLARE.indirizzo}
+                <br />
+                {TITOLARE.fiscale}
+              </p>
+              <p>
+                Contatto:{" "}
+                <a href={`mailto:${TITOLARE.email}`} className="link-underline">
+                  {TITOLARE.email}
+                </a>
+              </p>
+            </>
+          ) : (
+            <p>
+              <Manca>
+                Da compilare in src/lib/titolare.ts: nome o ragione sociale,
+                indirizzo, partita IVA o codice fiscale, email
+              </Manca>
+            </p>
+          )}
         </Sezione>
 
         <Sezione titolo="Cosa è Vybes, e cosa non è">
@@ -212,7 +235,7 @@ export default function TerminiPage() {
         <Sezione titolo="Legge applicabile">
           <p>
             Si applica la legge italiana. Per le controversie è competente il
-            foro di <Manca>città</Manca>, salvo il foro del consumatore quando
+            foro di {TITOLARE.foro ? TITOLARE.foro : <Manca>città</Manca>}, salvo il foro del consumatore quando
             previsto.
           </p>
         </Sezione>

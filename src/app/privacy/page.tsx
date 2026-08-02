@@ -3,6 +3,7 @@ import Link from "next/link";
 import { buildMetadata } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SITE } from "@/lib/constants";
+import { TITOLARE, titolareCompleto } from "@/lib/titolare";
 
 export const metadata: Metadata = buildMetadata({
   title: "Informativa privacy",
@@ -52,26 +53,46 @@ export default function PrivacyPage() {
         <h1 className="text-fluid-2xl">Informativa privacy</h1>
         <p className="mt-3 text-fluid-xs text-ink-faint">Ultimo aggiornamento: {AGGIORNATA}</p>
 
-        <p className="mt-6 rounded-xl border border-gold-500/40 bg-gold-500/[0.06] p-4 text-fluid-sm">
-          <strong>Da completare prima dell&apos;apertura al pubblico.</strong> I
-          riferimenti del titolare del trattamento vanno inseriti con dati reali
-          e il testo va rivisto da un legale. Tutto il resto descrive il
-          funzionamento effettivo della piattaforma.
-        </p>
+        {/* L'avviso compare da solo finché `src/lib/titolare.ts` non è
+            compilato, e sparisce da solo quando lo è. Prima era un paragrafo
+            fisso che qualcuno avrebbe dovuto ricordarsi di togliere — e che
+            sarebbe rimasto lì per mesi, oppure sarebbe stato tolto lasciando i
+            segnaposto sotto. */}
+        {!titolareCompleto() && (
+          <p className="mt-6 rounded-xl border border-gold-500/40 bg-gold-500/[0.06] p-4 text-fluid-sm">
+            <strong>Da completare prima dell&apos;apertura al pubblico.</strong>{" "}
+            I riferimenti del titolare del trattamento vanno inseriti con dati
+            reali e il testo va rivisto da un legale. Tutto il resto descrive il
+            funzionamento effettivo della piattaforma.
+          </p>
+        )}
 
         <Sezione titolo="Titolare del trattamento">
-          <p>
-            <span className="rounded bg-gold-500/[0.12] px-1.5 py-0.5 text-gold-300">
-              [Nome e cognome o ragione sociale, indirizzo, partita IVA o codice fiscale]
-            </span>
-          </p>
-          <p>
-            Per esercitare i tuoi diritti o per qualsiasi domanda sul
-            trattamento:{" "}
-            <span className="rounded bg-gold-500/[0.12] px-1.5 py-0.5 text-gold-300">
-              [indirizzo email di contatto]
-            </span>
-          </p>
+          {titolareCompleto() ? (
+            <>
+              <p>
+                {TITOLARE.nome}
+                <br />
+                {TITOLARE.indirizzo}
+                <br />
+                {TITOLARE.fiscale}
+              </p>
+              <p>
+                Per esercitare i tuoi diritti o per qualsiasi domanda sul
+                trattamento:{" "}
+                <a href={`mailto:${TITOLARE.email}`} className="link-underline">
+                  {TITOLARE.email}
+                </a>
+              </p>
+            </>
+          ) : (
+            <p>
+              <span className="rounded bg-gold-500/[0.12] px-1.5 py-0.5 text-gold-300">
+                Da compilare in src/lib/titolare.ts: nome o ragione sociale,
+                indirizzo, partita IVA o codice fiscale, email di contatto.
+              </span>
+            </p>
+          )}
         </Sezione>
 
         <Sezione titolo="Quali dati raccogliamo">
