@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { NotificationBell } from "@/components/NotificationBell";
 import { DashboardSidebar, DashboardMobileNav } from "@/components/dashboard/Nav";
 import { puo } from "@/lib/moderazione";
+import { attenzioneDi } from "@/lib/attenzione";
 import { PERMISSIONS } from "@/lib/permissions";
 import { Avatar } from "@/components/ui/Avatar";
 import { RoleBadge } from "@/components/ui/Badge";
@@ -20,6 +21,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Il ruolo si legge dal database a ogni caricamento, non dalla sessione: una
   // revoca deve sparire dal menu subito, non alla scadenza del token.
   const puoModerare = await puo(session.user.id, PERMISSIONS.CONTENT_MODERATE);
+
+  // I contatori del menu. Stanno nel layout e non nelle singole pagine perché
+  // il menu è visibile ovunque: calcolarli qui significa una volta per
+  // navigazione invece che una per sezione.
+  const contatori = await attenzioneDi(session.user.id, puoModerare);
 
   return (
     <div className="container-page py-8">
@@ -45,11 +51,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
 
       <div className="mb-6 lg:hidden">
-        <DashboardMobileNav puoModerare={puoModerare} />
+        <DashboardMobileNav puoModerare={puoModerare} contatori={contatori} />
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[200px_1fr]">
-        <DashboardSidebar puoModerare={puoModerare} />
+        <DashboardSidebar puoModerare={puoModerare} contatori={contatori} />
         <div className="min-w-0">{children}</div>
       </div>
     </div>

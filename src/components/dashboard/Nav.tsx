@@ -36,6 +36,49 @@ const MODERAZIONE = { href: "/dashboard/moderazione", label: "Segnalazioni", ico
 
 type Voce = { href: string; label: string; icon: typeof Home; exact?: boolean };
 
+/**
+ * Quanto aspetta una risposta, per voce di menu.
+ *
+ * Solo ciò che richiede un'azione, non ciò che è semplicemente nuovo: un post
+ * nel feed non conta perché non ti aspetta nessuno, una candidatura ferma sì.
+ * Un indicatore che segnala tutto viene ignorato, e allora tanto vale non
+ * averlo.
+ */
+export type Contatori = { candidature?: number; messaggi?: number; segnalazioni?: number };
+
+function contatoreDi(href: string, c: Contatori): number {
+  if (href === "/dashboard/eventi") return c.candidature ?? 0;
+  if (href === "/dashboard/messaggi") return c.messaggi ?? 0;
+  if (href === "/dashboard/moderazione") return c.segnalazioni ?? 0;
+  return 0;
+}
+
+/**
+ * Il numero accanto alla voce.
+ *
+ * `aria-label` esplicito perché un numero nudo, letto da uno screen reader
+ * dopo l'etichetta, suona come «Ingaggi 3» e non si capisce cosa siano quei
+ * tre. Il testo visibile resta il numero: chi vede non ha bisogno di leggere
+ * una frase.
+ */
+function Badge({ n, cosa }: { n: number; cosa: string }) {
+  if (n <= 0) return null;
+  return (
+    <span
+      aria-label={`${n} ${cosa}`}
+      className="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 px-1.5 text-xs font-bold text-white"
+    >
+      {n > 9 ? "9+" : n}
+    </span>
+  );
+}
+
+const COSA: Record<string, string> = {
+  "/dashboard/eventi": "candidature da valutare",
+  "/dashboard/messaggi": "conversazioni non lette",
+  "/dashboard/moderazione": "segnalazioni in attesa",
+};
+
 function voci(puoModerare: boolean): Voce[] {
   return puoModerare ? [...ITEMS, MODERAZIONE] : [...ITEMS];
 }
@@ -47,7 +90,13 @@ function useIsActive() {
 }
 
 /** Colonna laterale su desktop, con indicatore della sezione corrente. */
-export function DashboardSidebar({ puoModerare = false }: { puoModerare?: boolean }) {
+export function DashboardSidebar({
+  puoModerare = false,
+  contatori = {},
+}: {
+  puoModerare?: boolean;
+  contatori?: Contatori;
+}) {
   const isActive = useIsActive();
   const items = voci(puoModerare);
 
@@ -74,6 +123,7 @@ export function DashboardSidebar({ puoModerare = false }: { puoModerare?: boolea
                 )}
                 <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
                 {item.label}
+                <Badge n={contatoreDi(item.href, contatori)} cosa={COSA[item.href] ?? ""} />
               </Link>
             </li>
           );
@@ -88,7 +138,13 @@ export function DashboardSidebar({ puoModerare = false }: { puoModerare?: boolea
  * Qui diventa un pannello a scomparsa che si chiude da solo al cambio di
  * pagina — dimenticarlo aperto è l'errore classico di questi menu.
  */
-export function DashboardMobileNav({ puoModerare = false }: { puoModerare?: boolean }) {
+export function DashboardMobileNav({
+  puoModerare = false,
+  contatori = {},
+}: {
+  puoModerare?: boolean;
+  contatori?: Contatori;
+}) {
   const pathname = usePathname();
   const isActive = useIsActive();
   const items = voci(puoModerare);
@@ -162,6 +218,7 @@ export function DashboardMobileNav({ puoModerare = false }: { puoModerare?: bool
                     >
                       <Icon className="h-4 w-4" aria-hidden="true" />
                       {item.label}
+                      <Badge n={contatoreDi(item.href, contatori)} cosa={COSA[item.href] ?? ""} />
                     </Link>
                   </li>
                 );
