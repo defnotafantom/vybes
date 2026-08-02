@@ -110,10 +110,17 @@ jobs:
       - run: npm ci
       - run: npx prisma migrate deploy
       - run: npm run db:seed
-      - run: npx playwright install --with-deps chromium
+      # WebKit oltre a Chromium: i difetti mobile che la suite copre — lo
+      # zoom automatico sui campi, `vh` che ignora la barra degli indirizzi,
+      # la safe-area — esistono solo su quel motore. Verificarli su Chromium
+      # significava non verificarli.
+      - run: npx playwright install --with-deps chromium webkit
 
+      # Il desktop e i tre profili da telefono. Il progetto `mobile` c'era già
+      # in configurazione e non veniva eseguito da nessuno: una suite che
+      # nessuno lancia è documentazione, non verifica.
       - name: Playwright
-        run: npx playwright test --project=chromium
+        run: npx playwright test
 
       - uses: actions/upload-artifact@v4
         if: failure()

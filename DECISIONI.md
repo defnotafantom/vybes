@@ -1026,16 +1026,40 @@ segnaposto della stessa larghezza — mostrare «Accedi» a chi è autenticato e
 poi sostituirlo darebbe lo stesso messaggio sbagliato, per giunta
 lampeggiante.
 
-**Conseguenze.** `tests/e2e/mobile.spec.ts` gira a 390px *e* a 320px. Il
-secondo è un iPhone SE di prima generazione: è la larghezza a cui le cose si
-rompono, e testare solo il caso comune significa scoprirle dopo. I test
-verificano che si possa *fare qualcosa* — raggiungere le sezioni, accedere,
-toccare i bersagli, leggere senza trascinare la pagina di lato — e non
-l'aspetto, perché un test che si rompe a ogni ritocco grafico viene
-disattivato dopo la terza volta.
+**Su quali telefoni si verifica.** Qui c'era un secondo difetto, dentro la
+verifica stessa. La configurazione aveva due progetti, `chromium` e `mobile`
+(un Pixel 7), ma la CI lanciava `--project=chromium`: il profilo mobile non
+veniva **mai** eseguito. E anche se lo fosse stato, un Pixel 7 in Playwright è
+Chromium con una finestra più stretta — mentre i difetti appena corretti sono
+quasi tutti specifici di WebKit. Erano corretti e verificati su un motore che
+non li riproduce, che è un modo elegante di non averli verificati.
 
-Resta scoperto lo zoom di iOS in sé: Playwright non lo simula, quindi il test
-controlla la causa (la dimensione calcolata del carattere) e non l'effetto.
+Ora i profili sono quattro: desktop, `android` (Pixel 7, Blink), `iphone`
+(iPhone 13, WebKit) e `iphone-se` (WebKit a 320px). Su iOS il motore è
+obbligatorio per tutti i browser — anche Chrome e Firefox per iPhone sono
+WebKit sotto — quindi un solo profilo copre l'intera famiglia. La CI installa
+entrambi i motori ed esegue tutti i progetti.
+
+Tre profili e non dieci perché ciò che distingue un telefono da un altro, per
+un sito, è il **motore** e la **larghezza**: un Galaxy S23 e un Pixel 7
+eseguono lo stesso Blink a larghezze quasi identiche, e aggiungerlo
+raddoppierebbe il tempo della suite per ripercorrere gli stessi rami di
+codice. `iphone-se` non è un telefono diffuso: è il limite inferiore in cui le
+cose si rompono.
+
+**Conseguenze.** `tests/e2e/mobile.spec.ts` non nomina nessun dispositivo: le
+larghezze vengono dai progetti, e sul profilo desktop i test si saltano da
+soli. Verificano che si possa *fare qualcosa* — raggiungere le sezioni,
+accedere, toccare i bersagli, leggere senza trascinare la pagina di lato — e
+non l'aspetto, perché un test che si rompe a ogni ritocco grafico viene
+disattivato dopo la terza volta, e da quel momento non protegge più niente.
+
+Resta scoperto lo zoom di iOS in sé: Playwright non lo simula nemmeno su
+WebKit, quindi il test controlla la causa (la dimensione calcolata del
+carattere) e non l'effetto. E restano fuori le tastiere di sistema vere, la
+memoria e la rete reali: questi profili trovano i difetti di layout e di
+interazione, non quelli di prestazione — per quelli ci sono i Core Web Vitals
+raccolti sul traffico vero.
 
 ---
 

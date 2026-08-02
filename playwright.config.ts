@@ -2,6 +2,52 @@ import { defineConfig, devices } from "@playwright/test";
 
 const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:3000";
 
+/**
+ * Su quali telefoni gira davvero la suite.
+ *
+ * ── Il buco che c'era ──
+ *
+ * C'erano due progetti, `chromium` e `mobile` (un Pixel 7). Il secondo però
+ * non veniva mai eseguito — la CI lanciava `--project=chromium` e basta — e
+ * soprattutto usava lo stesso motore del primo: un Pixel 7 in Playwright è
+ * Chromium con una finestra più stretta e un altro user agent.
+ *
+ * Conta perché i difetti mobile corretti in ADR-027 sono quasi tutti
+ * **specifici di WebKit**: l'ingrandimento automatico sui campi sotto i 16px,
+ * `vh` che misura la finestra senza la barra degli indirizzi, la safe-area
+ * sotto la barra gestuale. Erano corretti e verificati su un motore che non
+ * li riproduce — che è un modo elegante di non averli verificati.
+ *
+ * ── I tre profili ──
+ *
+ * **`android`** (Pixel 7, Blink) è la maggioranza del traffico italiano. La
+ * sua particolarità rispetto a iOS: la tastiera *restringe* la finestra
+ * invece di sovrapporsi, quindi un pannello a tutta altezza si comporta
+ * diversamente mentre si scrive.
+ *
+ * **`iphone`** (iPhone 13, WebKit). Su iOS il motore è obbligatorio: anche
+ * Chrome e Firefox per iPhone sono WebKit sotto la scocca, quindi questo
+ * profilo copre *tutti* i browser di *tutti* gli iPhone, non solo Safari.
+ *
+ * **`iphone-se`** (WebKit a 320px) è il caso stretto. Non è un telefono
+ * diffuso: è il limite inferiore in cui le cose si rompono, e sta lì per
+ * trovarle prima che lo faccia qualcun altro.
+ *
+ * Tre profili invece di dieci perché ciò che distingue un telefono da un
+ * altro, per un sito, è il **motore** e la **larghezza**. Un Galaxy S23 e un
+ * Pixel 7 eseguono lo stesso Blink a larghezze quasi identiche: aggiungerlo
+ * raddoppierebbe il tempo della suite per rieseguire gli stessi rami di
+ * codice.
+ *
+ * ── Cosa resta scoperto, e va detto ──
+ *
+ * Un telefono emulato non è un telefono. Restano fuori le tastiere di
+ * sistema vere, la memoria e la rete reali, e il comportamento della barra
+ * degli indirizzi durante lo scorrimento, che si emula male ovunque. Questi
+ * profili trovano i difetti di layout e di interazione, non quelli di
+ * prestazione: quelli arrivano dai Core Web Vitals raccolti sul traffico
+ * vero.
+ */
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -11,7 +57,12 @@ export default defineConfig({
   use: { baseURL: BASE_URL, trace: "on-first-retry", locale: "it-IT" },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["Pixel 7"] } },
+    { name: "android", use: { ...devices["Pixel 7"] } },
+    { name: "iphone", use: { ...devices["iPhone 13"] } },
+    {
+      name: "iphone-se",
+      use: { ...devices["iPhone SE"], viewport: { width: 320, height: 568 } },
+    },
   ],
   // Riusa un server già avviato invece di farne partire un altro.
   webServer: process.env.E2E_BASE_URL
