@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Feed } from "@/components/Feed";
 import { levelProgress } from "@/lib/levels";
 import { missingForIndex } from "@/lib/profile-quality";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export default async function DashboardPage() {
     prisma.user.findUnique({
       where: { id: userId },
       select: {
-        name: true, experience: true, reputation: true, slug: true, isPublic: true,
+        name: true, experience: true, reputation: true, slug: true, isPublic: true, role: true,
         bio: true, disciplines: true,
         _count: {
           select: {
@@ -48,15 +48,46 @@ export default async function DashboardPage() {
       })
     : [];
 
+  const cercaArtisti = me?.role === "RECRUITER";
+
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <div>
         <h1 className="mb-6 text-2xl font-bold">Ciao {me?.name}</h1>
+
+        {/* Chi si iscrive per cercare artisti atterrava su un feed sociale con
+            livelli, esperienza e quest: tutto pensato per chi si fa trovare,
+            niente per chi cerca. Il primo passo di un organizzatore è uno solo,
+            e va detto invece di lasciarlo dedurre dalla colonna laterale. */}
+        {cercaArtisti && (
+          <div className="card mb-8 border-brand-400/40">
+            <p className="text-fluid-base font-semibold">Da dove si comincia</p>
+            <p className="mt-2 text-fluid-sm text-ink-muted">
+              Pubblica quello che cerchi e lascia che siano gli artisti a
+              candidarsi. Con data, luogo e compenso in chiaro l&apos;annuncio
+              riceve risposte pertinenti; senza compenso ne riceve poche.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link href="/dashboard/eventi/nuovo" className="btn-primary">
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                Pubblica un ingaggio
+              </Link>
+              <Link href="/artisti" className="btn-ghost">
+                Sfoglia gli artisti
+              </Link>
+            </div>
+          </div>
+        )}
+
         <Feed />
       </div>
 
       <aside className="space-y-6">
-        {me?.isPublic && gaps.length > 0 && (
+        {/* La soglia di indicizzazione riguarda chi vuole essere trovato. A un
+            organizzatore che pubblica annunci non serve comparire su Google
+            come profilo, e segnalarglielo sarebbe un allarme senza rimedio
+            utile. */}
+        {!cercaArtisti && me?.isPublic && gaps.length > 0 && (
           <div className="card border-gold-500/40 bg-gold-500/[0.06]">
             <h2 className="flex items-center gap-2 font-semibold">
               <Search className="h-4 w-4 text-gold-400" aria-hidden="true" />

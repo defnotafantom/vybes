@@ -1,14 +1,20 @@
 "use client";
 
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { MailCheck } from "lucide-react";
 import { registerSchema } from "@/lib/validations";
+import { ResendVerification } from "@/components/ResendVerification";
 
 export function RegisterForm({ defaultRole }: { defaultRole: "ARTIST" | "RECRUITER" }) {
   const router = useRouter();
   const [role, setRole] = useState(defaultRole);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  /** Indirizzo a cui è partita la verifica: se valorizzato, il modulo lascia
+   *  il posto alla schermata di conferma. */
+  const [inviata, setInviata] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -44,14 +50,64 @@ export function RegisterForm({ defaultRole }: { defaultRole: "ARTIST" | "RECRUIT
         return;
       }
 
-      await signIn("credentials", {
+      // Questo controllo mancava, e il risultato era il peggior finale
+      // possibile per una registrazione. Quando la verifica dell'email è
+      // richiesta, l'accesso automatico *non può* riuscire: il provider
+      // rifiuta chi non ha confermato l'indirizzo. Il fallimento non veniva
+      // guardato, si proseguiva verso la dashboard, il middleware non trovava
+      // il cookie e rimandava al login.
+      //
+      // La persona si era appena iscritta e si ritrovava davanti a un modulo
+      // di accesso, senza una parola. Nessuno legge quella schermata come
+      // «controlla la posta»: la legge come «non ha funzionato».
+      if (json.data?.verificationRequired) {
+        setInviata(parsed.data.email);
+        return;
+      }
+
+      // Senza verifica — sviluppo locale, o email non configurata — l'accesso
+      // deve riuscire. Se non riesce, meglio dirlo che fingere.
+      const esito = await signIn("credentials", {
         email: parsed.data.email,
         password: parsed.data.password,
         redirect: false,
       });
+
+      if (esito?.error) {
+        setErrors({
+          _: "Account creato, ma l'accesso automatico non è riuscito. Prova ad accedere.",
+        });
+        return;
+      }
+
       router.push("/dashboard");
       router.refresh();
     });
+  }
+
+  if (inviata) {
+    return (
+      <div role="status" className="space-y-5">
+        <div className="card border-brand-400/40">
+          <p className="flex items-center gap-2 text-fluid-base font-semibold">
+            <MailCheck className="h-5 w-5 text-brand-400" aria-hidden="true" />
+            Account creato. Ora conferma l&apos;email.
+          </p>
+          <p className="mt-3 text-fluid-sm text-ink-muted">
+            Abbiamo scritto a <strong className="text-ink">{inviata}</strong>. Apri
+            il link nel messaggio per attivare l&apos;account: fino ad allora non
+            puoi accedere, e il tuo profilo non compare negli elenchi pubblici.
+          </p>
+          <p className="mt-3 text-fluid-sm text-ink-muted">
+            Il link scade tra ventiquattro ore. Se non lo trovi, guarda nello
+            spam — è lì che finisce quasi sempre il primo messaggio da un
+            dominio nuovo.
+          </p>
+        </div>
+
+        <ResendVerification emailIniziale={inviata} />
+      </div>
+    );
   }
 
   return (
@@ -100,8 +156,19 @@ export function RegisterForm({ defaultRole }: { defaultRole: "ARTIST" | "RECRUIT
       <button type="submit" className="btn-primary w-full" disabled={pending}>
         {pending ? "Creazione…" : "Crea account"}
       </button>
+      {/* I due documenti erano nominati ma non raggiungibili da qui. Chiedere
+          di accettare qualcosa senza dare modo di leggerlo è un consenso che
+          non vale, e sono due link. */}
       <p className="text-xs muted">
-        Iscrivendoti accetti i termini di servizio e l&apos;informativa privacy.
+        Iscrivendoti accetti i{" "}
+        <Link href="/termini" className="link-underline">
+          termini di servizio
+        </Link>{" "}
+        e l&apos;
+        <Link href="/privacy" className="link-underline">
+          informativa privacy
+        </Link>
+        .
       </p>
     </form>
   );

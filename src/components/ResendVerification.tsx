@@ -2,8 +2,11 @@
 
 import { useState, useTransition } from "react";
 
-export function ResendVerification() {
-  const [email, setEmail] = useState("");
+export function ResendVerification({ emailIniziale = "" }: { emailIniziale?: string }) {
+  // Precompilato quando si arriva dalla registrazione: l'indirizzo l'abbiamo
+  // appena ricevuto, richiederlo sarebbe solo un ostacolo in più nel momento
+  // in cui la persona è già incerta.
+  const [email, setEmail] = useState(emailIniziale);
   const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
 
