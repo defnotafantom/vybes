@@ -194,6 +194,42 @@ per questo che il punteggio si può mostrare per intero in dashboard — dirlo
 non lo rende sfruttabile, e un numero che decide la tua visibilità senza dire
 come si ottiene è indistinguibile dall'arbitrio.
 
+### "Il sito è responsive?"
+
+Domanda che sembra di cortesia e non lo è: quasi tutti rispondono «sì,
+Tailwind» e chiudono lì. La risposta buona racconta cosa hai trovato.
+
+> Lo era nel senso che il layout si adattava, e non lo era nel senso che
+> conta. Ho scoperto cinque difetti che a 1280px non esistono, e tutta la mia
+> suite girava a 1280px — cioè testavo l'unica larghezza da cui il sito quasi
+> non viene guardato, su un progetto che vive di ricerca organica.
+>
+> Il peggiore non era grafico. L'intestazione mostrava «Accedi / Iscriviti»
+> sempre, anche a sessione aperta: chi usciva dalla dashboard per guardare un
+> profilo leggeva un sito che lo invitava a iscriversi, e concludeva di essere
+> stato disconnesso. La sessione dura un anno. Il sintomo percepito puntava
+> all'autenticazione, che funzionava benissimo.
+>
+> Poi: «Accedi» spariva sotto i 640px; ogni campo faceva ingrandire la pagina
+> su iOS, perché Safari lo fa da solo sotto i 16px e non torna indietro; i
+> pannelli di navigazione non scorrevano, e su uno schermo da 568px l'ultima
+> voce irraggiungibile era «Esci».
+
+Se chiedono **perché non un sito mobile separato**:
+
+> Perché significherebbe due URL per contenuto, canonical incrociati e ogni
+> modifica fatta due volte, su un progetto la cui intera strategia è comparire
+> nei risultati di ricerca. È l'architettura che il settore ha abbandonato
+> quando Google è passato all'indicizzazione mobile-first.
+
+E la parte che vale di più, se la domanda si apre:
+
+> Per i campi la scorciatoia sarebbe `maximum-scale=1`: risolve il fastidio
+> disattivando lo zoom per tutti, cioè lo toglie a chi non ci vede bene. Ho
+> messo 16px e ho scritto un test che verifica che quella scorciatoia non
+> rientri di nascosto — perché è il genere di riga che qualcuno aggiunge fra
+> sei mesi per chiudere in fretta lo stesso problema.
+
 ---
 
 ## Il capitolo più forte: quattordici difetti, e perché nessuno li aveva visti

@@ -14,6 +14,7 @@ import { ServiceWorker } from "@/components/ServiceWorker";
 import { NavProgress } from "@/components/NavProgress";
 import { Logo } from "@/components/Logo";
 import { NavPubblica } from "@/components/NavPubblica";
+import { MenuUtente } from "@/components/MenuUtente";
 import { SoloPubblico } from "@/components/SoloPubblico";
 import "./globals.css";
 
@@ -115,13 +116,15 @@ function SiteHeader() {
       className="sticky top-0 z-40 border-b backdrop-blur-md"
       style={{ borderColor: "rgb(var(--border))", background: "rgb(var(--bg) / 0.85)" }}
     >
-      <div className="container-page flex h-16 items-center justify-between gap-4">
+      {/* `gap-2` e non `gap-4` sotto sm: con logo, menu, tema e due pulsanti
+          su 320px, quattro spaziature da 16px sono 64px di vuoto che tolgono
+          spazio proprio agli elementi che devono restare tutti visibili. */}
+      <div className="container-page flex h-16 items-center justify-between gap-2 sm:gap-4">
         <Logo />
         <NavPubblica />
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Link href="/accedi" className="btn-ghost hidden sm:inline-flex">Accedi</Link>
-          <Link href="/registrati" className="btn-primary">Iscriviti</Link>
+          <MenuUtente />
         </div>
       </div>
     </header>
@@ -130,7 +133,15 @@ function SiteHeader() {
 
 function SiteFooter() {
   return (
-    <footer className="mt-20 border-t py-12" style={{ borderColor: "rgb(var(--border))" }}>
+    <footer
+      className="mt-20 border-t py-12"
+      style={{
+        borderColor: "rgb(var(--border))",
+        // Sugli iPhone recenti l'ultima riga del piè di pagina finisce sotto
+        // la barra gestuale, che è opaca e la copre.
+        paddingBottom: "max(3rem, env(safe-area-inset-bottom))",
+      }}
+    >
       <div className="container-page grid gap-8 text-sm sm:grid-cols-2 md:grid-cols-4">
         <div>
           <Logo href={null} />

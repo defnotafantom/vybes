@@ -178,9 +178,10 @@ test.describe("il sito è navigabile dal telefono", () => {
     for (const voce of ["Artisti", "Ingaggi", "Città", "Mappa", "Cerca"]) {
       await expect(menu.getByRole("link", { name: voce, exact: true })).toBeVisible();
     }
-    // Sotto i 640px «Accedi» spariva dall'intestazione: chi tornava sul sito
-    // vedeva solo l'invito a iscriversi di nuovo.
-    await expect(menu.getByRole("link", { name: /accedi/i })).toBeVisible();
+    // «Accedi» non sta più nel menu: ora è nell'intestazione a ogni
+    // larghezza, che è il posto in cui lo si cerca. Il controllo si è
+    // spostato in mobile.spec.ts, dove verifica che sia visibile *senza*
+    // aprire niente.
   });
 
   test("il menu porta davvero dove dice", async ({ page }) => {

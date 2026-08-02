@@ -240,7 +240,10 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
             Il livello invece è sparito da questa pagina: misura quanto una
             persona usa il sito, che non è un dato di cui un organizzatore
             debba tener conto per decidere se scriverle. */}
-        <dl className="container-page grid grid-cols-3">
+        {/* Tre colonne su 320px darebbero a «Ingaggi confermati» una
+            colonna da 90px: l'etichetta va a capo tre volte e il numero
+            perde la propria riga. Sotto sm si impilano. */}
+        <dl className="container-page grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-y-0">
           {[
             {
               label: "Reputazione",

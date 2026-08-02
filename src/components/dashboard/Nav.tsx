@@ -224,7 +224,7 @@ export function DashboardMobileNav({
         onClick={() => setOpen(true)}
         aria-expanded={open}
         aria-haspopup="dialog"
-        className="btn-ghost w-full justify-between"
+        className="btn-ghost min-h-11 w-full justify-between"
       >
         <span className="flex items-center gap-2">
           {current && <current.icon className="h-4 w-4" aria-hidden="true" />}
@@ -241,13 +241,16 @@ export function DashboardMobileNav({
             className="absolute inset-0 animate-fade-in bg-black/50 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute inset-x-3 top-3 animate-fade-down rounded-2xl border bg-surface p-2 shadow-float">
+          <div
+            className="absolute inset-x-3 top-3 max-h-[calc(100dvh-1.5rem)] animate-fade-down overflow-y-auto overscroll-contain rounded-2xl border bg-surface p-2 shadow-float"
+            style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+          >
             <div className="flex items-center justify-between px-2 py-1">
               <span className="text-sm font-semibold">Area personale</span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-lg p-1.5 text-ink-muted hover:bg-black/5 dark:hover:bg-white/5"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-ink-muted hover:bg-black/5 dark:hover:bg-white/5"
                 aria-label="Chiudi"
               >
                 <X className="h-4 w-4" aria-hidden="true" />
@@ -263,7 +266,7 @@ export function DashboardMobileNav({
                       href={item.href}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium",
+                        "flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium",
                         active ? "bg-brand-50 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300" : "text-ink"
                       )}
                     >
@@ -287,7 +290,7 @@ export function DashboardMobileNav({
                     <li key={v.href}>
                       <Link
                         href={v.href}
-                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-ink-muted"
+                        className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-ink-muted"
                       >
                         <Icona className="h-4 w-4" aria-hidden="true" />
                         {v.label}

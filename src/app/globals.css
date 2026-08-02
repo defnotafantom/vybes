@@ -93,6 +93,12 @@
   html.dark { color-scheme: dark; }
 
   body {
+    /* Un solo elemento largo più della finestra rende scorrevole in
+       orizzontale l'intera pagina, e su un telefono il sintomo è che il sito
+       "balla" sotto il dito mentre si scorre in verticale. Bloccarlo qui è
+       una rete di sicurezza: se un giorno un componente sfora, il danno
+       resta dentro quel componente invece di propagarsi al documento. */
+    overflow-x: hidden;
     background-color: rgb(var(--bg));
     color: rgb(var(--fg));
     -webkit-font-smoothing: antialiased;
@@ -160,9 +166,12 @@
   }
   .card-glow:hover::before { @apply opacity-100; }
 
+  /* `min-h-11` = 44px: sotto quella misura, su un telefono, si manca il
+     bersaglio. Su desktop non cambia niente, perché il riempimento verticale
+     porta già il bottone oltre quella soglia. */
   .btn {
-    @apply inline-flex select-none items-center justify-center gap-2 rounded-xl px-4 py-2.5
-           text-fluid-sm font-semibold transition-all duration-150 ease-out
+    @apply inline-flex min-h-11 select-none items-center justify-center gap-2 rounded-xl
+           px-4 py-2.5 text-fluid-sm font-semibold transition-all duration-150 ease-out
            active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-primary {
@@ -177,12 +186,29 @@
     @apply btn border border-red-400/40 bg-transparent text-red-500 hover:bg-red-500/10;
   }
 
+  /* ── Campi di modulo ──────────────────────────────────────────────────
+     I 16px sotto i 640px non sono una scelta estetica: Safari su iOS
+     ingrandisce automaticamente la pagina quando riceve il fuoco un campo
+     con testo sotto i 16px, e non la riporta indietro. Il risultato era che
+     ogni singolo modulo del sito — accesso, registrazione, pubblicazione di
+     un ingaggio — faceva saltare la pagina al primo tocco, lasciando
+     l'utente in un'inquadratura sbagliata da cui doveva uscire a mano.
+
+     La soluzione alternativa, `maximum-scale=1` nel viewport, funziona
+     disattivando lo zoom per tutti: risolve il fastidio impedendo a chi non
+     ci vede bene di ingrandire. Non è un compromesso accettabile, ed è
+     esplicitamente sconsigliata dalle WCAG (criterio 1.4.4).
+
+     Il tocco minimo di 44px viene dalle linee guida Apple ed è la soglia
+     sotto la quale un dito adulto sbaglia bersaglio; il criterio WCAG 2.5.8
+     ne chiede 24, che è il minimo per non fallire, non un obiettivo. */
   .input {
-    @apply w-full rounded-xl border bg-surface-sunken px-4 py-3 text-fluid-sm
+    @apply w-full rounded-xl border bg-surface-sunken px-4 py-3 text-base
            transition-all duration-150 placeholder:text-ink-faint
            hover:border-line-strong
            focus:border-brand-500 focus:bg-surface focus:outline-none
-           focus:ring-4 focus:ring-brand-500/[0.15] disabled:opacity-60;
+           focus:ring-4 focus:ring-brand-500/[0.15] disabled:opacity-60
+           sm:text-fluid-sm;
   }
 
   .chip {

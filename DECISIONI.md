@@ -950,6 +950,95 @@ un modulo.
 
 ---
 
+## ADR-027 · Un sito solo, che sotto i 640px cambia forma
+
+**Contesto.** Da telefono il sito aveva difetti che nessun controllo
+automatico poteva vedere, perché tutta la suite girava a 1280px — la
+larghezza a cui non esistono. Su un progetto che vive di ricerca organica è
+l'inversione peggiore possibile: **la larghezza a cui il sito funziona meno
+bene è quella da cui viene visto di più.**
+
+Sono cinque, e vale la pena elencarli perché hanno nature diverse.
+
+**«Accedi» spariva sotto i 640px** (`hidden sm:inline-flex`). L'unico pulsante
+rimasto invitava a iscriversi chi aveva già un account.
+
+**L'intestazione non sapeva se avevi la sessione aperta.** Mostrava «Accedi /
+Iscriviti» sempre, anche a sessione valida. Chi usciva dalla dashboard per
+guardare un profilo leggeva un sito che lo invitava a iscriversi, e la
+conclusione naturale era «sono stato disconnesso». La sessione dura un anno:
+il problema non era mai stato l'autenticazione, era che il sito pubblico non
+se ne accorgeva. È il difetto più insidioso dei cinque, perché il sintomo
+percepito (*«mi disconnette»*) puntava a un sottosistema che funzionava.
+
+**Ogni campo faceva ingrandire la pagina.** Safari su iOS ingrandisce da solo
+quando riceve il fuoco un campo con testo sotto i 16px, e non torna indietro.
+I campi erano a 14px: accesso, registrazione, pubblicazione di un ingaggio —
+ogni modulo del sito faceva saltare l'inquadratura al primo tocco.
+
+**I pannelli di navigazione non scorrevano.** Con il corpo bloccato a
+`overflow: hidden` mentre il menu è aperto, su uno schermo da 568px le ultime
+voci erano visibili ma irraggiungibili. Nella dashboard, fra quelle voci,
+c'era «Esci».
+
+**La mappa era alta 520px fissi**, su un telefono alto 667.
+
+**Decisione.** Un solo insieme di pagine, che sotto i 640px cambia forma.
+
+L'alternativa che sembra più diretta — un sito mobile separato, `m.dominio` —
+è quella che il settore ha abbandonato quando Google è passato
+all'indicizzazione mobile-first: significa due URL per ogni contenuto, quindi
+canonical incrociati da mantenere, contenuto duplicato da spiegare al crawler,
+e ogni modifica fatta due volte. Su un progetto la cui intera strategia è
+comparire nei risultati di ricerca, è il difetto peggiore che si possa
+introdurre di proposito.
+
+Anche scegliere i componenti a runtime in base alla larghezza è stato
+scartato: il markup verrebbe deciso dopo l'idratazione, quindi sfarfallio per
+chi guarda e una versione sola per chi indicizza.
+
+Quattro scelte meritano una nota, perché in ognuna la strada breve era la
+sbagliata:
+
+**16px sui campi, non `maximum-scale=1`.** La seconda risolve il problema
+disattivando lo zoom per tutti, cioè risolve un fastidio togliendo a chi non
+ci vede bene l'unico strumento che ha. È esplicitamente contraria al criterio
+WCAG 1.4.4. C'è un test che verifica che quella scorciatoia non rientri di
+nascosto.
+
+**44px di bersaglio minimo.** Viene dalle linee guida Apple. Il criterio WCAG
+2.5.8 ne chiede 24, che è la soglia per non fallire un audit, non una misura
+a cui si tocca bene.
+
+**`dvh` e non `vh`.** Su iOS `vh` misura la finestra *senza* la barra degli
+indirizzi: un elemento a `100vh` finisce parzialmente coperto proprio mentre
+si scorre. `dvh` segue l'altezza reale.
+
+**L'avatar arriva da `useSession()`, non da `await auth()` nel layout.** La
+seconda è una riga sola, e renderebbe **dinamica ogni pagina del sito**:
+leggere i cookie nel layout radice disattiva la generazione statica ovunque.
+Le pagine di città e i profili sono generati staticamente e rigenerati ogni
+ora, ed è ciò su cui poggia tutta la strategia di ricerca. Scambiare quello
+per un avatar in alto a destra sarebbe un pessimo affare. Il prezzo della
+scelta giusta è che per un istante non sappiamo chi sei, e quell'istante va
+gestito: durante il caricamento non si mostra né «Accedi» né l'avatar, ma un
+segnaposto della stessa larghezza — mostrare «Accedi» a chi è autenticato e
+poi sostituirlo darebbe lo stesso messaggio sbagliato, per giunta
+lampeggiante.
+
+**Conseguenze.** `tests/e2e/mobile.spec.ts` gira a 390px *e* a 320px. Il
+secondo è un iPhone SE di prima generazione: è la larghezza a cui le cose si
+rompono, e testare solo il caso comune significa scoprirle dopo. I test
+verificano che si possa *fare qualcosa* — raggiungere le sezioni, accedere,
+toccare i bersagli, leggere senza trascinare la pagina di lato — e non
+l'aspetto, perché un test che si rompe a ogni ritocco grafico viene
+disattivato dopo la terza volta.
+
+Resta scoperto lo zoom di iOS in sé: Playwright non lo simula, quindi il test
+controlla la causa (la dimensione calcolata del carattere) e non l'effetto.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

@@ -78,7 +78,7 @@ export function NavPubblica() {
         aria-expanded={aperto}
         aria-haspopup="dialog"
         aria-label="Apri il menu"
-        className="btn-ghost px-2 md:hidden"
+        className="btn-ghost min-h-11 min-w-11 px-2 md:hidden"
       >
         <Menu className="h-5 w-5" aria-hidden="true" />
       </button>
@@ -92,14 +92,17 @@ export function NavPubblica() {
             onClick={() => setAperto(false)}
           />
 
-          <div className="absolute inset-x-3 top-3 animate-fade-down rounded-2xl border bg-surface p-2 shadow-float">
+          <div
+            className="absolute inset-x-3 top-3 max-h-[calc(100dvh-1.5rem)] animate-fade-down overflow-y-auto overscroll-contain rounded-2xl border bg-surface p-2 shadow-float"
+            style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+          >
             <div className="flex items-center justify-between px-2 py-1">
               <span className="text-sm font-semibold">Vybes</span>
               <button
                 type="button"
                 onClick={() => setAperto(false)}
                 aria-label="Chiudi"
-                className="rounded-lg p-1.5 text-ink-muted hover:bg-black/5 dark:hover:bg-white/5"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-ink-muted hover:bg-black/5 dark:hover:bg-white/5"
               >
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
@@ -114,7 +117,7 @@ export function NavPubblica() {
                       href={v.href}
                       aria-current={attiva(v.href) ? "page" : undefined}
                       className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium",
+                        "flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium",
                         attiva(v.href)
                           ? "bg-brand-50 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300"
                           : "text-ink"
@@ -128,14 +131,6 @@ export function NavPubblica() {
               })}
             </ul>
 
-            {/* «Accedi» era nascosto sotto i 640px: chi tornava sul sito dal
-                telefono non aveva un modo evidente di rientrare, e l'unico
-                pulsante visibile lo invitava a iscriversi di nuovo. */}
-            <div className="mt-2 border-t p-2">
-              <Link href="/accedi" className="btn-ghost w-full">
-                Accedi
-              </Link>
-            </div>
           </div>
         </div>
       )}

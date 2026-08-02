@@ -146,7 +146,12 @@ export function MapExplorer({
           center={[origin.lat, origin.lng]}
           zoom={9}
           scrollWheelZoom={false}
-          style={{ height: 520, width: "100%" }}
+          /* 520px fissi su un telefono alto 667 lasciano fuori i comandi e
+             costringono a scorrere per capire cosa si sta guardando. `dvh` e
+             non `vh`: su iOS `vh` misura la finestra senza la barra degli
+             indirizzi, quindi il fondo della mappa resterebbe nascosto sotto
+             di essa proprio mentre la si scorre. */
+          className="h-[60dvh] max-h-[520px] min-h-72 w-full sm:h-[520px]"
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
