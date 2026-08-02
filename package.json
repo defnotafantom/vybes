@@ -15,6 +15,7 @@
     "format:check": "prettier --check .",
     "lint": "next lint",
     "postinstall": "prisma generate",
+    "artisti:importa": "tsx scripts/importa-artisti.ts",
     "pulisci:e2e": "tsx scripts/pulisci-e2e.ts",
     "reputazione:ricalcola": "tsx scripts/ricalcola-reputazione.ts",
     "start": "next start",

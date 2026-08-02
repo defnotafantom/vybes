@@ -22,3 +22,8 @@ public/uploads/*
 /blob-report/
 /playwright/.cache/
 e2e.txt
+
+# Dati degli artisti in fase di reclutamento: contengono email e consensi di
+# persone reali. Vedi RECLUTAMENTO.md.
+/dati/
+/consensi/

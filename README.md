@@ -19,6 +19,7 @@ possibile.
 | [COLLOQUIO.md](./COLLOQUIO.md) | Come spiegare il progetto e le domande che arrivano |
 | [PORT.md](./PORT.md) | Cosa è stato preso dalla versione precedente e perché |
 | [CV.md](./CV.md) | I testi pronti per curriculum, GitHub e LinkedIn |
+| [RECLUTAMENTO.md](./RECLUTAMENTO.md) | Come portare i primi venti artisti reali |
 
 ---
 

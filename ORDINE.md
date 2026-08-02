@@ -188,7 +188,7 @@ creare un problema legale invece che tecnico.
 
 ---
 
-## 4. Riempire Milano
+## 4. Riempire Milano — vedi RECLUTAMENTO.md
 
 **Perché conta più di tutto il resto, ma viene dopo.** Ogni altra voce migliora
 qualcosa che già funziona; questa stabilisce se il progetto ha ragione di
@@ -205,7 +205,12 @@ indicizzazione. Cinque o sei ingaggi aperti, anche piccoli.
 
 **Come.** Non inventarli. Contatta artisti veri e offri di costruire il
 profilo: per loro è una pagina indicizzata gratis, per te contenuto autentico.
-Chiedi consenso scritto per testo e immagini.
+
+`RECLUTAMENTO.md` ha il messaggio da mandare, le quattro cose da chiedere, la
+formula di consenso da farsi rimandare per iscritto e il formato del file.
+Poi `npm run artisti:importa` crea i profili completi — con biografia,
+discipline, portfolio e reputazione già calcolata — e segnala quali non
+supereranno la soglia di indicizzazione, dicendo cosa manca.
 
 ---
 
