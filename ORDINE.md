@@ -94,9 +94,56 @@ Nessuna di queste cose è stata vista su un browser vero.
 
 ---
 
-## 1. Upstash Redis
+## 1. I test scrivono nel database di produzione ⚠
 
-La salute in produzione riporta `rateLimitBackend: "memory"`: il limite di
+`percorso-critico.spec.ts` compila davvero il modulo di registrazione — è
+l'unico modo di verificare che chi si iscrive finisca da qualche parte, il
+difetto peggiore mai trovato su questo sito. Ogni esecuzione crea quindi
+**quattro account veri**, uno per profilo del browser.
+
+Con `DATABASE_URL` che punta a Neon, finiscono in produzione. Il 2 agosto gli
+utenti sono passati da 9 a 18 in un pomeriggio: metà sono test.
+
+**Il danno visibile è contenuto** — quegli account non compaiono negli
+elenchi, perché `PROFILO_PUBBLICO` richiede l'email confermata e quella non lo
+sarà mai. Restano però nei conteggi, nelle statistiche della landing e in
+`/api/health`, e crescono di quattro a ogni esecuzione.
+
+**Il danno potenziale no.** Oggi i test solo creano. Il giorno in cui uno
+dovesse cancellare o modificare qualcosa per verificare un percorso, lo
+farebbe su dati veri.
+
+**Pulizia, adesso:**
+
+```powershell
+npm run pulisci:e2e              # mostra e non scrive
+npm run pulisci:e2e -- --conferma
+```
+
+**La soluzione vera:** un database separato per i test. Su Neon si crea un
+*branch* del database in pochi secondi, gratis, con lo stesso schema. Poi:
+
+```powershell
+$env:DATABASE_URL="...branch di test..."; npm run test:e2e
+```
+
+Finché non è fatto, lo script di pulizia è un cerotto: ripulisce, non
+previene.
+
+---
+
+## 2. Upstash Redis ✔ fatto il 2 agosto
+
+`rateLimitBackend: "redis"` in produzione, nessun avviso sull'ambiente. Il
+limite di richieste è ora condiviso fra le istanze serverless invece di
+valere per ciascuna: con dieci istanze attive, un limite di 5 tentativi era in
+pratica 50.
+
+---
+
+## Come era, prima che fosse fatto
+
+La salute in produzione riportava `rateLimitBackend: "memory"`: il limite di
 richieste vale per singola istanza serverless, quindi il limite reale è il
 numero di istanze moltiplicato per la soglia. Con le registrazioni chiuse era
 teoria; aperte, la limitazione è la prima difesa contro la creazione automatica
@@ -109,7 +156,7 @@ di account.
 
 ---
 
-## 2. I tuoi dati da titolare, e un legale
+## 3. I tuoi dati da titolare, e un legale
 
 Sulla pagina privacy i riferimenti mancanti sono evidenziati in giallo: si
 vedono apposta. Servono nome o ragione sociale, indirizzo, codice fiscale o
@@ -120,7 +167,7 @@ creare un problema legale invece che tecnico.
 
 ---
 
-## 3. Riempire Milano
+## 4. Riempire Milano
 
 **Perché conta più di tutto il resto, ma viene dopo.** Ogni altra voce migliora
 qualcosa che già funziona; questa stabilisce se il progetto ha ragione di
@@ -141,7 +188,7 @@ Chiedi consenso scritto per testo e immagini.
 
 ---
 
-## 4. Cancellare gli account di prova
+## 5. Cancellare gli account di prova
 
 `kkkk` e `il-tuo-nome` esistono in produzione. La soglia di qualità li tiene
 fuori dall'indice, ma restano negli elenchi pubblici e chi li incontra capisce
@@ -158,7 +205,7 @@ cancellando la persona sbagliata.
 
 ---
 
-## 5. Search Console
+## 6. Search Console
 
 Solo ora, e non prima. Un dominio nuovo viene valutato su ciò che la prima
 scansione trova: presentarsi con pagine vuote significa farsi misurare nel
@@ -170,7 +217,7 @@ Profili marcati «Esclusa per tag noindex» sono la difesa che funziona.
 
 ---
 
-## 6. Google OAuth
+## 7. Google OAuth
 
 `googleOAuth: false` in produzione. Riduce l'attrito alla registrazione, che su
 una piattaforma a due lati conta. Il codice c'è: mancano le credenziali.
