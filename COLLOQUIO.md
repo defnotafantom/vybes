@@ -158,6 +158,104 @@ Rispondere con onestà e con criterio vale più che fingere completezza:
 
 ---
 
+## Il capitolo più forte: quattordici difetti, e perché nessuno li aveva visti
+
+Questo è il materiale migliore che hai, ed è meglio di qualunque scelta
+architetturale. Le decisioni su una pagina bianca le sa raccontare chiunque
+abbia letto la documentazione giusta. Trovare i difetti in qualcosa che gira
+già, capire perché sono passati, e cambiare il processo perché non ripassino —
+quello lo sa fare chi ha lavorato davvero.
+
+### Come introdurlo
+
+> A un certo punto ho smesso di aggiungere funzionalità e ho percorso il sito
+> come se fossi un utente che ci arriva da Google. In due giorni ho trovato
+> quattordici difetti. Nessuno era nel codice complicato: erano tutti nei punti
+> di giunzione.
+
+### I quattro che raccontano meglio
+
+**1. La sessione che sembrava scadere.** Gli utenti venivano rimandati al login
+con una sessione valida. Auth.js spezza il cookie in parti numerate quando il
+token supera i quattromila byte; il middleware cercava il nome esatto e non lo
+trovava. Era intermittente perché la dimensione del token dipende da cosa
+contiene — chi entrava con Google, che ha un URL di avatar lungo, lo
+incontrava; gli altri no.
+
+Perché è una buona storia: il sintomo («scade la sessione») indicava un
+componente che funzionava benissimo, e la causa stava altrove.
+
+**2. Il login perdeva la destinazione.** Il middleware passava alla pagina di
+accesso il percorso ma non la query. Chi cliccava «Contatta» su un profilo
+tornava, dopo il login, in un elenco di messaggi vuoto senza più sapere chi
+volesse contattare. Lo stesso difetto era sull'altra metà dell'imbuto.
+
+Perché è una buona storia: `pathname` senza `search` è una stringa
+perfettamente valida. Nessuno strumento poteva vederlo, e la revisione umana lo
+aveva letto e approvato.
+
+**3. La registrazione finiva sulla pagina di login.** In produzione la verifica
+email è obbligatoria, quindi l'accesso automatico dopo l'iscrizione non poteva
+riuscire. Il fallimento non veniva controllato: si proseguiva verso la
+dashboard, il middleware non trovava il cookie, e rimbalzava al login. Chi si
+era appena iscritto si ritrovava davanti a un modulo di accesso senza una
+parola. L'API restituiva `verificationRequired` dal primo giorno; il modulo lo
+ignorava.
+
+Perché è una buona storia: colpiva **ogni singola iscrizione**, in produzione,
+e nessun test falliva.
+
+**4. Dal telefono il sito non aveva navigazione.** `hidden md:flex`: sotto i
+768px sparivano artisti, ingaggi, città e mappa. Su un progetto la cui unica
+fonte di traffico è la ricerca — e le ricerche arrivano da telefono — significa
+che chi atterrava su una pagina di città non poteva andare da nessun'altra
+parte.
+
+### La diagnosi, che è la parte che conta
+
+Se ti chiedono «perché non li avevi visti», questa è la risposta:
+
+> Perché i controlli guardavano le pagine, e nessuno di quei difetti sta dentro
+> una pagina. Stanno nei passaggi fra una pagina e l'altra: dove si finisce
+> dopo il login, cosa vedi quando una lista è vuota, cosa può fare chi arriva
+> da fuori. È la parte che si scrive per ultima, si guarda una volta, e non si
+> riapre più.
+>
+> Il typecheck non poteva prenderli: erano tutte espressioni valide. Il lint
+> nemmeno. I test end-to-end coprivano autenticazione, navigazione e SEO — le
+> cose che si scrivono per prime — e verificavano che le pagine rispondessero.
+> Le pagine rispondevano tutte.
+
+### Cosa hai cambiato, che è la conclusione
+
+> Ho scritto i test che li avrebbero presi, con una regola sola: **ogni test
+> verifica dove si finisce, non che qualcosa esista.** Se un test si può
+> soddisfare rispondendo 200, non sta verificando niente di ciò che rompe
+> l'esperienza.
+>
+> E per il difetto che aveva riscritto un file di rotta con una copia della
+> landing — quello che faceva dichiarare a ogni profilo artista
+> `canonical: "/"`, cioè «la pagina vera è la home» — ho scritto un controllo
+> che confronta il percorso dichiarato con la posizione del file nell'albero
+> delle rotte. Gira in CI. Quel difetto avrebbe deindicizzato da solo il tipo
+> di pagina su cui poggia tutta la strategia, in silenzio, e ce ne saremmo
+> accorti mesi dopo guardando il traffico che non arrivava.
+
+### Se ti chiedono un difetto di sicurezza
+
+> Il parametro di ritorno dopo il login finiva diritto in un reindirizzamento:
+> un *open redirect*. Bastava `/accedi?next=https://sito-falso.example` per
+> costruire un'esca — la vittima vede il dominio giusto, si fida, e dopo
+> l'accesso finisce su un clone che le chiede di rifarlo. Con le registrazioni
+> aperte il link si distribuisce mettendolo in un profilo.
+>
+> La difesa è una lista di ciò che è permesso, non di ciò che è vietato: si
+> accettano solo percorsi interni. E copre anche `//sito.example`, che i
+> browser leggono come URL assoluto — è il modo più comune di aggirare un
+> controllo che guarda solo la prima barra.
+
+---
+
 ## Domande difficili, e come non cadere
 
 **"Non è sovradimensionato per un progetto senza utenti?"**
@@ -201,6 +299,15 @@ digitazione al ragionamento — che è l'unica cosa che conta davvero.
 | **CI verde e visibile** | Il badge in cima al README dimostra che i test esistono e passano |
 | **Riempi una città** | Trenta artisti veri. Un sito vuoto, per quanto ben costruito, sembra un esercizio |
 | **Rileggi `DECISIONI.md`** | Devi poter spiegare a voce ogni ADR senza rileggerlo |
+| **Sappi raccontare i difetti** | È il capitolo che ti distingue: chiunque sa difendere le proprie scelte, quasi nessuno sa raccontare cosa ha sbagliato e cosa ha cambiato di conseguenza |
+
+**Sulla cronologia git, un consiglio che vale più di quanto sembri.** I messaggi
+di commit di questo progetto spiegano il *perché*, non il *cosa* — «la
+registrazione non finiva da nessuna parte» e poi il ragionamento, non «fix
+RegisterForm». Se chi ti valuta apre il repository, `git log` è la prima cosa
+che legge, e da solo racconta come lavori. Non riscriverlo per farlo sembrare
+più ordinato: la sequenza vera, con i difetti trovati e corretti, dice di più
+di una storia pulita.
 
 ---
 
@@ -219,3 +326,14 @@ Se ricordi solo cinque cose, che siano queste:
    limiter rotto non deve diventare un sito irraggiungibile.
 
 Sono cinque risposte che nessuno può dare avendo solo copiato un tutorial.
+
+E una sesta, che vale da sola quanto le altre cinque:
+
+6. **Perché quattordici difetti erano sfuggiti a typecheck, lint, test e
+   revisione** → perché tutti guardavano *dentro* le pagine, e i difetti
+   stavano nei passaggi *fra* le pagine. Da lì la regola nuova: un test
+   verifica dove si finisce, non che qualcosa esista.
+
+La differenza fra i primi cinque punti e il sesto è che i primi li puoi
+imparare, il sesto lo puoi solo aver vissuto. È quello che ti distingue da chi
+porta un progetto costruito e mai messo alla prova.
