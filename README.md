@@ -5,7 +5,9 @@ TypeScript, Prisma su PostgreSQL, Tailwind. Costruita SEO-first: tutto ciò che
 ha valore per la ricerca organica è renderizzato lato server e statico dove
 possibile.
 
-![CI](https://github.com/USERNAME/vybes/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/defnotafantom/vybes/actions/workflows/ci.yml/badge.svg)
+
+**In produzione:** [vybeshub.art](https://vybeshub.art)
 
 ## Documentazione
 
@@ -16,6 +18,7 @@ possibile.
 | [MANUALE.md](./MANUALE.md) | I passi per arrivare online, con i comandi esatti |
 | [COLLOQUIO.md](./COLLOQUIO.md) | Come spiegare il progetto e le domande che arrivano |
 | [PORT.md](./PORT.md) | Cosa è stato preso dalla versione precedente e perché |
+| [CV.md](./CV.md) | I testi pronti per curriculum, GitHub e LinkedIn |
 
 ---
 
