@@ -31,12 +31,14 @@ const COOKIE_SESSIONE = ["authjs.session-token", "__Secure-authjs.session-token"
  * dipende da cosa contiene — un'immagine di profilo di Google ha un URL lungo,
  * un nome lungo pesa, e si passa la soglia senza accorgersene.
  *
- * Il controllo per prefisso copre entrambe le forme.
+ * La funzione prende i nomi dei cookie invece della richiesta perché così è
+ * verificabile senza costruire un oggetto di Next: è il punto in cui il
+ * difetto viveva, e merita un test suo.
  */
-function haSessione(req: NextRequest): boolean {
-  return req.cookies
-    .getAll()
-    .some((c) => COOKIE_SESSIONE.some((base) => c.name === base || c.name.startsWith(`${base}.`)));
+export function haSessione(nomiCookie: string[]): boolean {
+  return nomiCookie.some((nome) =>
+    COOKIE_SESSIONE.some((base) => nome === base || nome.startsWith(`${base}.`))
+  );
 }
 
 export function middleware(req: NextRequest) {
@@ -52,7 +54,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(pathname.slice(0, -1) + search, origin), 308);
   }
 
-  if (pathname.startsWith("/dashboard") && !haSessione(req)) {
+  const nomiCookie = req.cookies.getAll().map((c) => c.name);
+
+  if (pathname.startsWith("/dashboard") && !haSessione(nomiCookie)) {
     const url = new URL("/accedi", origin);
     // Con la query, non solo il percorso. È il difetto che rompeva l'azione
     // più importante del sito: chi non è autenticato clicca «Contatta» su un

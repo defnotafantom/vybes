@@ -744,6 +744,47 @@ decisione errata.
 
 ---
 
+## ADR-024 · I test verificano dove si finisce, non che le pagine esistano
+
+**Il fatto da cui nasce.** In un solo pomeriggio sono emersi cinque difetti,
+tutti sul percorso che dà senso al sito, tutti presenti da settimane:
+
+1. La sessione sembrava scadere — il middleware non riconosceva il cookie
+   quando Auth.js lo spezzava in più parti.
+2. Il login perdeva la destinazione: la query non veniva conservata, e chi
+   cliccava «Contatta» finiva nell'elenco vuoto dei messaggi.
+3. Lo stesso difetto sull'altra metà dell'imbuto: «Accedi per candidarti»
+   riportava all'elenco degli ingaggi, non a quello letto.
+4. Il parametro di ritorno era un *open redirect*, sfruttabile per phishing.
+5. Dopo che una candidatura veniva accettata, le due parti non avevano un modo
+   di scriversi.
+
+**Perché nessun controllo li aveva visti.** La suite copriva autenticazione,
+navigazione e SEO — le parti che si scrivono per prime — e verificava che le
+pagine rispondessero. Le pagine rispondevano tutte. Nessuno di questi difetti
+sta *dentro* una pagina: stanno nei passaggi fra una pagina e l'altra, che è
+esattamente ciò che un utente percorre e un test per pagine non guarda mai.
+
+Il typecheck non poteva vederli: `pathname` senza `search` è una stringa
+valida. Il lint nemmeno. La revisione umana li aveva letti e approvati.
+
+**Decisione.** I test end-to-end del percorso critico verificano **dove si
+finisce**, non che qualcosa esista. Ogni passaggio importante ha un test che
+segue l'utente da una pagina alla successiva e controlla che arrivi dove
+voleva andare, con il contesto che si portava dietro.
+
+**Il criterio operativo.** Se un test si può soddisfare rispondendo 200, non
+sta verificando niente di ciò che rompe l'esperienza. La domanda giusta non è
+«questa pagina funziona» ma «da qui, dove finisco».
+
+**Cosa resta scoperto, e va detto.** Il difetto del cookie spezzato è
+difficile da riprodurre in un test end-to-end, perché richiede un token oltre i
+quattromila byte. Per quello la logica è stata estratta in una funzione pura e
+coperta da test unitari, compresi i casi in cui un confronto troppo largo
+accetterebbe il token CSRF che sta lì accanto.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:
