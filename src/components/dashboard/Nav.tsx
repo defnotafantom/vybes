@@ -11,10 +11,13 @@ import {
   Trophy,
   UserRound,
   Flag,
+  Compass,
+  Map as MapIcon,
   Menu,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { Esci } from "@/components/dashboard/Esci";
 
 const ITEMS = [
   { href: "/dashboard", label: "Feed", icon: Home, exact: true },
@@ -33,6 +36,25 @@ const ITEMS = [
  * può aprire — mostrarla e basta inviterebbe a provarci.
  */
 const MODERAZIONE = { href: "/dashboard/moderazione", label: "Segnalazioni", icon: Flag } as const;
+
+/**
+ * Le destinazioni del sito pubblico, dentro il menu laterale.
+ *
+ * Togliendo la barra superiore dall'area personale sparivano anche gli unici
+ * accessi ad artisti, ingaggi e mappa. Non è una perdita accettabile: un
+ * organizzatore che gestisce le candidature ha bisogno di sfogliare gli
+ * artisti nello stesso momento, e un artista che guarda le proprie
+ * candidature vuole vedere quali altri ingaggi sono aperti.
+ *
+ * Stanno in un gruppo separato perché sono un'altra cosa: le prime portano ai
+ * *tuoi* dati, queste al sito. Mescolarle darebbe un elenco di nove voci in
+ * cui nessuna ha più peso di un'altra.
+ */
+const PUBBLICHE = [
+  { href: "/artisti", label: "Artisti", icon: Compass },
+  { href: "/eventi", label: "Ingaggi aperti", icon: CalendarDays },
+  { href: "/mappa", label: "Mappa", icon: MapIcon },
+] as const;
 
 type Voce = { href: string; label: string; icon: typeof Home; exact?: boolean };
 
@@ -129,6 +151,35 @@ export function DashboardSidebar({
           );
         })}
       </ul>
+
+      <div className="mt-6 border-t pt-4">
+        <p className="px-3 pb-2 text-fluid-xs uppercase tracking-wider text-ink-faint">
+          Esplora il sito
+        </p>
+        <ul className="space-y-1">
+          {PUBBLICHE.map((v) => {
+            const Icona = v.icon;
+            return (
+              <li key={v.href}>
+                <Link
+                  href={v.href}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:bg-black/[0.03] hover:text-ink dark:hover:bg-white/[0.04]"
+                >
+                  <Icona className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  {v.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Separato da una riga: uscire non è andare in una sezione, e
+          mescolarlo alle altre voci lo rende un bersaglio per il clic
+          sbagliato. */}
+      <div className="mt-6 border-t pt-4">
+        <Esci />
+      </div>
     </nav>
   );
 }
@@ -224,6 +275,32 @@ export function DashboardMobileNav({
                 );
               })}
             </ul>
+
+            <div className="mt-3 border-t px-2 pt-3">
+              <p className="px-1 pb-2 text-fluid-xs uppercase tracking-wider text-ink-faint">
+                Esplora il sito
+              </p>
+              <ul>
+                {PUBBLICHE.map((v) => {
+                  const Icona = v.icon;
+                  return (
+                    <li key={v.href}>
+                      <Link
+                        href={v.href}
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-ink-muted"
+                      >
+                        <Icona className="h-4 w-4" aria-hidden="true" />
+                        {v.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            <div className="mt-2 border-t p-2">
+              <Esci />
+            </div>
           </div>
         </div>
       )}

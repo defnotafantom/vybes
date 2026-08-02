@@ -23,18 +23,36 @@ export class EmailNonVerificataError extends CredentialsSignin {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   /**
-   * Sessione scorrevole: trenta giorni di durata, rinnovata al più una volta
-   * al giorno. Chi usa il sito con regolarità non viene mai disconnesso; chi
-   * sparisce per un mese sì, ed è il comportamento giusto per un cookie che
-   * resta su un computer eventualmente condiviso.
+   * La sessione finisce quando lo si chiede, non da sola.
    *
-   * `updateAge` è esplicito anche se coincide con il valore predefinito:
-   * senza, il rinnovo sembra un caso e non una scelta. A zero il cookie verrebbe
-   * riscritto a ogni richiesta — un costo inutile e una scrittura in più su
-   * ogni risposta.
+   * Un anno di durata, rinnovata a ogni giorno di utilizzo: chi usa il sito
+   * anche solo una volta ogni tanto non viene mai disconnesso, e per uscire
+   * c'è il pulsante nel menu laterale.
    *
-   * Se le sessioni cadono prima dei trenta giorni, la causa non è qui.
-   * Le tre reali, in ordine di frequenza:
+   * ── Il compromesso, detto per intero ──
+   *
+   * Una sessione lunga è comoda e meno sicura: un cookie rubato resta valido
+   * a lungo, e su un computer condiviso chi si dimentica di uscire lascia
+   * l'account aperto a chi arriva dopo. Con sessioni brevi il tempo lavora per
+   * te; qui no.
+   *
+   * La scelta si regge su tre cose. Il cookie è `httpOnly` e `Secure`, quindi
+   * non è leggibile da JavaScript e non viaggia in chiaro. Il ruolo di
+   * moderazione non sta nel token ma si legge dal database a ogni verifica
+   * (ADR-020), quindi una revoca ha effetto subito anche su una sessione
+   * vecchia. E qui non si muove denaro: il danno di un accesso indebito è un
+   * profilo modificato, non un conto svuotato.
+   *
+   * Su un prodotto che gestisse pagamenti la risposta sarebbe l'opposto:
+   * sessione breve e riautenticazione per le operazioni sensibili.
+   *
+   * `updateAge` a un giorno e non a zero: a zero il cookie verrebbe riscritto
+   * a ogni singola richiesta, una scrittura in più su ogni risposta senza
+   * nessun vantaggio.
+   *
+   * ── Se una sessione cade lo stesso ──
+   *
+   * La causa non è qui. Le tre reali, in ordine di frequenza:
    *
    * 1. Il cookie spezzato in più parti e non riconosciuto dal middleware —
    *    difetto corretto in src/middleware.ts, vedi il commento lì.
@@ -46,7 +64,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
    */
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * 365,
     updateAge: 60 * 60 * 24,
   },
   pages: { signIn: "/accedi", error: "/accedi" },

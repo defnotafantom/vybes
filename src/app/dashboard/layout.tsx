@@ -9,6 +9,8 @@ import { puo } from "@/lib/moderazione";
 import { attenzioneDi } from "@/lib/attenzione";
 import { PERMISSIONS } from "@/lib/permissions";
 import { Avatar } from "@/components/ui/Avatar";
+import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { RoleBadge } from "@/components/ui/Badge";
 
 // L'intera area privata resta fuori dall'indice.
@@ -29,17 +31,25 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="container-page py-8">
+      {/* Questa riga è l'unica cornice dell'area personale: senza la barra
+          superiore, qui devono trovare posto il logo — che è anche la via
+          d'uscita verso il sito — le notifiche e il tema. */}
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <Avatar name={session.user.name ?? "?"} src={session.user.image} size="sm" />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">{session.user.name}</p>
-            <RoleBadge role={session.user.role} />
+        <div className="flex min-w-0 items-center gap-4">
+          <Logo />
+          <span className="hidden h-6 w-px bg-line sm:block" aria-hidden="true" />
+          <div className="hidden min-w-0 items-center gap-3 sm:flex">
+            <Avatar name={session.user.name ?? "?"} src={session.user.image} size="sm" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{session.user.name}</p>
+              <RoleBadge role={session.user.role} />
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <NotificationBell />
+          <ThemeToggle />
           <Link
             href={`/artisti/${session.user.slug}`}
             className="btn-ghost hidden text-sm sm:inline-flex"
@@ -54,7 +64,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <DashboardMobileNav puoModerare={puoModerare} contatori={contatori} />
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[200px_1fr]">
+      <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
         <DashboardSidebar puoModerare={puoModerare} contatori={contatori} />
         <div className="min-w-0">{children}</div>
       </div>

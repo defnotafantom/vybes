@@ -14,6 +14,7 @@ import { ServiceWorker } from "@/components/ServiceWorker";
 import { NavProgress } from "@/components/NavProgress";
 import { Logo } from "@/components/Logo";
 import { NavPubblica } from "@/components/NavPubblica";
+import { SoloPubblico } from "@/components/SoloPubblico";
 import "./globals.css";
 
 const inter = Inter({
@@ -85,9 +86,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SessionProvider>
           <ToastProvider>
             <NavProgress />
-            <SiteHeader />
+            {/* Intestazione e piè di pagina solo sul sito pubblico: dentro
+                l'area personale la navigazione è nel menu laterale, e due
+                sistemi sovrapposti costringono a decidere ogni volta quale
+                guardare. */}
+            <SoloPubblico>
+              <SiteHeader />
+            </SoloPubblico>
             <main id="main">{children}</main>
-            <SiteFooter />
+            <SoloPubblico>
+              <SiteFooter />
+            </SoloPubblico>
           </ToastProvider>
         </SessionProvider>
         <ServiceWorker />

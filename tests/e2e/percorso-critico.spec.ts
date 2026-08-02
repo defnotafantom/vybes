@@ -198,6 +198,22 @@ test.describe("il sito è navigabile dal telefono", () => {
   });
 });
 
+test.describe("area personale e sito pubblico sono due posti diversi", () => {
+  test("la barra superiore c'è sul sito pubblico", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("navigation", { name: /navigazione principale/i })).toBeVisible();
+  });
+
+  test("dentro la dashboard non c'è", async ({ page }) => {
+    // Non autenticati si viene rimandati al login, che è comunque una pagina
+    // pubblica: il controllo vero è che /accedi mostri la barra e /dashboard
+    // no. Senza sessione non possiamo entrare, quindi verifichiamo almeno che
+    // il reindirizzamento avvenga — la separazione la copre il test manuale.
+    await page.goto("/dashboard");
+    await expect(page).toHaveURL(/\/accedi/);
+  });
+});
+
 test.describe("segnalare un contenuto è possibile senza account", () => {
   test("il modulo si apre e chiede un motivo", async ({ page }) => {
     // Il Digital Services Act non riserva la segnalazione agli iscritti: chi
