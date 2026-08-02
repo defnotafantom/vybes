@@ -113,22 +113,42 @@ sarà mai. Restano però nei conteggi, nelle statistiche della landing e in
 dovesse cancellare o modificare qualcosa per verificare un percorso, lo
 farebbe su dati veri.
 
-**Pulizia, adesso:**
+**Da adesso i test si rifiutano di partire** su un database che non sembra di
+prova: `npm run test:e2e` esegue prima `scripts/verifica-db-test.mjs`, che
+riconosce la produzione **per esclusione** — tutto è produzione tranne ciò
+che è locale o lo dichiara nel nome. Il verso opposto, un elenco di host da
+bloccare, fallirebbe in silenzio il giorno in cui il database cambia
+indirizzo: cioè proprio quando servirebbe.
+
+**Quindi ora servono due cose.**
+
+*Uno*, ripulire i residui:
 
 ```powershell
 npm run pulisci:e2e              # mostra e non scrive
 npm run pulisci:e2e -- --conferma
 ```
 
-**La soluzione vera:** un database separato per i test. Su Neon si crea un
-*branch* del database in pochi secondi, gratis, con lo stesso schema. Poi:
+*Due*, creare il branch — altrimenti i test non partono più:
+
+1. Console Neon → progetto → **Branches** → *Create branch*
+2. Nome `test`, parent `main`. Copia lo schema e i dati in pochi secondi,
+   senza costi sul piano gratuito.
+3. Copia la sua connection string.
+4. Nel terminale, prima dei test:
 
 ```powershell
-$env:DATABASE_URL="...branch di test..."; npm run test:e2e
+$env:DATABASE_URL="...connection string del branch test..."
+npm run test:e2e
 ```
 
-Finché non è fatto, lo script di pulizia è un cerotto: ripulisce, non
-previene.
+Vale per la sessione del terminale: aprendone uno nuovo va ripetuto. Se
+preferisci che sia permanente, mettila in `.env.local`, che ha la precedenza
+su `.env` e non è versionato.
+
+Se hai davvero bisogno di girare sul database vero, la via d'uscita c'è ed è
+volutamente scomoda: `$env:E2E_CONSENTI_DB_PRODUZIONE="1"`. Deve costare più
+che creare il branch.
 
 ---
 

@@ -1107,6 +1107,60 @@ avviso.
 
 ---
 
+## ADR-029 · I test non possono scrivere sul database vero
+
+**Contesto.** `percorso-critico.spec.ts` compila davvero il modulo di
+registrazione. È una scelta voluta: il difetto peggiore mai trovato su questo
+sito era che chi si iscriveva finiva davanti a un modulo di accesso senza una
+parola, e l'unico modo di accorgersene è arrivare in fondo al percorso. Un
+test che si ferma prima non lo vede.
+
+Il prezzo è che ogni esecuzione crea account veri — uno per profilo del
+browser, quindi quattro a giro. E `DATABASE_URL` punta a Neon.
+
+Nessuno se ne è accorto per settimane, perché quegli account **non compaiono
+da nessuna parte**: `PROFILO_PUBBLICO` richiede l'email confermata e quella
+non lo sarà mai. Il sito sembrava pulito mentre la tabella si riempiva. È
+venuto fuori da un numero di contorno in `/api/health` — gli utenti erano
+passati da 9 a 18 in un pomeriggio — notato mentre si verificava
+tutt'altro.
+
+**Decisione.** `npm run test:e2e` esegue prima un controllo che rifiuta di
+partire se il database non sembra di prova.
+
+Il riconoscimento va **per esclusione**: tutto è produzione tranne ciò che è
+riconoscibilmente locale (`localhost`, `127.0.0.1`) o lo dichiara nel proprio
+nome (`test`, `staging`, `e2e`). Un elenco di host da bloccare sarebbe stato
+più semplice da scrivere e avrebbe fallito in silenzio il giorno in cui il
+database cambia indirizzo — cioè esattamente quando serve. Fra un controllo
+che sbaglia bloccando e uno che sbaglia lasciando passare, su una cosa
+irreversibile si sceglie il primo.
+
+La via d'uscita esiste — `E2E_CONSENTI_DB_PRODUZIONE=1` — ed è volutamente
+lunga e scomoda: deve costare più che creare un branch su Neon, che richiede
+pochi secondi.
+
+**Perché un controllo e non una riga di documentazione.** È lo schema che si
+ripete in quasi tutti i difetti di questo progetto: la regola esisteva, era
+scritta da qualche parte, e non era applicata da niente. Il canonical, la
+soglia di indicizzazione, la conferma prima di cancellare, i 16px sui campi.
+Ogni volta che una regola vive solo in un commento, prima o poi qualcuno fa
+il contrario senza accorgersene — e quel qualcuno, il più delle volte, è chi
+l'ha scritta.
+
+**Conseguenze.** Serve un branch dedicato per far girare la suite in locale.
+`npm run pulisci:e2e` rimuove i residui già accumulati: cancella solo gli
+indirizzi che corrispondono al formato generato dai test e mai un account con
+un ruolo di moderazione. In CI non cambia niente: il database di servizio è
+su `localhost` e passa il controllo.
+
+**Cosa resta scoperto.** Il controllo guarda l'host, non i dati: un branch
+Neon chiamato `test` che per errore contiene la copia della produzione
+passerebbe. È un limite accettabile — protegge dall'errore distratto, non da
+quello deliberato.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:
