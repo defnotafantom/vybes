@@ -3,7 +3,7 @@
 Cosa resta da fare, in ordine di urgenza. Ogni voce dice **perché** viene prima
 delle altre, e cosa succede se la si salta.
 
-Aggiornato al 1° agosto 2026. Produzione in linea su `vybeshub.art`, salute
+Aggiornato al 2 agosto 2026. Produzione in linea su `vybeshub.art`, salute
 verde. Scelta di apertura: **registrazioni aperte a chiunque**.
 
 ---
@@ -33,34 +33,66 @@ Cinque cose sono già state chiuse in preparazione:
 
 ---
 
-## Dove eravamo rimasti — 1° agosto, sera
+## Dove eravamo rimasti — 2 agosto
 
-**Tre commit da mandare su.** Nel tuo terminale:
+**Tredici commit da mandare su.** Nel tuo terminale:
 
 ```powershell
+npm run verify          # tipi, lint, canonical, unit test
+npm run test:e2e        # ora installa anche WebKit: la prima volta ci mette qualche minuto
 git push origin main
 ```
 
 Poi Vercel distribuisce da solo.
 
-**Cosa provare appena è online**, perché sono le correzioni di oggi e nessuna
-è stata verificata su un browser vero:
+`npm run verify` e `test:e2e` vanno **prima** del push, non dopo: in questa
+sessione lint e Playwright non si sono potuti eseguire — l'ambiente non ha i
+binari nativi per Linux — quindi tipi e CSS generato sono verificati, il resto
+no.
 
-1. In finestra anonima, apri un ingaggio → «Accedi per candidarti» → dopo il
-   login devi ritrovarti **su quell'ingaggio**, non sull'elenco.
-2. Sempre da sloggato, apri un profilo → «Contatta» → dopo il login devi
-   arrivare **sulla chat con quella persona**.
-3. Iscriviti con un indirizzo vero: devi vedere la schermata «controlla la
-   posta» — non il modulo di login — ricevere il messaggio, e dal link entrare.
-4. Iscriviti scegliendo «Cerco artisti»: la dashboard deve dirti di pubblicare
-   un ingaggio. È il percorso che nessuno aveva mai fatto fino in fondo.
+### Un comando che va lanciato una volta sola
 
-**Se qualcosa non torna**, il commit da guardare è `7beb384` per i punti 1 e 2,
-`857e11d` per i punti 3 e 4.
+```powershell
+npm run reputazione:ricalcola -- --prova   # mostra e non scrive
+npm run reputazione:ricalcola              # applica
+```
 
-**Cosa resta tuo e non si può fare senza di te:** Upstash (punto 1 qui sotto) e
-i dati da titolare su privacy e termini (punto 2). Sono le ultime due caselle
-prima di poter dire che il sito è davvero apribile al pubblico.
+Già eseguito il 2 agosto su nove account. Serve di nuovo **solo** se cambiano i
+pesi in `src/lib/reputazione.ts`: è idempotente, calcola dallo stato, quindi
+rilanciarlo non fa danni.
+
+### Cosa provare appena è online
+
+Sono le correzioni delle ultime due sessioni e nessuna è stata vista su un
+browser vero.
+
+**Da telefono** — è lì che stavano i difetti:
+
+1. Apri il sito da anonimo: **«Accedi» deve vedersi subito**, senza aprire il
+   menu.
+2. Tocca un campo qualsiasi del modulo di accesso. Su iPhone **la pagina non
+   deve ingrandirsi**. È il difetto più fastidioso dei cinque.
+3. Accedi, poi torna sul sito pubblico: in alto a destra ci deve essere
+   **l'avatar**, non «Accedi / Iscriviti». Da lì «Esci».
+4. Naviga fra artisti, città e profili per qualche minuto: **non devi essere
+   rimandato al login**. La sessione dura un anno e finisce solo con «Esci».
+5. Apri il menu dell'area personale su uno schermo piccolo: **deve scorrere**
+   fino in fondo, «Esci» compreso.
+6. La mappa non deve occupare più di due terzi dello schermo.
+
+**Da computer:**
+
+7. Dashboard: livello e reputazione ora sono due schede distinte. La
+   reputazione dice **cosa la fa salire**.
+8. Portfolio: «Elimina» deve chiedere conferma, e i lavori si devono
+   **vedere**, non solo leggere.
+9. `/artisti`: l'ordine è cambiato, perché il punteggio è stato ricalcolato.
+
+**Se qualcosa non torna**, i commit da guardare: `983163c` per la reputazione,
+`541bb58` per colori e date, `e7f2b9b` per il portfolio, `a15eb24` per il
+mobile, `8a5713b` per i profili di test.
+
+---
 
 ---
 
