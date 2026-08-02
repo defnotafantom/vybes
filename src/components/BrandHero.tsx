@@ -190,7 +190,7 @@ export function BrandHero() {
           }}
         >
           <div className="brand-glow brand-float relative">
-            <div className={carica ? "brand-carica" : "brand-scale"}>
+            <div className="brand-scale">
               <div className="brand-spin">
                 <Image
                   src="/logo-vybes.png"
@@ -211,6 +211,28 @@ export function BrandHero() {
                 />
               </div>
             </div>
+
+            {/*
+              A caricarsi è la scritta, non il marchio.
+
+              Prima cresceva il logo intero, e il gesto si leggeva come uno
+              zoom. Così invece nasce qualcosa dal centro della spirale e preme
+              per uscire: la scritta è il contenuto, la spirale è il
+              contenitore, e l'esplosione è la seconda che cede alla prima.
+
+              Il tetto di espansione la tiene dentro la spirale — arriva a poco
+              più di metà del suo diametro. Superarlo romperebbe il racconto:
+              qualcosa che è già uscito non ha più motivo di scoppiare.
+
+              `aria-hidden`: il nome del prodotto è già nel titolo sotto, e un
+              lettore di schermo non deve sentirlo due volte.
+            */}
+            <span
+              aria-hidden="true"
+              className={`brand-scritta ${carica ? "brand-scritta-carica" : ""}`}
+            >
+              <span className="text-gradient">Vy</span>bes
+            </span>
           </div>
         </button>
 

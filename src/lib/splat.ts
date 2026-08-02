@@ -113,5 +113,15 @@ export const MACCHIE: Macchia[] = Array.from({ length: 12 }, (_, i) => {
   return { corpo: corpo(rnd), gocce: gocce(rnd) };
 });
 
-/** I colori del progetto: l'inchiostro non introduce una tinta nuova. */
-export const INCHIOSTRI = ["#8b5cf6", "#a78bfa", "#22d3ee", "#06b6d4", "#c4b5fd"];
+/**
+ * L'inchiostro esce dalla scritta, quindi ne ha i colori.
+ *
+ * Sono le tre fermate esatte di `.text-gradient`: brand-400, brand-500,
+ * accent-400 — lo stesso gradiente che colora «Vy» nella barra e la scritta
+ * che si carica al centro del marchio.
+ *
+ * Prima erano cinque tinte prese dalla tavolozza generale, e il legame fra ciò
+ * che scoppia e ciò che schizza non si vedeva: sembravano due cose diverse
+ * capitate nello stesso istante.
+ */
+export const INCHIOSTRI = ["#a78bfa", "#8b5cf6", "#22d3ee"];

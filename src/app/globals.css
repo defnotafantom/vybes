@@ -501,16 +501,45 @@
   border-radius: 999px;
 }
 
-/* La crescita è lenta e con andamento accelerato: parte quasi impercettibile
-   e stringe alla fine, così la sensazione è di qualcosa che si comprime prima
-   di cedere invece di gonfiarsi a velocità costante.
+/* La scritta che si carica dentro la spirale.
+ *
+ * A riposo è invisibile e ridotta a un punto al centro del marchio. Tenendo
+ * premuto cresce fino al tetto, poi scoppia.
+ *
+ * La misura è legata a quella del marchio — 34vmin nel componente — così il
+ * rapporto fra scritta e spirale resta lo stesso su ogni schermo. A piena
+ * carica occupa poco più di metà del diametro: il tetto serve al racconto,
+ * perché qualcosa che è già uscito dal contenitore non ha più motivo di
+ * scoppiare.
+ *
+ * L'andamento è accelerato: parte quasi impercettibile e stringe alla fine,
+ * così si sente qualcosa che preme per uscire invece di gonfiarsi a velocità
+ * costante. La durata combacia con CARICA_PIENA in BrandHero.tsx — se le due
+ * si scollassero, l'esplosione arriverebbe mentre la scritta sta ancora
+ * crescendo.
+ *
+ * `pointer-events-none` perché il bersaglio del clic resta il pulsante che la
+ * contiene: una scritta che intercetta la pressione la interromperebbe. */
+.brand-scritta {
+  @apply pointer-events-none absolute left-1/2 top-1/2 select-none whitespace-nowrap
+         font-bold tracking-tight;
+  font-size: clamp(2rem, 7vmin, 5rem);
+  /* Due trasformazioni separate: `translate` centra, `scale` anima. Se
+     stessero entrambe in `transform` la seconda cancellerebbe la prima. */
+  translate: -50% -50%;
+  scale: 0.04;
+  opacity: 0;
+  /* Materia, non testo sovrapposto: l'ombra scura sotto stacca le lettere
+     dalla spirale, che ha gli stessi colori e altrimenti le assorbirebbe. */
+  text-shadow: 0 2px 12px rgb(0 0 0 / 0.55);
+  transition:
+    scale 900ms cubic-bezier(0.6, 0, 0.9, 0.35),
+    opacity 220ms var(--ease);
+}
 
-   La durata combacia con CARICA_PIENA in BrandHero.tsx: se le due si
-   scollassero, l'esplosione arriverebbe mentre il marchio sta ancora
-   crescendo. */
-.brand-carica {
-  transform: scale(1.42);
-  transition: transform 900ms cubic-bezier(0.6, 0, 0.9, 0.35);
+.brand-scritta-carica {
+  scale: 1;
+  opacity: 1;
 }
 
 /* Il volo di una macchia: parte piccola dal centro, arriva oltre misura e
@@ -547,9 +576,11 @@
   .brand:hover .brand-scale { transform: none; }
   /* La carica resta, ridotta a un accenno: è la risposta a un comando
      deliberato, e toglierla del tutto farebbe sembrare il pulsante rotto.
-     Sparisce invece il volo delle macchie, che è il movimento ampio e
-     involontario che questa preferenza esclude: compaiono e se ne vanno. */
-  .brand-carica { transform: scale(1.06); transition-duration: 200ms; }
+     La scritta compare invece di crescere. Sparisce il volo delle macchie,
+     che è il movimento ampio e involontario che questa preferenza esclude:
+     compaiono e se ne vanno. */
+  .brand-scritta { transition-duration: 150ms; }
+  .brand-scritta-carica { scale: 0.85; }
   .macchia { animation: macchia-quieta 2600ms linear both; }
 }
 

@@ -140,20 +140,7 @@ Profili marcati «Esclusa per tag noindex» sono la difesa che funziona.
 
 ---
 
-## 6. Rifinire l'esplosione del marchio
-
-Non è una priorità: l'effetto funziona, va reso quello che era stato pensato.
-
-Oggi a caricarsi è il logo intero. Dovrebbe essere il **logotipo «Vybes»** — lo
-stesso della barra, con una resa più materica — che nasce dal centro del
-marchio e cresce finché scoppia, con un tetto di espansione che lo tenga dentro
-la spirale rotante. I colori delle macchie vanno presi dalle lettere.
-
-Le forme delle macchie restano come sono.
-
----
-
-## 7. Google OAuth
+## 6. Google OAuth
 
 `googleOAuth: false` in produzione. Riduce l'attrito alla registrazione, che su
 una piattaforma a due lati conta. Il codice c'è: mancano le credenziali.
