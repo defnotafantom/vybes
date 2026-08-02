@@ -59,7 +59,7 @@ export function EventCard({ event, priority = false }: { event: EventCardData; p
         </div>
 
         <div className="p-5">
-          <h3 className="text-fluid-base font-semibold leading-snug transition-colors group-hover:text-brand-400">
+          <h3 className="text-fluid-base font-semibold leading-snug transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
             {event.title}
           </h3>
 

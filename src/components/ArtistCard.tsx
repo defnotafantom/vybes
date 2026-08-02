@@ -42,7 +42,7 @@ export function ArtistCard({
         />
 
         <div className="min-w-0 flex-1">
-          <h3 className="flex items-center gap-1.5 truncate text-fluid-base font-semibold transition-colors group-hover:text-brand-400">
+          <h3 className="flex items-center gap-1.5 truncate text-fluid-base font-semibold transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
             {artist.name}
             {artist.isVerified && <VerifiedBadge />}
           </h3>

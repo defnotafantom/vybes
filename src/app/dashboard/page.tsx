@@ -181,7 +181,7 @@ export default async function DashboardPage() {
                   <li key={q.id}>
                     <div className="flex items-baseline justify-between gap-3">
                       <p className="text-fluid-sm font-medium">{q.title}</p>
-                      <span className="shrink-0 text-fluid-xs font-bold tabular-nums text-brand-300">
+                      <span className="shrink-0 text-fluid-xs font-bold tabular-nums text-brand-700 dark:text-brand-300">
                         +{q.xpReward}
                       </span>
                     </div>

@@ -6,6 +6,9 @@ import { fromCsv } from "@/lib/slug";
 import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import { SchedaReputazione } from "@/components/dashboard/SchedaReputazione";
+import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
+import { reputazioneMassima } from "@/lib/reputazione";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +29,13 @@ export default async function ProfiloPage() {
     }),
     prisma.city.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true } }),
   ]);
+
+  // Il dettaglio della reputazione sta anche in dashboard, ma lì informa e
+  // basta. Qui accompagna l'unica pagina in cui quei campi si possono davvero
+  // riempire: leggerlo altrove e agire qui significava tenere a mente un
+  // elenco mentre si compila un modulo.
+  const voci = await dettaglioReputazioneDi(session!.user.id);
+  const totale = voci.reduce((s, v) => s + v.punti, 0);
 
   if (!me) return null;
 
@@ -52,6 +62,12 @@ export default async function ProfiloPage() {
           </Link>
         }
       />
+
+      {/* Prima del modulo, non dopo: dice cosa vale la pena compilare mentre
+          si sta per compilarlo. */}
+      <div className="mb-8">
+        <SchedaReputazione voci={voci} totale={totale} massimo={reputazioneMassima()} compatta />
+      </div>
 
       <div>
         <ProfileForm

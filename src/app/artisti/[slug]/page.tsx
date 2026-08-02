@@ -306,7 +306,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                           )}
                         </div>
                         <div className="p-4">
-                          <h3 className="text-fluid-sm font-semibold transition-colors group-hover:text-brand-400">
+                          <h3 className="text-fluid-sm font-semibold transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
                             {item.title}
                           </h3>
                           {item.year && (

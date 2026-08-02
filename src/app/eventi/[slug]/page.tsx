@@ -246,7 +246,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                       >
                         <Avatar name={user.name} src={user.image} size="sm" />
                         <span className="min-w-0">
-                          <span className="block truncate text-fluid-sm font-semibold transition-colors group-hover:text-brand-400">
+                          <span className="block truncate text-fluid-sm font-semibold transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
                             {user.name}
                           </span>
                           {user.headline && (
@@ -272,7 +272,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 className="group mt-3 flex items-center gap-3"
               >
                 <Avatar name={event.organizer.name} src={event.organizer.image} size="sm" />
-                <span className="text-fluid-sm font-semibold transition-colors group-hover:text-brand-400">
+                <span className="text-fluid-sm font-semibold transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
                   {event.organizer.name}
                 </span>
               </Link>

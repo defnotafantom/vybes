@@ -103,7 +103,7 @@ export default async function QuestPage() {
                     <p className="mt-1 text-fluid-sm text-ink-muted">{q.description}</p>
                   </div>
                 </div>
-                <span className="shrink-0 text-fluid-xs font-bold tabular-nums text-brand-300">
+                <span className="shrink-0 text-fluid-xs font-bold tabular-nums text-brand-700 dark:text-brand-300">
                   +{q.xpReward} XP
                 </span>
               </div>

@@ -105,11 +105,11 @@ export default async function CittaIndexPage() {
                       className="card-interactive border-glow group flex h-full flex-col justify-between"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <span className="text-fluid-lg font-bold tracking-tight transition-colors group-hover:text-brand-400">
+                        <span className="text-fluid-lg font-bold tracking-tight transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
                           {c.name}
                         </span>
                         <ArrowUpRight
-                          className="h-4 w-4 shrink-0 translate-y-0.5 text-ink-faint opacity-0 transition-all duration-250 group-hover:translate-y-0 group-hover:text-brand-400 group-hover:opacity-100"
+                          className="h-4 w-4 shrink-0 translate-y-0.5 text-ink-faint opacity-0 transition-all duration-250 group-hover:translate-y-0 group-hover:text-brand-600 dark:group-hover:text-brand-400 group-hover:opacity-100"
                           aria-hidden="true"
                         />
                       </div>

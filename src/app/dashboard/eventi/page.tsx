@@ -95,7 +95,7 @@ export default async function DashboardEventiPage() {
                 <div className="min-w-0">
                   <Link
                     href={`/eventi/${e.slug}`}
-                    className="text-fluid-sm font-semibold transition-colors hover:text-brand-400"
+                    className="text-fluid-sm font-semibold transition-colors hover:text-brand-600 dark:hover:text-brand-400"
                   >
                     {e.title}
                   </Link>
@@ -175,7 +175,7 @@ function EventRecap({ title, rows, vuoto }: { title: string; rows: Row[]; vuoto?
               <div className="min-w-0">
                 <Link
                   href={`/eventi/${p.event.slug}`}
-                  className="text-fluid-sm font-semibold transition-colors hover:text-brand-400"
+                  className="text-fluid-sm font-semibold transition-colors hover:text-brand-600 dark:hover:text-brand-400"
                 >
                   {p.event.title}
                 </Link>

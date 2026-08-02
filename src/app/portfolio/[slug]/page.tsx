@@ -136,7 +136,7 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
             <div className="min-w-0 flex-1">
               <Link
                 href={`/artisti/${item.user.slug}`}
-                className="text-fluid-lg font-bold tracking-tight transition-colors hover:text-brand-400"
+                className="text-fluid-lg font-bold tracking-tight transition-colors hover:text-brand-600 dark:hover:text-brand-400"
               >
                 {item.user.name}
               </Link>
@@ -181,7 +181,7 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
                         />
                       )}
                     </div>
-                    <p className="p-3 text-fluid-sm font-medium transition-colors group-hover:text-brand-400">
+                    <p className="p-3 text-fluid-sm font-medium transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
                       {a.title}
                     </p>
                   </Link>

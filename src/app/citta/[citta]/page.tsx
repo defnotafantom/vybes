@@ -203,7 +203,7 @@ export default async function CityHubPage({ params }: { params: Promise<{ citta:
             <div className="mt-8 divide-y border-y">
               {faqs.map((f) => (
                 <details key={f.q} className="group py-4">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-fluid-sm font-semibold transition-colors marker:hidden group-hover:text-brand-400">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-fluid-sm font-semibold transition-colors marker:hidden group-hover:text-brand-600 dark:group-hover:text-brand-400">
                     {f.q}
                     <span
                       aria-hidden="true"

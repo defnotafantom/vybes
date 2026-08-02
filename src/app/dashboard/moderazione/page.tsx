@@ -17,16 +17,10 @@ import {
 import { DecisioneForm } from "@/components/DecisioneForm";
 import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { dataOra } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
-
-const dataOra = new Intl.DateTimeFormat("it-IT", {
-  day: "numeric",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-});
 
 export default async function ModerazionePage() {
   const session = await auth();
@@ -113,7 +107,7 @@ export default async function ModerazionePage() {
                     dateTime={r.createdAt.toISOString()}
                     className="shrink-0 text-fluid-xs text-ink-faint"
                   >
-                    {dataOra.format(r.createdAt)}
+                    {dataOra(r.createdAt)}
                   </time>
                 </div>
 
@@ -160,7 +154,7 @@ export default async function ModerazionePage() {
                     {MOTIVI[r.reason as Motivo]?.label ?? r.reason}
                   </span>
                   <span className="text-fluid-xs text-ink-faint">
-                    {r.decisaIl && dataOra.format(r.decisaIl)}
+                    {r.decisaIl && dataOra(r.decisaIl)}
                     {r.decisaDa && ` · ${r.decisaDa.name}`}
                   </span>
                 </p>

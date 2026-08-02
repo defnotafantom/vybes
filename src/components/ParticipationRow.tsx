@@ -61,7 +61,7 @@ export function ParticipationRow({
           <div className="min-w-0">
             <Link
               href={`/artisti/${participation.user.slug}`}
-              className="text-fluid-sm font-semibold transition-colors hover:text-brand-400"
+              className="text-fluid-sm font-semibold transition-colors hover:text-brand-600 dark:hover:text-brand-400"
             >
               {participation.user.name}
             </Link>

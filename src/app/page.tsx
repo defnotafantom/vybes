@@ -162,7 +162,7 @@ export default async function HomePage() {
                   <Link
                     key={`${copy}-${c.slug}`}
                     href={`/citta/${c.slug}`}
-                    className="whitespace-nowrap text-fluid-lg font-semibold text-ink-faint transition-colors hover:text-brand-400"
+                    className="whitespace-nowrap text-fluid-lg font-semibold text-ink-faint transition-colors hover:text-brand-600 dark:hover:text-brand-400"
                   >
                     {c.name}
                     <span className="ml-8 text-brand-500/40">✦</span>
@@ -194,7 +194,7 @@ export default async function HomePage() {
               </div>
 
               <div className="mt-8">
-                <h3 className="text-fluid-xl transition-colors group-hover:text-brand-400">
+                <h3 className="text-fluid-xl transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
                   {hero.name}
                 </h3>
                 {hero.headline && (
@@ -303,7 +303,7 @@ export default async function HomePage() {
         <div className="reveal mt-10 divide-y border-y">
           {FAQ.map((f) => (
             <details key={f.q} className="group py-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-fluid-base font-semibold transition-colors marker:hidden group-hover:text-brand-400">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-fluid-base font-semibold transition-colors marker:hidden group-hover:text-brand-600 dark:group-hover:text-brand-400">
                 {f.q}
                 <span
                   aria-hidden="true"

@@ -21,13 +21,22 @@ export function SchedaReputazione({
   voci,
   totale,
   massimo,
+  /**
+   * Nella pagina del profilo la scheda compare senza il collegamento al
+   * profilo — ci si è già dentro — e senza l'elenco di quello che si è già
+   * ottenuto: lì serve sapere cosa manca mentre si compila, non ripassare i
+   * traguardi. La dashboard fa il contrario, perché lì la scheda informa e
+   * non accompagna un'azione.
+   */
+  compatta = false,
 }: {
   voci: { label: string; punti: number; max: number; come: string }[];
   totale: number;
   massimo: number;
+  compatta?: boolean;
 }) {
   const mancanti = voci.filter((v) => v.punti < v.max);
-  const ottenute = voci.filter((v) => v.punti >= v.max);
+  const ottenute = compatta ? [] : voci.filter((v) => v.punti >= v.max);
   const percento = Math.round((totale / massimo) * 100);
 
   return (
@@ -35,7 +44,7 @@ export function SchedaReputazione({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="flex items-center gap-2 text-fluid-lg font-bold">
-            <TrendingUp className="h-5 w-5 text-accent-400" aria-hidden="true" />
+            <TrendingUp className="h-5 w-5 text-accent-600 dark:text-accent-400" aria-hidden="true" />
             Reputazione
           </h2>
           <p className="mt-2 max-w-xl text-fluid-sm text-ink-muted">
@@ -73,7 +82,7 @@ export function SchedaReputazione({
           <ul className="mt-3 space-y-3">
             {mancanti.map((v) => (
               <li key={v.label} className="flex items-start gap-3">
-                <span className="mt-0.5 shrink-0 rounded-md bg-brand-500/10 px-1.5 py-0.5 text-fluid-xs font-bold tabular-nums text-brand-300">
+                <span className="mt-0.5 shrink-0 rounded-md bg-brand-500/10 px-1.5 py-0.5 text-fluid-xs font-bold tabular-nums text-brand-700 dark:text-brand-300">
                   +{v.max - v.punti}
                 </span>
                 <span className="min-w-0">
@@ -83,9 +92,11 @@ export function SchedaReputazione({
               </li>
             ))}
           </ul>
-          <Link href="/dashboard/profilo" className="btn-ghost mt-5 inline-flex">
-            Vai al profilo
-          </Link>
+          {!compatta && (
+            <Link href="/dashboard/profilo" className="btn-ghost mt-5 inline-flex">
+              Vai al profilo
+            </Link>
+          )}
         </div>
       )}
 

@@ -910,6 +910,14 @@ risparmierebbe due valori esadecimali al prezzo di quella regola.
 un elenco che si guarda ogni giorno, il rosso lo farebbe sembrare più grave di
 quanto sia. I rifiuti restano neutri e spenti, che è come vanno letti.
 
+Il rosso non sparisce dal progetto, però: resta nella coda di moderazione, sul
+bordo delle segnalazioni urgenti, e sulle azioni distruttive. È coerente, non
+contraddittorio — il rosso segnala un pericolo, e una candidatura respinta non
+lo è mentre un contenuto illecito da valutare sì. Un colore riservato a una
+cosa sola conserva il proprio significato; usato ovunque lo perde, ed è
+esattamente ciò che è successo alla pillola viola che marcava indistintamente
+tutti e quattro gli stati.
+
 *I valori stanno in `globals.css`, non nel config di Tailwind*, perché
 cambiano con il tema come tutte le altre superfici. Servono due variabili per
 tinta — `-testo` e `-tinta` — perché il verde leggibile su bianco è troppo
