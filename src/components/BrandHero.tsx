@@ -227,11 +227,18 @@ export function BrandHero() {
               `aria-hidden`: il nome del prodotto è già nel titolo sotto, e un
               lettore di schermo non deve sentirlo due volte.
             */}
+            {/*
+              Tutta bianca, senza il gradiente che «Vy» ha nella barra. Lì
+              serve a legare il logotipo al marchio; qui il marchio è già
+              intorno, con gli stessi colori, e ripeterli farebbe sparire la
+              scritta dentro la spirale. Due materiali diversi si distinguono,
+              due volte lo stesso no.
+            */}
             <span
               aria-hidden="true"
               className={`brand-scritta ${carica ? "brand-scritta-carica" : ""}`}
             >
-              <span className="text-gradient">Vy</span>bes
+              Vybes
             </span>
           </div>
         </button>

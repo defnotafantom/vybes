@@ -522,16 +522,50 @@
  * contiene: una scritta che intercetta la pressione la interromperebbe. */
 .brand-scritta {
   @apply pointer-events-none absolute left-1/2 top-1/2 select-none whitespace-nowrap
-         font-bold tracking-tight;
+         font-black;
   font-size: clamp(2rem, 7vmin, 5rem);
-  /* Due trasformazioni separate: `translate` centra, `scale` anima. Se
-     stessero entrambe in `transform` la seconda cancellerebbe la prima. */
+  /* Lettere serrate: un lettering da adesivo sta stretto, e con un bordo
+     spesso le spaziature larghe lo fanno sembrare testo con un contorno
+     invece che un oggetto solo. */
+  letter-spacing: -0.045em;
+
+  /* Bianco pieno: è il colore che deve dominare. Il gradiente del marchio sta
+     tutto intorno, e ripeterlo qui farebbe sparire la scritta dentro la
+     spirale — servono due materiali diversi, non due volte lo stesso. */
+  color: #fff;
+
+  /* ── Il bordo ──
+     `paint-order: stroke fill` fa dipingere il contorno PRIMA del
+     riempimento, quindi dietro le lettere: la loro forma resta intera. Senza,
+     lo spessore verrebbe metà dentro e metà fuori, e a questi valori le aste
+     sottili si chiuderebbero. */
+  -webkit-text-stroke: 0.085em #05030c;
+  paint-order: stroke fill;
+
+  /* ── Il chiaroscuro ──
+     Quattro strati sovrapposti, letti dal basso verso l'alto: una lama chiara
+     appena sopra le lettere, poi due gradini di viola sempre più scuro che
+     danno lo spessore, e infine l'ombra portata sfocata che stacca il tutto
+     dal fondo.
+     I gradini sono a sfocatura zero: è quello a farli leggere come materia
+     estrusa invece che come alone. */
+  text-shadow:
+    0 -0.018em 0 rgb(255 255 255 / 0.85),
+    0 0.055em 0 #4c1d95,
+    0 0.1em 0 #2e1065,
+    0 0.16em 0.22em rgb(0 0 0 / 0.6);
+
+  /* Inclinazione: un adesivo appiccicato storto sembra appoggiato sopra, uno
+     dritto sembra parte dello sfondo. `rotate` è una proprietà a sé, quindi
+     non entra in conflitto con `scale` che è animata. */
+  rotate: -4deg;
+
+  /* Due proprietà separate: `translate` centra, `scale` anima. Se stessero
+     entrambe dentro `transform` la seconda cancellerebbe la prima. */
   translate: -50% -50%;
   scale: 0.04;
   opacity: 0;
-  /* Materia, non testo sovrapposto: l'ombra scura sotto stacca le lettere
-     dalla spirale, che ha gli stessi colori e altrimenti le assorbirebbe. */
-  text-shadow: 0 2px 12px rgb(0 0 0 / 0.55);
+
   transition:
     scale 900ms cubic-bezier(0.6, 0, 0.9, 0.35),
     opacity 220ms var(--ease);
