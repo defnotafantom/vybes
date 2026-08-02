@@ -1126,19 +1126,38 @@ passati da 9 a 18 in un pomeriggio — notato mentre si verificava
 tutt'altro.
 
 **Decisione.** `npm run test:e2e` esegue prima un controllo che rifiuta di
-partire se il database non sembra di prova.
+partire se non è stato **dichiarato** un database su cui i test possono
+scrivere: `E2E_DATABASE_URL`.
 
-Il riconoscimento va **per esclusione**: tutto è produzione tranne ciò che è
-riconoscibilmente locale (`localhost`, `127.0.0.1`) o lo dichiara nel proprio
-nome (`test`, `staging`, `e2e`). Un elenco di host da bloccare sarebbe stato
-più semplice da scrivere e avrebbe fallito in silenzio il giorno in cui il
-database cambia indirizzo — cioè esattamente quando serve. Fra un controllo
-che sbaglia bloccando e uno che sbaglia lasciando passare, su una cosa
-irreversibile si sceglie il primo.
+*La prima versione di questo controllo era sbagliata, e vale la pena dirlo
+perché l'errore è istruttivo.* Guardava l'hostname cercando parole come
+`test` o `staging`. Non funziona con Neon: gli endpoint hanno nomi
+autogenerati — `ep-sweet-cloud-agamab83` — e **il nome del branch non compare
+nell'indirizzo**. Un branch creato apposta per i test sarebbe stato rifiutato
+esattamente come la produzione, e il primo tentativo di usarlo lo avrebbe
+dimostrato.
+
+Il difetto di fondo non era la lista di parole: era voler *indovinare* le
+intenzioni da una stringa. Un controllo che deduce può sbagliare in entrambi i
+versi; uno che chiede, no. Ora l'intenzione si dichiara, e non resta niente da
+interpretare.
+
+Restano due protezioni contro l'errore distratto: un database su `localhost`
+passa senza dichiarazioni, perché non è di nessuno; e se `E2E_DATABASE_URL`
+è *identica* a `DATABASE_URL` il controllo blocca, perché è l'errore di chi
+copia la riga sbagliata e non se ne accorge.
 
 La via d'uscita esiste — `E2E_CONSENTI_DB_PRODUZIONE=1` — ed è volutamente
 lunga e scomoda: deve costare più che creare un branch su Neon, che richiede
 pochi secondi.
+
+**Il dettaglio che rendeva tutto inutile.** Dichiarare la variabile non basta:
+`playwright.config.ts` deve passarla al server dei test al posto di
+`DATABASE_URL`, e i file `.env` Node non li legge da solo. Senza quelle due
+righe il controllo avrebbe detto di sì e le scritture sarebbero andate
+comunque in produzione — cioè il difetto di partenza, con in più la
+convinzione di averlo risolto. È la variante peggiore: una difesa che si vede
+e non c'è.
 
 **Perché un controllo e non una riga di documentazione.** È lo schema che si
 ripete in quasi tutti i difetti di questo progetto: la regola esisteva, era

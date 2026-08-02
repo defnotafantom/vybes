@@ -1,4 +1,21 @@
 import { defineConfig, devices } from "@playwright/test";
+import { config as caricaEnv } from "dotenv";
+
+/**
+ * I file `.env` non li legge Node da solo, e questo file è Node.
+ *
+ * Serve perché `E2E_DATABASE_URL` — il branch dedicato ai test — si scrive in
+ * `.env.local`, che non è versionato. Senza questa riga la variabile sarebbe
+ * visibile allo script di controllo (che il file lo legge a mano) ma non a
+ * questa configurazione, e il server dei test continuerebbe a usare il
+ * database di sempre: il controllo direbbe di sì e le scritture andrebbero
+ * comunque in produzione.
+ *
+ * `override: false` è il valore predefinito e va bene: chi esporta la
+ * variabile nel terminale deve vincere sul file.
+ */
+caricaEnv({ path: ".env.local" });
+caricaEnv({ path: ".env" });
 
 /**
  * Porta 3100, non 3000.
@@ -107,7 +124,17 @@ export default defineConfig({
         // per una discrepanza di configurazione e non per un difetto. È lo
         // stesso vincolo che in produzione impedisce alla sitemap di
         // dichiarare il dominio effimero del deployment.
-        env: { NEXT_PUBLIC_SITE_URL: BASE_URL },
+        env: {
+          NEXT_PUBLIC_SITE_URL: BASE_URL,
+          // Il server dei test riceve il database dei test, se dichiarato.
+          // Senza questa riga `E2E_DATABASE_URL` resterebbe una variabile che
+          // nessuno legge: il controllo passerebbe e le scritture andrebbero
+          // comunque in produzione — cioè il difetto di prima, con in più la
+          // convinzione di averlo risolto.
+          ...(process.env.E2E_DATABASE_URL
+            ? { DATABASE_URL: process.env.E2E_DATABASE_URL, DIRECT_URL: process.env.E2E_DATABASE_URL }
+            : {}),
+        },
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,
       },

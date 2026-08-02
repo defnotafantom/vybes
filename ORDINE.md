@@ -113,38 +113,39 @@ sarà mai. Restano però nei conteggi, nelle statistiche della landing e in
 dovesse cancellare o modificare qualcosa per verificare un percorso, lo
 farebbe su dati veri.
 
-**Da adesso i test si rifiutano di partire** su un database che non sembra di
-prova: `npm run test:e2e` esegue prima `scripts/verifica-db-test.mjs`, che
-riconosce la produzione **per esclusione** — tutto è produzione tranne ciò
-che è locale o lo dichiara nel nome. Il verso opposto, un elenco di host da
-bloccare, fallirebbe in silenzio il giorno in cui il database cambia
-indirizzo: cioè proprio quando servirebbe.
+**Da adesso i test si rifiutano di partire** se non è stato dichiarato un
+database su cui possono scrivere. Non lo indovinano dall'indirizzo — con Neon
+non si può, perché gli endpoint hanno nomi autogenerati e **il nome del branch
+non compare nell'host** — quindi lo si dichiara.
 
-**Quindi ora servono due cose.**
+**Configurazione, una volta sola:**
 
-*Uno*, ripulire i residui:
+1. Console Neon → **Branches** → *Create branch*
+2. Parent **`production`** (è il branch principale, rinominato da Neon: ha lo
+   schema con tutte le migrazioni e i dati veri, che ai test servono — diverse
+   prove cercano un artista o un ingaggio esistente e altrimenti si saltano).
+   `development` può essere indietro o vuoto.
+3. **Auto-delete disattivato.** Un branch che si autocancella farebbe fallire
+   i test un mattino senza spiegazione.
+4. Copia la connection string **pooled** del branch e mettila in `.env.local`
+   — non è versionato e ha la precedenza su `.env`:
+
+```
+E2E_DATABASE_URL="postgresql://...branch di test..."
+```
+
+Da quel momento `npm run test:e2e` funziona senza altri passaggi: il controllo
+la riconosce e il server dei test la riceve al posto di `DATABASE_URL`.
+
+La copia è copy-on-write, quindi non consuma spazio e ci mette pochi secondi.
+
+**Ripulire i residui già in produzione** — da un terminale normale, non da uno
+in cui hai cambiato la variabile:
 
 ```powershell
 npm run pulisci:e2e              # mostra e non scrive
 npm run pulisci:e2e -- --conferma
 ```
-
-*Due*, creare il branch — altrimenti i test non partono più:
-
-1. Console Neon → progetto → **Branches** → *Create branch*
-2. Nome `test`, parent `main`. Copia lo schema e i dati in pochi secondi,
-   senza costi sul piano gratuito.
-3. Copia la sua connection string.
-4. Nel terminale, prima dei test:
-
-```powershell
-$env:DATABASE_URL="...connection string del branch test..."
-npm run test:e2e
-```
-
-Vale per la sessione del terminale: aprendone uno nuovo va ripetuto. Se
-preferisci che sia permanente, mettila in `.env.local`, che ha la precedenza
-su `.env` e non è versionato.
 
 Se hai davvero bisogno di girare sul database vero, la via d'uscita c'è ed è
 volutamente scomoda: `$env:E2E_CONSENTI_DB_PRODUZIONE="1"`. Deve costare più

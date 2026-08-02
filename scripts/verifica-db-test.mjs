@@ -1,5 +1,5 @@
 /**
- * Rifiuta di far partire i test se il database è quello di produzione.
+ * Rifiuta di far partire i test se il database non è stato scelto apposta.
  *
  * ── Il problema che previene ──
  *
@@ -11,99 +11,101 @@
  * Con `DATABASE_URL` che punta a Neon, finivano in produzione. Nessuno se ne
  * era accorto per settimane, perché non compaiono negli elenchi pubblici —
  * `PROFILO_PUBBLICO` richiede l'email confermata — e quindi il sito sembrava
- * pulito mentre la tabella si riempiva. È venuto fuori da un numero in
- * `/api/health`: gli utenti erano passati da 9 a 18 in un pomeriggio.
+ * pulito mentre la tabella si riempiva. È venuto fuori da un numero di
+ * contorno in `/api/health`: gli utenti erano passati da 9 a 18 in un
+ * pomeriggio.
  *
- * Oggi i test solo creano. Il giorno in cui uno dovesse cancellare o
- * modificare qualcosa per verificare un percorso — e prima o poi capita, è il
- * genere di verifica che serve — lo farebbe su dati veri.
+ * ── Come lo riconosce, e come *non* lo riconosce ──
  *
- * ── Perché un controllo e non solo una nota nella documentazione ──
+ * La prima versione di questo controllo guardava l'hostname, cercando parole
+ * come `test` o `staging`. Non funziona con Neon: gli endpoint hanno nomi
+ * autogenerati — `ep-sweet-cloud-agamab83` — e **il nome del branch non
+ * compare nell'indirizzo**. Un branch creato apposta per i test sarebbe stato
+ * rifiutato esattamente come la produzione.
  *
- * Una nota si legge una volta e si dimentica. Questo è lo stesso schema di
- * quasi tutti i difetti trovati su questo progetto: la regola esisteva, era
- * scritta da qualche parte, e non era applicata da niente.
+ * Era anche il tipo di controllo sbagliato: cercava di *indovinare* le
+ * intenzioni da una stringa. Adesso le chiede.
  *
- * ── Come riconosce la produzione ──
+ * `E2E_DATABASE_URL` è la dichiarazione esplicita: se c'è, i test usano
+ * quella e nient'altro. Se non c'è, non partono. Non resta niente da
+ * interpretare, e nessun formato di indirizzo può ingannare il controllo.
  *
- * Per esclusione, che è l'unico verso sicuro: **tutto è produzione tranne ciò
- * che è riconoscibilmente locale o di prova**. Il contrario — un elenco di
- * host da bloccare — fallirebbe in silenzio il giorno in cui il database
- * cambia indirizzo, ed è precisamente il caso in cui servirebbe.
+ * ── Come si configura, una volta sola ──
  *
- * ── Come si sblocca ──
+ * Su Neon: **Branches → Create branch**, parent `production`, senza
+ * auto-delete. Poi si copia la sua connection string (quella *pooled*) e la
+ * si mette in `.env.local`, che non è versionato e ha la precedenza su
+ * `.env`:
  *
- * Con un branch Neon dedicato ai test (si crea in pochi secondi, gratis, con
- * lo stesso schema):
+ *     E2E_DATABASE_URL="postgresql://...branch di test..."
  *
- *     $env:DATABASE_URL="...branch di test..."
- *     npm run test:e2e
+ * Da quel momento `npm run test:e2e` funziona senza altri passaggi.
  *
- * Oppure, se si sa quello che si sta facendo e si accetta di sporcare i dati:
+ * ── La via d'uscita ──
  *
- *     $env:E2E_CONSENTI_DB_PRODUZIONE="1"
- *
- * La variabile è volutamente lunga e scomoda: deve costare più che creare il
- * branch.
+ * `E2E_CONSENTI_DB_PRODUZIONE=1` fa girare i test sul database configurato in
+ * `DATABASE_URL`. È volutamente lunga e scomoda: deve costare più che creare
+ * il branch.
  */
 import { readFileSync, existsSync } from "node:fs";
 
-/**
- * `DATABASE_URL` può arrivare dall'ambiente — è così che si passa un branch
- * di prova — oppure dai file `.env`, che Node non legge da solo. L'ordine
- * segue quello di Next: chi la esporta nel terminale vince su ciò che è
- * scritto nei file, altrimenti sovrascrivere il proprio `.env` per un giro di
- * test sarebbe l'unica strada.
- */
-function daFile() {
+/** I file `.env` non li legge Node da solo. L'ambiente ha la precedenza. */
+function daFile(chiave) {
   for (const nome of [".env.local", ".env"]) {
     if (!existsSync(nome)) continue;
     for (const riga of readFileSync(nome, "utf8").split("\n")) {
-      const m = riga.match(/^\s*DATABASE_URL\s*=\s*"?([^"\n]+)"?/);
+      const m = riga.match(new RegExp(`^\\s*${chiave}\\s*=\\s*"?([^"\\n]+?)"?\\s*$`));
       if (m) return m[1];
     }
   }
   return "";
 }
 
-const url = process.env.DATABASE_URL || daFile();
+const perTest = process.env.E2E_DATABASE_URL || daFile("E2E_DATABASE_URL");
+const attuale = process.env.DATABASE_URL || daFile("DATABASE_URL");
 
-if (!url) {
-  console.error("\n  DATABASE_URL non è impostata: i test non hanno un database.\n");
-  process.exit(1);
-}
-
-if (process.env.E2E_CONSENTI_DB_PRODUZIONE === "1") {
-  console.log("  ⚠  E2E_CONSENTI_DB_PRODUZIONE=1 — i test scriveranno sul database configurato.");
-  process.exit(0);
-}
-
-/** Un host è di prova se è locale, oppure se lo dichiara nel nome. */
-const host = (() => {
+function host(u) {
   try {
-    return new URL(url).hostname;
+    return new URL(u).hostname;
   } catch {
     return "";
   }
-})();
+}
 
-const diProva =
-  /^(localhost|127\.0\.0\.1|::1|host\.docker\.internal)$/.test(host) ||
-  /\b(test|staging|preview|dev|e2e|shadow)\b/.test(host) ||
-  // I branch Neon portano il proprio nome nell'host: `ep-<nome>-<id>`.
-  /-(test|staging|e2e)-/.test(host);
+if (process.env.E2E_CONSENTI_DB_PRODUZIONE === "1") {
+  console.log(`  ⚠  E2E_CONSENTI_DB_PRODUZIONE=1 — i test scriveranno su ${host(attuale)}`);
+  process.exit(0);
+}
 
-if (!diProva) {
+// Un database locale non ha bisogno di dichiarazioni: non è di nessuno.
+if (/^(localhost|127\.0\.0\.1|::1|host\.docker\.internal)$/.test(host(attuale)) && !perTest) {
+  console.log(`  ✓ database locale (${host(attuale)})`);
+  process.exit(0);
+}
+
+if (!perTest) {
   console.error(
-    `\n  I test end-to-end creano account veri, e questo database non sembra di prova.\n` +
-      `\n  Host: ${host || "(non riconosciuto)"}\n` +
-      `\n  Crea un branch su Neon e usalo solo per i test:\n` +
-      `\n      $env:DATABASE_URL="...connection string del branch..."\n` +
-      `      npm run test:e2e\n` +
-      `\n  Se vuoi davvero procedere su questo database:\n` +
+    `\n  I test end-to-end creano account veri, e non è stato dichiarato un` +
+      `\n  database su cui possono farlo.\n` +
+      `\n  Attuale: ${host(attuale) || "(nessuno)"}\n` +
+      `\n  Su Neon: Branches → Create branch, parent "production", senza` +
+      `\n  auto-delete. Poi in .env.local (non versionato):\n` +
+      `\n      E2E_DATABASE_URL="postgresql://...branch di test..."\n` +
+      `\n  Se vuoi davvero girare sul database attuale:\n` +
       `\n      $env:E2E_CONSENTI_DB_PRODUZIONE="1"\n`
   );
   process.exit(1);
 }
 
-console.log(`  ✓ database di prova (${host})`);
+// Dichiarata sì, ma uguale a quella di produzione: è l'errore di chi copia la
+// riga sbagliata, e senza questo controllo passerebbe inosservato.
+if (perTest.trim() === attuale.trim()) {
+  console.error(
+    `\n  E2E_DATABASE_URL è identica a DATABASE_URL: non è un database separato.\n` +
+      `\n  Controlla di aver copiato la connection string del branch di test e` +
+      `\n  non quella di produzione.\n`
+  );
+  process.exit(1);
+}
+
+console.log(`  ✓ database dei test: ${host(perTest)}`);
