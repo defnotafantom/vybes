@@ -20,7 +20,7 @@ export default async function DashboardPortfolioPage() {
           <>
             Ogni lavoro diventa una pagina pubblica indicizzata: chi cerca trova
             prima il lavoro della persona — «cover jazz Bologna», non un nome —
-            e da lì arriva al tuo profilo. È la porta d'ingresso più probabile.
+            e da lì arriva al tuo profilo. È la porta d&apos;ingresso più probabile.
           </>
         }
         numeri={[
