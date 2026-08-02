@@ -44,6 +44,13 @@ npm run test:e2e
 git push origin main
 ```
 
+**Chiudi `npm run dev` prima dei test.** I due processi si contendono la
+cartella `.next`: il build dei test e il server di sviluppo scrivono nello
+stesso posto. La causa più frequente di rottura — `prisma generate` che non
+riesce a sostituire `query_engine-windows.dll.node` perché Node la tiene
+aperta, e muore con `EPERM` — è stata rimossa (il build dei test non rigenera
+più il client, non serviva), ma la cartella condivisa resta.
+
 **`test:e2e:setup` non è opzionale.** Playwright tiene i browser fuori da
 `node_modules`, in una cartella di sistema versionata a parte: quando il
 pacchetto si aggiorna, i binari scaricati prima non valgono più e *tutti* i

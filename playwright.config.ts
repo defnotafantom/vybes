@@ -85,7 +85,21 @@ export default defineConfig({
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
-        command: "npm run build && npm run start -- -p 3100",
+        // `build:e2e` è `next build` senza `prisma generate`.
+        //
+        // Su Windows `prisma generate` deve sostituire
+        // `query_engine-windows.dll.node`, e il file è bloccato finché un
+        // processo Node lo tiene aperto: con `npm run dev` in un'altra
+        // finestra — cioè quasi sempre, mentre si lavora — il comando muore
+        // con EPERM e i test non partono nemmeno.
+        //
+        // Rigenerare qui non serviva a niente: il client è già stato
+        // generato da `postinstall`, e chi tocca lo schema passa comunque da
+        // `prisma migrate dev`, che rigenera. Il rischio residuo è un client
+        // vecchio se qualcuno modifica `schema.prisma` senza migrare — ma in
+        // quel caso il tipo non compila, e `npm run verify` se ne accorge
+        // prima.
+        command: "npm run build:e2e && npm run start -- -p 3100",
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,
