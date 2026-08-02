@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { EventForm, type EventFormValues } from "@/components/EventForm";
+import { PaginaHeader } from "@/components/dashboard/PaginaHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -50,11 +51,13 @@ export default async function ModificaEventoPage({ params }: { params: Promise<{
 
   return (
     <div className="mx-auto max-w-2xl">
-      <Link href={`/dashboard/eventi/${event.id}`} className="text-sm text-brand-600 hover:underline">
-        ← Torna alla gestione
-      </Link>
-      <h1 className="mt-4 text-2xl font-bold">Modifica ingaggio</h1>
-      <div className="mt-8">
+      <PaginaHeader
+        ritornoA={`/dashboard/eventi/${event.id}`}
+        ritornoLabel="Torna alla gestione"
+        titolo="Modifica ingaggio"
+        sottotitolo="Le modifiche sono visibili subito sulla pagina pubblica. Chi si è già candidato non viene avvisato: se cambi data o compenso, scrivilo anche in chat."
+      />
+      <div>
         <EventForm cities={cities} initial={initial} />
       </div>
     </div>

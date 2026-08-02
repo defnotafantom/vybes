@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { ProfileForm } from "@/components/ProfileForm";
 import { ZonaPericolosa } from "@/components/ZonaPericolosa";
 import { fromCsv } from "@/lib/slug";
+import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -32,13 +35,25 @@ export default async function ProfiloPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold">Il tuo profilo</h1>
-      <p className="mt-2 text-sm muted">
-        Questi dati alimentano la tua pagina pubblica <code>/artisti/{me.slug}</code>, il titolo e la
-        descrizione che compaiono su Google.
-      </p>
+      <SezioneHeader
+        titolo="Profilo"
+        sottotitolo={
+          <>
+            Questi dati alimentano la tua pagina pubblica{" "}
+            <code className="text-ink">/artisti/{me.slug}</code>: sono il titolo
+            e la descrizione che compaiono su Google, non solo quello che si
+            vede sul sito.
+          </>
+        }
+        azione={
+          <Link href={`/artisti/${me.slug}`} className="btn-ghost" target="_blank">
+            Vedi la pagina pubblica
+            <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        }
+      />
 
-      <div className="mt-8">
+      <div>
         <ProfileForm
           initial={{ ...profilo, disciplines: fromCsv(profilo.disciplines) }}
           cities={cities}

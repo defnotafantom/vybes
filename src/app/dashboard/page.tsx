@@ -5,6 +5,7 @@ import { levelProgress } from "@/lib/levels";
 import { missingForIndex } from "@/lib/profile-quality";
 import { Plus, Search } from "lucide-react";
 import Link from "next/link";
+import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +54,14 @@ export default async function DashboardPage() {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <div>
-        <h1 className="mb-6 text-2xl font-bold">Ciao {me?.name}</h1>
+        <SezioneHeader
+          titolo={`Ciao ${me?.name ?? ""}`}
+          sottotitolo={
+            cercaArtisti
+              ? "Da qui pubblichi gli annunci e segui le candidature che arrivano."
+              : "Il feed di chi segui. Le cose che ti riguardano — candidature, messaggi, decisioni — arrivano dalla campanella in alto."
+          }
+        />
 
         {/* Chi si iscrive per cercare artisti atterrava su un feed sociale con
             livelli, esperienza e quest: tutto pensato per chi si fa trovare,

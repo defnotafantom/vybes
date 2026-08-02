@@ -1,7 +1,11 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PARTICIPATION_STATUS } from "@/lib/constants";
+import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
@@ -33,16 +37,40 @@ export default async function DashboardEventiPage() {
     (p) => p.event.startsAt < now && p.status !== "ACCEPTED"
   );
 
+  // Le candidature che aspettano una risposta sono l'unico numero che fa agire:
+  // ogni giorno che passa un artista aspetta senza sapere.
+  const daDecidere = organized.reduce((n, e) => n + e.participations.length, 0);
+
   return (
-    <div className="space-y-12">
+    <div className="space-y-14">
+      <SezioneHeader
+        titolo="Ingaggi"
+        sottotitolo="Quelli che hai pubblicato e quelli a cui ti sei candidato. Un annuncio con data, luogo e compenso in chiaro riceve risposte pertinenti; senza compenso ne riceve poche."
+        numeri={[
+          { label: "Pubblicati", valore: organized.length },
+          { label: "Candidature da decidere", valore: daDecidere },
+          { label: "Tue candidature attive", valore: upcoming.length },
+        ]}
+        azione={
+          <Link href="/dashboard/eventi/nuovo" className="btn-primary">
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Pubblica un ingaggio
+          </Link>
+        }
+      />
+
       <section>
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">Ingaggi che organizzi</h1>
-          <Link href="/dashboard/eventi/nuovo" className="btn-primary">Pubblica un ingaggio</Link>
-        </div>
+        <h2 className="text-fluid-lg font-bold">Ingaggi che organizzi</h2>
 
         {organized.length === 0 ? (
-          <p className="mt-4 muted">Non hai ancora pubblicato ingaggi.</p>
+          <div className="mt-5">
+            <EmptyState
+              title="Non hai ancora pubblicato niente"
+              body="Pubblica quello che cerchi e lascia che siano gli artisti a candidarsi: è più veloce che cercarli uno per uno."
+              ctaLabel="Pubblica il primo ingaggio"
+              ctaHref="/dashboard/eventi/nuovo"
+            />
+          </div>
         ) : (
           <ul className="mt-6 space-y-3">
             {organized.map((e) => (
@@ -67,7 +95,21 @@ export default async function DashboardEventiPage() {
         )}
       </section>
 
-      <EventRecap title="Le tue candidature attive" rows={upcoming} />
+      {/* Solo la prima mostra qualcosa quando è vuota: è l'unica in cui il
+          vuoto ha un rimedio. «Nessun ingaggio concluso» non si risolve
+          cliccando da nessuna parte. */}
+      <EventRecap
+        title="Le tue candidature attive"
+        rows={upcoming}
+        vuoto={
+          <EmptyState
+            title="Nessuna candidatura in corso"
+            body="Gli ingaggi aperti si trovano nella directory pubblica: filtra per città e disciplina e candidati direttamente."
+            ctaLabel="Vedi gli ingaggi aperti"
+            ctaHref="/eventi"
+          />
+        }
+      />
       <EventRecap title="Ingaggi conclusi" rows={completed} />
       <EventRecap title="Archivio" rows={archived} />
     </div>
@@ -80,12 +122,21 @@ type Row = {
   event: { slug: string; title: string; startsAt: Date; city: string };
 };
 
-function EventRecap({ title, rows }: { title: string; rows: Row[] }) {
+/**
+ * I tre riepiloghi delle proprie candidature.
+ *
+ * Quando sono vuoti spariscono del tutto invece di mostrare «niente qui per
+ * ora» tre volte di fila. Tre sezioni vuote una sotto l'altra fanno sembrare
+ * l'area personale rotta, e non aggiungono niente: l'assenza si vede già.
+ */
+function EventRecap({ title, rows, vuoto }: { title: string; rows: Row[]; vuoto?: ReactNode }) {
+  if (rows.length === 0 && !vuoto) return null;
+
   return (
     <section>
-      <h2 className="text-xl font-bold">{title}</h2>
+      <h2 className="text-fluid-lg font-bold">{title}</h2>
       {rows.length === 0 ? (
-        <p className="mt-3 text-sm muted">Niente qui per ora.</p>
+        <div className="mt-5">{vuoto}</div>
       ) : (
         <ul className="mt-4 space-y-2">
           {rows.map((p) => (

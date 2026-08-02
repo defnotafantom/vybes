@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { levelProgress } from "@/lib/levels";
+import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -21,12 +22,17 @@ export default async function QuestPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-bold">Quest</h1>
-      <p className="mt-2 muted">
-        {done} di {quests.length} completate · livello {progress.level} ({progress.current}/{progress.needed} XP)
-      </p>
+      <SezioneHeader
+        titolo="Quest"
+        sottotitolo="Obiettivi che portano a completare il profilo. Non sono un gioco fine a sé stesso: ognuno corrisponde a qualcosa che rende il profilo più facile da trovare."
+        numeri={[
+          { label: "Completate", valore: `${done} su ${quests.length}` },
+          { label: "Livello", valore: progress.level },
+          { label: "Al livello successivo", valore: `${progress.current}/${progress.needed} XP` },
+        ]}
+      />
 
-      <ul className="mt-8 space-y-3">
+      <ul className="space-y-3">
         {quests.map((q) => {
           const p = q.progress[0];
           const current = p?.current ?? 0;

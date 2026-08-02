@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { EventForm } from "@/components/EventForm";
+import { PaginaHeader } from "@/components/dashboard/PaginaHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +12,13 @@ export default async function NuovoEventoPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold">Pubblica un ingaggio</h1>
-      <p className="mt-2 text-sm muted">
-        L&apos;annuncio genera una pagina pubblica indicizzabile con dati strutturati Event,
-        e compare nella directory della città scelta.
-      </p>
-      <div className="mt-8">
+      <PaginaHeader
+        ritornoA="/dashboard/eventi"
+        ritornoLabel="Tutti i tuoi ingaggi"
+        titolo="Pubblica un ingaggio"
+        sottotitolo="L'annuncio diventa una pagina pubblica indicizzata e compare nella directory della città scelta. Compila il compenso anche quando è basso: gli annunci che non lo dichiarano ricevono molte meno candidature."
+      />
+      <div>
         <EventForm cities={cities} />
       </div>
     </div>

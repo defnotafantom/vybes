@@ -2,6 +2,8 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Avatar } from "@/components/ui/Avatar";
+import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
@@ -27,14 +29,21 @@ export default async function MessaggiPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold">Messaggi</h1>
+      <SezioneHeader
+        titolo="Messaggi"
+        sottotitolo="Qui si concordano le cose che l'annuncio non dice: orari, brani, chi porta cosa. Le conversazioni nascono da «Contatta» su un profilo o da una candidatura accettata."
+        numeri={parts.length > 0 ? [{ label: "Conversazioni", valore: parts.length }] : undefined}
+      />
 
       {parts.length === 0 ? (
-        <p className="mt-6 muted">
-          Nessuna conversazione. Apri il profilo di un artista e usa il pulsante “Contatta”.
-        </p>
+        <EmptyState
+          title="Nessuna conversazione"
+          body="Si comincia sempre da una persona: apri un profilo e usa «Contatta», oppure candidati a un ingaggio e aspetta la risposta."
+          ctaLabel="Sfoglia gli artisti"
+          ctaHref="/artisti"
+        />
       ) : (
-        <ul className="mt-6 space-y-2">
+        <ul className="space-y-2">
           {parts.map((p) => {
             const other = p.conversation.participants[0]?.user;
             const last = p.conversation.messages[0];

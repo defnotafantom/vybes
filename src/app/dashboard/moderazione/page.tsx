@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink, Flag } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { puo } from "@/lib/moderazione";
@@ -15,6 +15,8 @@ import {
   type TipoSegnalabile,
 } from "@/lib/segnalazioni";
 import { DecisioneForm } from "@/components/DecisioneForm";
+import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -51,22 +53,23 @@ export default async function ModerazionePage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="flex items-center gap-2 text-2xl font-bold">
-        <Flag className="h-5 w-5 text-brand-400" aria-hidden="true" />
-        Segnalazioni
-      </h1>
-      <p className="mt-2 text-fluid-sm text-ink-muted">
-        Ordinate per urgenza e poi per data di arrivo. Ogni decisione richiede
-        una motivazione: viene comunicata a chi ha segnalato, se ha lasciato un
-        indirizzo.
-      </p>
+      <SezioneHeader
+        titolo="Segnalazioni"
+        sottotitolo="Ordinate per urgenza e poi per data di arrivo. Ogni decisione richiede una motivazione: viene comunicata a chi ha segnalato e a chi subisce la rimozione, che può contestarla."
+        numeri={[
+          { label: "In attesa", valore: coda.length },
+          { label: "Urgenti", valore: coda.filter((r) => eUrgente(r.reason as Motivo)).length },
+          { label: "Decise di recente", valore: chiuse.length },
+        ]}
+      />
 
       {coda.length === 0 ? (
-        <p className="card mt-8 text-fluid-sm text-ink-muted">
-          Nessuna segnalazione in attesa.
-        </p>
+        <EmptyState
+          title="Nessuna segnalazione in attesa"
+          body="La coda è vuota. Le nuove segnalazioni compaiono qui, con le urgenti in cima."
+        />
       ) : (
-        <ul className="mt-8 space-y-4">
+        <ul className="space-y-4">
           {coda.map((r) => {
             const motivo = MOTIVI[r.reason as Motivo];
             const urgente = eUrgente(r.reason as Motivo);

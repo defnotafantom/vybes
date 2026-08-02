@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ChatRoom } from "@/components/ChatRoom";
+import { PaginaHeader } from "@/components/dashboard/PaginaHeader";
+import { ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -40,12 +42,21 @@ export default async function ConversationPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <Link href="/dashboard/messaggi" className="text-sm text-brand-600 hover:underline">
-        ← Tutte le conversazioni
-      </Link>
-      <h1 className="mt-4 text-2xl font-bold">{other?.user.name ?? "Conversazione"}</h1>
+      <PaginaHeader
+        ritornoA="/dashboard/messaggi"
+        ritornoLabel="Tutte le conversazioni"
+        titolo={other?.user.name ?? "Conversazione"}
+        azioni={
+          other?.user.slug ? (
+            <Link href={`/artisti/${other.user.slug}`} className="btn-ghost" target="_blank">
+              Vedi il profilo
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          ) : undefined
+        }
+      />
 
-      <div className="mt-6">
+      <div>
         <ChatRoom
           conversationId={conversationId}
           currentUserId={userId}
