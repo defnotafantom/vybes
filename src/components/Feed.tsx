@@ -170,6 +170,30 @@ export function Feed() {
         </article>
       ))}
 
+      {/* Il feed vuoto non diceva niente: dopo il riquadro per scrivere,
+          il nulla. Su una piattaforma appena aperta è lo stato che vedono
+          tutti, ed è la prima impressione del prodotto una volta entrati.
+          Uno schermo bianco si legge come «qui non c'è niente da fare»,
+          quando invece le cose da fare sono altrove. */}
+      {!loading && posts.length === 0 && !error && (
+        <div className="card text-center">
+          <p className="text-fluid-base font-semibold">Ancora nessun post</p>
+          <p className="mx-auto mt-2 max-w-md text-fluid-sm text-ink-muted">
+            Il feed si riempie con quello che pubblicano gli artisti che segui.
+            Nel frattempo la parte utile del sito è di là: gli ingaggi aperti e
+            i profili da seguire.
+          </p>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <Link href="/eventi" className="btn-primary">
+              Vedi gli ingaggi aperti
+            </Link>
+            <Link href="/artisti" className="btn-ghost">
+              Trova artisti da seguire
+            </Link>
+          </div>
+        </div>
+      )}
+
       {hasMore && (
         <button type="button" className="btn-ghost w-full" disabled={loading} onClick={() => load(cursor)}>
           {loading ? "Caricamento…" : "Carica altri post"}

@@ -9,6 +9,8 @@ import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PROFILO_PUBBLICO } from "@/lib/visibilita";
 import { Segnala } from "@/components/Segnala";
+import { Avatar } from "@/components/ui/Avatar";
+import { MessageSquare } from "lucide-react";
 
 export const revalidate = 3600;
 
@@ -39,6 +41,16 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const item = await getItem(slug);
   if (!item) notFound();
+
+  // Altri lavori dello stesso artista: chi è arrivato qui cercando *questo*
+  // lavoro è la persona più disposta a guardarne altri, e sono link interni
+  // fra pagine indicizzate che prima non esistevano.
+  const altri = await prisma.portfolioItem.findMany({
+    where: { userId: item.userId, isPublic: true, slug: { not: item.slug } },
+    orderBy: { position: "asc" },
+    take: 3,
+    select: { slug: true, title: true, mediaUrl: true, mediaType: true },
+  });
 
   return (
     <div className="container-page py-10">
@@ -108,6 +120,77 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
             </a>
           </p>
         )}
+        {/* ─────────────────── CHI L'HA FATTO ───────────────────
+            Questa pagina era un vicolo cieco: mostrava il lavoro e finiva lì.
+            Ed è una delle porte d'ingresso più probabili, perché chi cerca
+            trova prima il lavoro della persona — «cover jazz Bologna», non un
+            nome. Arrivava, guardava, e non aveva niente da fare.
+
+            Il motivo per cui esiste il sito è che quel «mi piace» diventi un
+            contatto: qui va detto di chi è il lavoro e come raggiungerlo. */}
+        <aside className="card mt-14">
+          <p className="text-fluid-xs uppercase tracking-wider text-ink-faint">Il lavoro è di</p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            <Avatar name={item.user.name} src={item.user.image} size="md" />
+            <div className="min-w-0 flex-1">
+              <Link
+                href={`/artisti/${item.user.slug}`}
+                className="text-fluid-lg font-bold tracking-tight transition-colors hover:text-brand-400"
+              >
+                {item.user.name}
+              </Link>
+              <p className="mt-0.5 text-fluid-sm text-ink-muted">
+                {[item.user.headline, item.user.city].filter(Boolean).join(" · ")}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href={`/dashboard/messaggi/nuovo?a=${item.user.slug}`} className="btn-primary">
+              <MessageSquare className="h-4 w-4" aria-hidden="true" />
+              Contatta {item.user.name.split(" ")[0]}
+            </Link>
+            <Link href={`/artisti/${item.user.slug}`} className="btn-ghost">
+              Vedi il profilo
+            </Link>
+          </div>
+        </aside>
+
+        {altri.length > 0 && (
+          <section className="mt-14">
+            <p className="eyebrow">Dello stesso artista</p>
+            <h2 className="mt-2 text-fluid-xl">Altri lavori</h2>
+
+            <ul className="mt-6 grid gap-4 sm:grid-cols-3">
+              {altri.map((a) => (
+                <li key={a.slug}>
+                  <Link
+                    href={`/portfolio/${a.slug}`}
+                    className="card-interactive group block overflow-hidden p-0"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-surface-sunken">
+                      {a.mediaType === "image" && (
+                        <Image
+                          src={a.mediaUrl}
+                          alt={a.title}
+                          fill
+                          sizes="(max-width: 640px) 100vw, 30vw"
+                          className="object-cover transition-transform duration-600 ease-out group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      )}
+                    </div>
+                    <p className="p-3 text-fluid-sm font-medium transition-colors group-hover:text-brand-400">
+                      {a.title}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <div className="mt-12 border-t pt-6">
           <Segnala targetType="PORTFOLIO" targetId={item.slug} etichetta="Segnala questo lavoro" />
         </div>
