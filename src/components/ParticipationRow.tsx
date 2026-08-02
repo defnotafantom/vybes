@@ -7,6 +7,7 @@ import { PARTICIPATION_STATUS } from "@/lib/constants";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { MessageSquare } from "lucide-react";
+import { reputazioneMassima } from "@/lib/reputazione";
 
 type Participation = {
   id: string;
@@ -18,7 +19,6 @@ type Participation = {
     name: string;
     headline: string | null;
     city: string | null;
-    level: number;
     reputation: number;
   };
 };
@@ -66,7 +66,11 @@ export function ParticipationRow({
             {[participation.user.headline, participation.user.city].filter(Boolean).join(" · ")}
           </p>
           <p className="text-xs muted">
-            Lv. {participation.user.level} · reputazione {participation.user.reputation} · candidatura del{" "}
+            {/* Il livello era la prima cosa che un organizzatore leggeva di
+                un candidato, e misura quanto quella persona usa il sito.
+                Resta la reputazione, con la sua scala: da sola non basta per
+                scegliere, ma almeno è una risposta alla domanda giusta. */}
+            Reputazione {participation.user.reputation}/{reputazioneMassima()} · candidatura del{" "}
             {new Date(participation.createdAt).toLocaleDateString("it-IT")}
           </p>
           {participation.message && (

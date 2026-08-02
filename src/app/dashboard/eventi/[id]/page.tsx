@@ -21,7 +21,7 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
         orderBy: { createdAt: "desc" },
         include: {
           user: {
-            select: { slug: true, name: true, image: true, headline: true, city: true, level: true, reputation: true },
+            select: { slug: true, name: true, image: true, headline: true, city: true, reputation: true },
           },
         },
       },

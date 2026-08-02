@@ -156,6 +156,44 @@ Rispondere con onestà e con criterio vale più che fingere completezza:
 > al posto loro, perché la frizione dell'iscrizione è l'ostacolo, non la
 > mancanza di interesse.
 
+### "C'è la gamification. Non è un gioco applicato a caso?"
+
+È la domanda-trappola: la gamification ha pessima fama, e a ragione. La
+risposta buona non difende la scelta, racconta un errore corretto.
+
+> All'inizio sì, ed era un difetto vero. Avevo due numeri, esperienza e
+> reputazione, e li facevo salire tutti e due completando obiettivi. Il
+> problema è che la reputazione ordina la directory pubblica: è il campo che
+> decide chi vede per primo un organizzatore che cerca un chitarrista a
+> Bologna. Quindi stavo ordinando i professionisti **per quanto avessero usato
+> il mio sito**. Con le registrazioni aperte a chiunque, il modo più veloce di
+> arrivare in cima era fare rumore.
+>
+> L'ho rifatto separando i due assi. Il livello resta l'attività, sta
+> nell'area privata e non decide niente per nessun altro. La reputazione non
+> si accumula più: si calcola da fatti verificabili, con un tetto per ogni
+> voce, e si **ricalcola** quando quei fatti cambiano — quindi se svuoti il
+> portfolio scende, cosa che un contatore incrementale non può fare.
+>
+> La voce che pesa di più sono gli ingaggi confermati, perché è l'unica che
+> non dipende da te: te la assegna qualcun altro scegliendoti. È il segnale
+> più difficile da falsificare, quindi il più prezioso.
+
+Se chiedono **perché ricalcolare e non incrementare**, è la parte tecnica:
+
+> Un contatore incrementale diverge dalla realtà al primo caso non previsto, e
+> resta sbagliato per sempre perché non c'è niente con cui confrontarlo.
+> Ricalcolando, il punteggio è per costruzione una funzione dello stato: non
+> può divergere. Pago una query in più nei tre punti in cui quei fatti
+> cambiano, non a ogni pagina.
+
+Se chiedono **come si evita che venga sfruttato**, ci sono tre proprietà, e
+sono le tre coperte dai test: ogni voce ha un tetto, nessuna voce vale più di
+un quinto del totale, e ogni voce misura uno stato invece di contare azioni. È
+per questo che il punteggio si può mostrare per intero in dashboard — dirlo
+non lo rende sfruttabile, e un numero che decide la tua visibilità senza dire
+come si ottiene è indistinguibile dall'arbitrio.
+
 ---
 
 ## Il capitolo più forte: quattordici difetti, e perché nessuno li aveva visti

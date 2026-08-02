@@ -88,7 +88,7 @@ export default async function CityDisciplinePage({
     take: 48,
     select: {
       slug: true, name: true, headline: true, image: true, city: true,
-      disciplines: true, level: true, isVerified: true,
+      disciplines: true, reputation: true, isVerified: true,
     },
   });
 

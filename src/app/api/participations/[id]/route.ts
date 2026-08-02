@@ -4,6 +4,7 @@ import { guard, parseBody, ok, fail, handle } from "@/lib/api";
 import { notify } from "@/lib/notifications";
 import { grantXp } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
+import { ricalcolaReputazione } from "@/lib/reputazione-server";
 
 /** L'organizzatore accetta o rifiuta una candidatura. */
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -29,7 +30,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       data: { status: data.status, respondedAt: new Date() },
     });
 
-    if (data.status === "ACCEPTED") await grantXp(participation.userId, 40, 5);
+    if (data.status === "ACCEPTED") {
+      await grantXp(participation.userId, 40);
+      // Un ingaggio confermato è la voce che pesa di più nella reputazione, ed
+      // è l'unica che non dipende dall'artista: gliela assegna qualcun altro
+      // scegliendolo. Il ricalcolo va fatto qui, dove il fatto accade.
+      await ricalcolaReputazione(participation.userId);
+    }
 
     await notify({
       recipientId: participation.userId,

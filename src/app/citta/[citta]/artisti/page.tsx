@@ -64,7 +64,7 @@ export default async function CityArtistsPage({
       take: PER_PAGE,
       select: {
         slug: true, name: true, headline: true, image: true, city: true,
-        disciplines: true, level: true, isVerified: true,
+        disciplines: true, reputation: true, isVerified: true,
       },
     }),
     prisma.user.count({ where }),

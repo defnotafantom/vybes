@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { VerifiedBadge } from "@/components/ui/Badge";
+import { reputazioneMassima } from "@/lib/reputazione";
 
 export type ArtistCardData = {
   slug: string;
@@ -10,7 +11,15 @@ export type ArtistCardData = {
   image: string | null;
   city: string | null;
   disciplines: string[];
-  level: number;
+  /**
+   * La reputazione, non il livello.
+   *
+   * La scheda mostrava «Lv. 7» in un elenco che è ordinato per reputazione:
+   * il numero visibile e il criterio d'ordinamento erano due cose diverse, e
+   * il primo misurava quanto quella persona usa il sito — informazione che a
+   * un organizzatore non serve per decidere se aprirne il profilo.
+   */
+  reputation: number;
   isVerified: boolean;
 };
 
@@ -54,7 +63,10 @@ export function ArtistCard({
                 {artist.city}
               </span>
             )}
-            <span className="tabular-nums text-ink-faint">Lv. {artist.level}</span>
+            <span className="ml-auto shrink-0 tabular-nums text-ink-faint">
+              {artist.reputation}
+              <span className="opacity-60">/{reputazioneMassima()}</span>
+            </span>
           </div>
         </div>
       </Link>

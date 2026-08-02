@@ -4,6 +4,7 @@ import { guard, parseBody, ok, handle } from "@/lib/api";
 import { uniqueSlug } from "@/lib/slug";
 import { progressQuest, grantXp, syncProfileQuest } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
+import { ricalcolaReputazione } from "@/lib/reputazione-server";
 
 export async function GET(req: Request) {
   return handle(async () => {
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
     });
 
     await grantXp(g.user!.id, 15);
+    await ricalcolaReputazione(g.user!.id);
     await progressQuest(g.user!.id, "first_portfolio");
     await syncProfileQuest(g.user!.id);
 

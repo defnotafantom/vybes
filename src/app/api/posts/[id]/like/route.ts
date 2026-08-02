@@ -22,7 +22,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     await prisma.like.create({ data: { postId: id, userId: g.user!.id } });
-    await grantXp(post.authorId, 2, 1);
+    await grantXp(post.authorId, 2);
     await notify({
       recipientId: post.authorId,
       actorId: g.user!.id,

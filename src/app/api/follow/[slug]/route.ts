@@ -55,7 +55,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     }
 
     await prisma.follow.create({ data: { followerId: g.user!.id, followingId: target.id } });
-    await grantXp(target.id, 3, 1);
+    await grantXp(target.id, 3);
     await notify({
       recipientId: target.id,
       actorId: g.user!.id,

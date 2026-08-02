@@ -6,6 +6,7 @@ import { guard, parseBody, ok, fail, handle } from "@/lib/api";
 import { toCsv } from "@/lib/slug";
 import { syncProfileQuest } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
+import { ricalcolaReputazione } from "@/lib/reputazione-server";
 
 export async function PATCH(req: Request) {
   return handle(async () => {
@@ -53,6 +54,9 @@ export async function PATCH(req: Request) {
     });
 
     await syncProfileQuest(g.user!.id);
+    // Biografia, foto, città e discipline entrano nel punteggio: se cambiano,
+    // il punteggio deve seguirli — anche in discesa, se si svuota il profilo.
+    await ricalcolaReputazione(g.user!.id);
 
     // Le pagine indicizzate che mostrano il profilo vanno rigenerate.
     revalidatePath(`/artisti/${user.slug}`);

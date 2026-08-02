@@ -6,6 +6,9 @@ import { missingForIndex } from "@/lib/profile-quality";
 import { Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
+import { SchedaReputazione } from "@/components/dashboard/SchedaReputazione";
+import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
+import { reputazioneMassima } from "@/lib/reputazione";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +38,9 @@ export default async function DashboardPage() {
   ]);
 
   const progress = levelProgress(me?.experience ?? 0);
+  // Le stesse voci con cui il punteggio è stato calcolato: mostrarne una
+  // versione riscritta a mano vorrebbe dire mantenerle allineate in due posti.
+  const voci = await dettaglioReputazioneDi(userId);
   const pending = openQuests.filter((q) => !q.progress[0]?.completedAt);
 
   // Un profilo sotto la soglia non compare sui motori di ricerca. La regola
@@ -122,42 +128,77 @@ export default async function DashboardPage() {
           </div>
         )}
 
+        {/* Livello e reputazione stavano nella stessa scheda, uno sopra
+            l'altro, con la stessa grafica: era impossibile capire che uno è un
+            progresso privato e l'altro il segnale che decide dove compari.
+            Separarli in due schede è la spiegazione più economica possibile. */}
         <div className="card">
-          <h2 className="font-semibold">Livello {progress.level}</h2>
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-fluid-sm font-semibold">Livello {progress.level}</h2>
+            <span className="text-fluid-xs tabular-nums text-ink-faint">
+              {progress.current}/{progress.needed} XP
+            </span>
+          </div>
           <div
-            className="mt-3 h-2 overflow-hidden rounded-full bg-black/10 dark:bg-white/10"
+            className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-sunken"
             role="progressbar"
             aria-valuenow={progress.percent}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="Progresso verso il livello successivo"
           >
-            <div className="h-full bg-brand-600" style={{ width: `${progress.percent}%` }} />
+            <div
+              className="h-full rounded-full bg-brand-500 transition-[width] duration-700 ease-out"
+              style={{ width: `${progress.percent}%` }}
+            />
           </div>
-          <p className="mt-2 text-sm muted">
-            {progress.current}/{progress.needed} XP al livello {progress.level + 1}
+          <p className="mt-3 text-fluid-xs text-ink-muted">
+            Sale con quello che fai qui dentro. Resta tuo: non decide come ti
+            vedono gli altri.
           </p>
-          <dl className="mt-4 flex gap-6 text-sm">
-            <div><dt className="muted">Reputazione</dt><dd className="font-bold">{me?.reputation}</dd></div>
-            <div><dt className="muted">Follower</dt><dd className="font-bold">{me?._count.followers}</dd></div>
+          <dl className="mt-4 border-t pt-3 text-fluid-xs">
+            <div className="flex items-center justify-between">
+              <dt className="text-ink-muted">Follower</dt>
+              <dd className="font-bold tabular-nums">{me?._count.followers}</dd>
+            </div>
           </dl>
         </div>
 
+        <SchedaReputazione
+          voci={voci}
+          totale={me?.reputation ?? 0}
+          massimo={reputazioneMassima()}
+        />
+
         {pending.length > 0 && (
           <div className="card">
-            <h2 className="font-semibold">Quest in corso</h2>
-            <ul className="mt-3 space-y-3 text-sm">
-              {pending.map((q) => (
-                <li key={q.id}>
-                  <p className="font-medium">{q.title}</p>
-                  <p className="muted">{q.description}</p>
-                  <p className="text-xs text-brand-600">
-                    {q.progress[0]?.current ?? 0}/{q.target} · +{q.xpReward} XP
-                  </p>
-                </li>
-              ))}
+            <h2 className="text-fluid-sm font-semibold">Quest in corso</h2>
+            <ul className="mt-3 space-y-4">
+              {pending.map((q) => {
+                const fatto = q.progress[0]?.current ?? 0;
+                const perc = Math.min(100, Math.round((fatto / q.target) * 100));
+                return (
+                  <li key={q.id}>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <p className="text-fluid-sm font-medium">{q.title}</p>
+                      <span className="shrink-0 text-fluid-xs font-bold tabular-nums text-brand-300">
+                        +{q.xpReward}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-fluid-xs text-ink-muted">{q.description}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="h-1 flex-1 overflow-hidden rounded-full bg-surface-sunken">
+                        <div className="h-full rounded-full bg-brand-500" style={{ width: `${perc}%` }} />
+                      </div>
+                      <span className="text-fluid-xs tabular-nums text-ink-faint">
+                        {fatto}/{q.target}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
-            <Link href="/dashboard/quest" className="mt-4 inline-block text-sm text-brand-600 hover:underline">
+            <Link href="/dashboard/quest" className="btn-ghost mt-5 inline-flex">
               Tutte le quest
             </Link>
           </div>

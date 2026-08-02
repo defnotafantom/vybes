@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink, MapPin } from "lucide-react";
+import { Check, ExternalLink, MapPin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata, absoluteUrl } from "@/lib/seo";
 import { artistJsonLd } from "@/lib/jsonld";
@@ -11,13 +11,14 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { EventCard } from "@/components/EventCard";
 import { fromCsv } from "@/lib/slug";
 import { disciplineBySlug } from "@/lib/constants";
-import { levelProgress } from "@/lib/levels";
 import { isProfileIndexable } from "@/lib/profile-quality";
 import { FollowButton } from "@/components/FollowButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge, VerifiedBadge } from "@/components/ui/Badge";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 import { Segnala } from "@/components/Segnala";
+import { reputazioneMassima } from "@/lib/reputazione";
+import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
 
 export const revalidate = 3600;
 export const dynamicParams = true; // i profili nuovi vengono generati on-demand
@@ -141,7 +142,10 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   const sameAs = [artist.website, artist.instagram, artist.spotify, artist.youtube].filter(
     (v): v is string => Boolean(v)
   );
-  const progress = levelProgress(artist.experience);
+  // Una query in più su una pagina rigenerata ogni ora: il costo è
+  // trascurabile e in cambio la scheda non ripete a mano una regola che vive
+  // altrove.
+  const ottenute = (await dettaglioReputazioneDi(artist.id)).filter((v) => v.punti >= v.max);
 
   return (
     <>
@@ -228,15 +232,31 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
       {/* ─────────────────────────── NUMERI ─────────────────────────── */}
       <section className="border-b bg-surface-sunken">
-        <dl className="container-page grid grid-cols-2 sm:grid-cols-4">
+        {/* Qui c'era «Reputazione 234», un numero senza scala accanto a un
+            livello che sembrava confrontabile e non lo è. Un visitatore non ha
+            modo di sapere se 234 sia molto: la reputazione ha un massimo, e
+            mostrarlo è quello che rende il numero un'informazione.
+
+            Il livello invece è sparito da questa pagina: misura quanto una
+            persona usa il sito, che non è un dato di cui un organizzatore
+            debba tener conto per decidere se scriverle. */}
+        <dl className="container-page grid grid-cols-3">
           {[
-            { label: "Livello", value: progress.level },
-            { label: "Reputazione", value: artist.reputation },
+            {
+              label: "Reputazione",
+              value: `${artist.reputation}`,
+              suffisso: `/${reputazioneMassima()}`,
+            },
+            { label: "Ingaggi confermati", value: artist._count.participations },
             { label: "Follower", value: artist._count.followers },
-            { label: "Ingaggi", value: artist._count.participations },
           ].map((s) => (
             <div key={s.label} className="py-6">
-              <dd className="text-fluid-2xl font-bold tabular-nums">{s.value}</dd>
+              <dd className="text-fluid-2xl font-bold tabular-nums">
+                {s.value}
+                {"suffisso" in s && (
+                  <span className="text-fluid-sm font-semibold text-ink-faint">{s.suffisso}</span>
+                )}
+              </dd>
               <dt className="mt-0.5 text-fluid-xs uppercase tracking-wider text-ink-faint">
                 {s.label}
               </dt>
@@ -315,28 +335,29 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
           {/* ─────────────────────────── COLONNA ─────────────────────────── */}
           <aside className="space-y-6">
-            <div className="card">
-              <p className="text-fluid-xs uppercase tracking-wider text-ink-faint">Livello</p>
-              <p className="mt-2 flex items-baseline gap-2">
-                <span className="text-fluid-2xl font-bold tabular-nums">{progress.level}</span>
-                <span className="text-fluid-sm text-ink-faint">
-                  {artist.experience} punti esperienza
-                </span>
-              </p>
-              <div
-                className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-sunken"
-                role="progressbar"
-                aria-valuenow={Math.round(progress.percent)}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`Progresso verso il livello ${progress.level + 1}`}
-              >
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-brand-500 to-accent-400"
-                  style={{ width: `${Math.min(100, progress.percent)}%` }}
-                />
+            {/* Al posto della barra dei livelli — che diceva a un
+                organizzatore quanto quella persona usa il sito, cioè niente di
+                utile — l'elenco di quello che nel profilo è verificato.
+                È lo stesso dettaglio con cui si calcola la reputazione, letto
+                dal lato di chi deve decidere se scrivere. */}
+            {ottenute.length > 0 && (
+              <div className="card">
+                <p className="text-fluid-xs uppercase tracking-wider text-ink-faint">
+                  Cosa risulta a noi
+                </p>
+                <ul className="mt-3 space-y-2">
+                  {ottenute.map((v) => (
+                    <li key={v.label} className="flex items-start gap-2 text-fluid-sm">
+                      <Check
+                        className="mt-0.5 h-4 w-4 shrink-0 text-brand-400"
+                        aria-hidden="true"
+                      />
+                      {v.label}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
+            )}
 
             {sameAs.length > 0 && (
               <div className="card">

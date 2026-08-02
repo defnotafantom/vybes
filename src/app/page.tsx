@@ -63,7 +63,7 @@ export default async function HomePage() {
         image: true,
         city: true,
         disciplines: true,
-        level: true,
+        reputation: true,
         isVerified: true,
       },
     }),

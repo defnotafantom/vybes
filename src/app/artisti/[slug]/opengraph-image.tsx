@@ -17,7 +17,7 @@ export const contentType = "image/png";
 export default async function Image({ params }: { params: { slug: string } }) {
   const artist = await prisma.user.findFirst({
     where: { slug: params.slug, isPublic: true },
-    select: { name: true, headline: true, city: true, disciplines: true, level: true },
+    select: { name: true, headline: true, city: true, disciplines: true },
   });
 
   const name = artist?.name ?? "Vybes";
@@ -53,7 +53,6 @@ export default async function Image({ params }: { params: { slug: string } }) {
         </div>
         <div style={{ display: "flex", gap: 28, fontSize: 26, opacity: 0.8 }}>
           {artist?.city && <span>{artist.city}</span>}
-          {artist?.level ? <span>Livello {artist.level}</span> : null}
         </div>
       </div>
     ),

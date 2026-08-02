@@ -785,6 +785,106 @@ accetterebbe il token CSRF che sta lì accanto.
 
 ---
 
+## ADR-025 · La reputazione misura l'affidabilità, non l'attività
+
+**Contesto.** `/artisti` ordina i risultati con
+`orderBy: [{ reputation: "desc" }]`. Quel campo decide chi vede per primo un
+organizzatore che cerca un chitarrista a Bologna: è la posizione più preziosa
+che il prodotto abbia da assegnare, e l'unica cosa che un utente possa
+davvero desiderare da noi.
+
+Il punteggio si accumulava completando quest. Ogni obiettivo aveva un
+`repReward`, e `grantXp(userId, xp, reputation)` sommava entrambi i valori
+senza mai sottrarne. Tradotto: **la directory era ordinata per quanto una
+persona avesse usato il sito.** Chi passa un pomeriggio a spuntare obiettivi
+scavalca un musicista bravo iscritto la settimana prima. E con le
+registrazioni aperte a chiunque (ADR-018) il modo più veloce per stare in cima
+diventava fare rumore — che è esattamente il comportamento che una directory
+di professionisti non deve premiare.
+
+C'era anche un difetto meccanico sotto quello concettuale: essendo
+incrementale, il punteggio non poteva scendere. Chi cancellava metà del
+portfolio si teneva i punti guadagnati caricandolo.
+
+**Decisione.** La reputazione non si accumula più: si **calcola** da fatti
+verificabili, e si **ricalcola** quando quei fatti cambiano.
+
+`src/lib/reputazione.ts` è una funzione pura da uno stato a un punteggio, con
+otto voci e un massimo di 110:
+
+| Voce | Max | Perché |
+| --- | --- | --- |
+| Ingaggi confermati | 20 | L'unica voce assegnata da qualcun altro |
+| Identità verificata | 15 | La assegniamo noi, con riscontro |
+| Profilo compilato | 15 | Foto, headline, città: ciò che si vede in elenco |
+| Biografia | 15 | A scaglioni: 120 / 200 / 400 caratteri |
+| Portfolio | 15 | Fino a cinque lavori, tre punti l'uno |
+| Indirizzo confermato | 10 | Soglia minima di esistenza |
+| Discipline dichiarate | 10 | Una o due: sono le chiavi di ricerca |
+| Ingaggi organizzati | 10 | La stessa cosa, per chi pubblica annunci |
+
+Tre proprietà tengono in piedi la scelta, e sono quelle coperte dai test:
+
+**Ogni voce ha un tetto.** Il sesto lavoro nel portfolio e la decima disciplina
+non valgono niente. Senza tetti, il modo più rapido di salire tornerebbe a
+essere ripetere un'azione — cioè il difetto di prima con altri numeri.
+
+**Nessuna voce vale più di un quinto del totale.** Non si arriva in cima
+grazie a una cosa sola.
+
+**Gli ingaggi confermati pesano più di tutto il resto per unità**, perché sono
+l'unica riga che non dipende da chi la riceve: la assegna un organizzatore
+scegliendo quella persona. È il segnale più difficile da falsificare, quindi
+il più prezioso.
+
+**Ricalcolare, non incrementare.** Un contatore incrementale diverge dalla
+realtà al primo caso non previsto — un lavoro cancellato, una candidatura
+ritirata, un profilo svuotato — e resta alto senza che niente lo rilevi,
+perché non c'è nulla con cui confrontarlo. Ricalcolando, il punteggio è per
+costruzione una funzione dello stato attuale: se svuoti il profilo scende, e
+questa è la parte che rende il numero onesto. Il costo è una query in più nei
+tre punti in cui quei fatti cambiano — candidatura accettata, profilo
+salvato, portfolio modificato — non a ogni pagina.
+
+**Il file è diviso in due** perché `reputazione.ts` viene importato anche da
+componenti client (le schede in elenco leggono il massimo per mostrare la
+scala): tirarsi dietro Prisma da lì spedirebbe al browser la logica di accesso
+al database. Le query stanno in `reputazione-server.ts`.
+
+**Il punteggio si spiega.** `dettaglioReputazione` restituisce le voci, non
+solo il totale, e ogni voce porta con sé la frase che dice come ottenerla. Un
+numero che decide la tua posizione in una directory e non dice come si ottiene
+è indistinguibile dall'arbitrio. Dirlo per intero non apre a nessuno
+sfruttamento proprio perché ogni voce misura uno *stato* e non un conteggio di
+azioni: l'unico modo di alzarlo è fare davvero le cose che rendono un profilo
+affidabile.
+
+**Cosa resta all'XP.** Il livello continua a salire con l'attività e va
+benissimo: è un progresso personale, sta nell'area privata, non decide niente
+per nessun altro. I due assi ora sono separati davvero — uno motiva chi lo
+guarda, l'altro informa chi cerca — e la separazione è stata portata fino
+all'interfaccia: il livello è sparito dalle schede pubbliche, dalla pagina
+profilo, dall'immagine social e dalla riga del candidato, dove diceva a un
+organizzatore quanto quella persona usa il sito. Al suo posto, dove serviva un
+segnale, c'è la reputazione **con la sua scala**: «84/110» è un'informazione,
+«84» da solo non lo è.
+
+**Conseguenze.** I valori già in tabella sono il residuo della vecchia regola e
+vanno riallineati una volta sola:
+`npm run reputazione:ricalcola` (con `-- --prova` per vedere senza scrivere).
+Lo script è idempotente perché calcola dallo stato: si può rilanciare dopo ogni
+modifica ai pesi. È in TypeScript e non in SQL apposta — riscrivere scaglioni e
+tetti in una migrazione significherebbe due copie della stessa regola, che
+divergono alla prima modifica.
+
+**Alternative scartate.** Un punteggio bayesiano su recensioni reciproche
+sarebbe più informativo, ma richiede un volume di transazioni che il sito non
+ha ancora: con dieci ingaggi totali produrrebbe una classifica casuale
+travestita da statistica. Si può aggiungere quando ci sarà di che calcolarla,
+e le voci attuali restano valide come base.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:
