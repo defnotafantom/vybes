@@ -68,7 +68,14 @@ async function main() {
 
   // Un moderatore non si cancella per sbaglio da riga di comando: se è
   // davvero quello che vuoi, togligli prima il ruolo.
-  const moderatori = utenti.filter((u) => u.adminRole);
+  // `adminRole` ha default "NONE" e non è nullable: `if (u.adminRole)` è
+  // sempre vero. Questa protezione rifiutava quindi *ogni* cancellazione,
+  // sostenendo che l'account avesse un ruolo di moderazione — ed è il motivo
+  // per cui gli account di prova in produzione non si riuscivano a rimuovere.
+  //
+  // `elenca-utenti.ts` faceva il confronto giusto tre righe più in là. La
+  // regola era nota, ma qui non era applicata.
+  const moderatori = utenti.filter((u) => u.adminRole !== "NONE");
   if (moderatori.length > 0) {
     console.error(
       `\nRifiuto: ${moderatori.map((m) => `${m.slug} (${m.adminRole})`).join(", ")} ` +

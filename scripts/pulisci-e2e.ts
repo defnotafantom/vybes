@@ -80,9 +80,18 @@ async function main() {
     return;
   }
 
-  // Non dovrebbe mai succedere, ma se un account di prova avesse un ruolo di
-  // moderazione il problema sarebbe più grande di questo script.
-  const conRuolo = daCancellare.filter((u) => u.adminRole);
+  // `adminRole` è una stringa con default "NONE", non un campo nullable:
+  // `if (u.adminRole)` è quindi **sempre vero**, perché "NONE" è una stringa
+  // non vuota. Con quel confronto lo script rifiutava di cancellare
+  // qualunque cosa, dicendo che nove account di prova avevano un ruolo di
+  // moderazione.
+  //
+  // Il difetto è passato inosservato perché il messaggio d'errore era
+  // plausibile e il comportamento — non cancellare — sembra il lato
+  // prudente. Un controllo di sicurezza che blocca sempre non protegge
+  // niente: rende solo inutile lo strumento, e chi ha fretta lo aggira a
+  // mano.
+  const conRuolo = daCancellare.filter((u) => u.adminRole !== "NONE");
   if (conRuolo.length > 0) {
     console.error(`Rifiuto: ${conRuolo.map((u) => u.email).join(", ")} hanno un ruolo di moderazione.`);
     process.exitCode = 1;
