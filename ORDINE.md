@@ -33,37 +33,28 @@ Cinque cose sono già state chiuse in preparazione:
 
 ---
 
-## Dove eravamo rimasti — 2 agosto
+## Dove eravamo rimasti — 2 agosto, sera
 
-**Tredici commit da mandare su.** Nel tuo terminale:
+**Suite verde: 171 test, quattro profili — computer, Android, iPhone,
+iPhone SE a 320px.** I 13 saltati sono i test da telefono sul profilo
+desktop e viceversa: si escludono da soli, come devono.
 
 ```powershell
 npm run verify            # tipi, lint, canonical, unit test
-npm run test:e2e:setup    # UNA VOLTA SOLA, e di nuovo dopo ogni aggiornamento di Playwright
+npm run test:e2e:setup    # UNA VOLTA SOLA, e dopo ogni aggiornamento di Playwright
 npm run test:e2e
 git push origin main
 ```
 
 **Chiudi `npm run dev` prima dei test.** I due processi si contendono la
-cartella `.next`: il build dei test e il server di sviluppo scrivono nello
-stesso posto. La causa più frequente di rottura — `prisma generate` che non
-riesce a sostituire `query_engine-windows.dll.node` perché Node la tiene
-aperta, e muore con `EPERM` — è stata rimossa (il build dei test non rigenera
-più il client, non serviva), ma la cartella condivisa resta.
+cartella `.next`. La causa più frequente di rottura — `prisma generate` che
+non riesce a sostituire `query_engine-windows.dll.node` e muore con `EPERM` —
+è stata rimossa, ma la cartella condivisa resta.
 
-**`test:e2e:setup` non è opzionale.** Playwright tiene i browser fuori da
-`node_modules`, in una cartella di sistema versionata a parte: quando il
-pacchetto si aggiorna, i binari scaricati prima non valgono più e *tutti* i
-test falliscono con «Executable doesn't exist», compresi quelli su Chromium
-che prima passavano. Non è un problema del progetto, è come funziona
-Playwright — ma vederselo arrivare addosso su 156 test sembra un disastro.
-
-Poi Vercel distribuisce da solo.
-
-`npm run verify` e `test:e2e` vanno **prima** del push, non dopo: in questa
-sessione lint e Playwright non si sono potuti eseguire — l'ambiente non ha i
-binari nativi per Linux — quindi tipi e CSS generato sono verificati, il resto
-no.
+**`test:e2e:setup` non è opzionale.** Playwright tiene i browser in una
+cartella di sistema versionata a parte: quando il pacchetto si aggiorna, i
+binari scaricati prima non valgono più e *tutti* i test falliscono con
+«Executable doesn't exist», compresi quelli che prima passavano.
 
 ### Un comando che va lanciato una volta sola
 
@@ -72,42 +63,34 @@ npm run reputazione:ricalcola -- --prova   # mostra e non scrive
 npm run reputazione:ricalcola              # applica
 ```
 
-Già eseguito il 2 agosto su nove account. Serve di nuovo **solo** se cambiano i
-pesi in `src/lib/reputazione.ts`: è idempotente, calcola dallo stato, quindi
-rilanciarlo non fa danni.
+Già eseguito il 2 agosto su nove account. Serve di nuovo **solo** se cambiano
+i pesi in `src/lib/reputazione.ts`: è idempotente, calcola dallo stato.
 
 ### Cosa provare appena è online
 
-Sono le correzioni delle ultime due sessioni e nessuna è stata vista su un
-browser vero.
+Nessuna di queste cose è stata vista su un browser vero.
 
 **Da telefono** — è lì che stavano i difetti:
 
-1. Apri il sito da anonimo: **«Accedi» deve vedersi subito**, senza aprire il
-   menu.
-2. Tocca un campo qualsiasi del modulo di accesso. Su iPhone **la pagina non
-   deve ingrandirsi**. È il difetto più fastidioso dei cinque.
-3. Accedi, poi torna sul sito pubblico: in alto a destra ci deve essere
-   **l'avatar**, non «Accedi / Iscriviti». Da lì «Esci».
+1. Da anonimo, **«Accedi» si vede subito**, senza aprire il menu.
+2. Tocca un campo del modulo di accesso: su iPhone **la pagina non si
+   ingrandisce**.
+3. Accedi, poi torna sul sito pubblico: in alto a destra **l'avatar**, non
+   «Accedi / Iscriviti». Da lì «Esci».
 4. Naviga fra artisti, città e profili per qualche minuto: **non devi essere
-   rimandato al login**. La sessione dura un anno e finisce solo con «Esci».
-5. Apri il menu dell'area personale su uno schermo piccolo: **deve scorrere**
-   fino in fondo, «Esci» compreso.
+   rimandato al login**.
+5. Il menu dell'area personale **deve scorrere** fino in fondo, «Esci»
+   compreso.
 6. La mappa non deve occupare più di due terzi dello schermo.
 
 **Da computer:**
 
-7. Dashboard: livello e reputazione ora sono due schede distinte. La
-   reputazione dice **cosa la fa salire**.
-8. Portfolio: «Elimina» deve chiedere conferma, e i lavori si devono
-   **vedere**, non solo leggere.
-9. `/artisti`: l'ordine è cambiato, perché il punteggio è stato ricalcolato.
-
-**Se qualcosa non torna**, i commit da guardare: `983163c` per la reputazione,
-`541bb58` per colori e date, `e7f2b9b` per il portfolio, `a15eb24` per il
-mobile, `8a5713b` per i profili di test.
-
----
+7. Dashboard: livello e reputazione sono due schede distinte, e la reputazione
+   dice **cosa la fa salire**.
+8. Portfolio: «Elimina» chiede conferma, e i lavori si **vedono**.
+9. `/artisti`: l'ordine è cambiato, il punteggio è stato ricalcolato.
+10. Un indirizzo inventato tipo `/artisti/non-esisto` deve dare **404**, non
+    uno scheletro di caricamento.
 
 ---
 
