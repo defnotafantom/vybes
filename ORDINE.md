@@ -33,36 +33,38 @@ Cinque cose sono già state chiuse in preparazione:
 
 ---
 
-## 1. Applicare la migrazione delle segnalazioni ⚠️
+## Dove eravamo rimasti — 1° agosto, sera
 
-**Il codice c'è, il database no.** Il modello `Report` è nello schema e la
-migrazione è scritta, ma non è stata applicata: l'ambiente in cui è nata non ha
-accesso al database, e Prisma non può girarci.
-
-Finché non la applichi, **il progetto non compila**: ventidue errori di tipo,
-tutti perché `prisma.report` non esiste ancora nel client generato. Non sono
-difetti del codice, spariscono tutti insieme.
-
-Due comandi, nel tuo terminale:
+**Tre commit da mandare su.** Nel tuo terminale:
 
 ```powershell
-npx prisma migrate deploy
-npx prisma generate
+git push origin main
 ```
 
-Poi verifica che sia tornato tutto a posto:
+Poi Vercel distribuisce da solo.
 
-```powershell
-npm run verify
-```
+**Cosa provare appena è online**, perché sono le correzioni di oggi e nessuna
+è stata verificata su un browser vero:
 
-Se `migrate deploy` si lamenta di una deriva, fermati e chiedimi: la migrazione
-è scritta a mano seguendo le convenzioni di nome di Prisma proprio per evitarlo,
-ma è l'unico punto in cui non ho potuto verificare da solo.
+1. In finestra anonima, apri un ingaggio → «Accedi per candidarti» → dopo il
+   login devi ritrovarti **su quell'ingaggio**, non sull'elenco.
+2. Sempre da sloggato, apri un profilo → «Contatta» → dopo il login devi
+   arrivare **sulla chat con quella persona**.
+3. Iscriviti con un indirizzo vero: devi vedere la schermata «controlla la
+   posta» — non il modulo di login — ricevere il messaggio, e dal link entrare.
+4. Iscriviti scegliendo «Cerco artisti»: la dashboard deve dirti di pubblicare
+   un ingaggio. È il percorso che nessuno aveva mai fatto fino in fondo.
+
+**Se qualcosa non torna**, il commit da guardare è `7beb384` per i punti 1 e 2,
+`857e11d` per i punti 3 e 4.
+
+**Cosa resta tuo e non si può fare senza di te:** Upstash (punto 1 qui sotto) e
+i dati da titolare su privacy e termini (punto 2). Sono le ultime due caselle
+prima di poter dire che il sito è davvero apribile al pubblico.
 
 ---
 
-## 2. Upstash Redis
+## 1. Upstash Redis
 
 La salute in produzione riporta `rateLimitBackend: "memory"`: il limite di
 richieste vale per singola istanza serverless, quindi il limite reale è il
@@ -77,7 +79,7 @@ di account.
 
 ---
 
-## 3. I tuoi dati da titolare, e un legale
+## 2. I tuoi dati da titolare, e un legale
 
 Sulla pagina privacy i riferimenti mancanti sono evidenziati in giallo: si
 vedono apposta. Servono nome o ragione sociale, indirizzo, codice fiscale o
@@ -88,7 +90,7 @@ creare un problema legale invece che tecnico.
 
 ---
 
-## 4. Riempire Milano
+## 3. Riempire Milano
 
 **Perché conta più di tutto il resto, ma viene dopo.** Ogni altra voce migliora
 qualcosa che già funziona; questa stabilisce se il progetto ha ragione di
@@ -109,7 +111,7 @@ Chiedi consenso scritto per testo e immagini.
 
 ---
 
-## 5. Cancellare gli account di prova
+## 4. Cancellare gli account di prova
 
 `kkkk` e `il-tuo-nome` esistono in produzione. La soglia di qualità li tiene
 fuori dall'indice, ma restano negli elenchi pubblici e chi li incontra capisce
@@ -126,7 +128,7 @@ cancellando la persona sbagliata.
 
 ---
 
-## 6. Search Console
+## 5. Search Console
 
 Solo ora, e non prima. Un dominio nuovo viene valutato su ciò che la prima
 scansione trova: presentarsi con pagine vuote significa farsi misurare nel
@@ -138,7 +140,7 @@ Profili marcati «Esclusa per tag noindex» sono la difesa che funziona.
 
 ---
 
-## 7. Rifinire l'esplosione del marchio
+## 6. Rifinire l'esplosione del marchio
 
 Non è una priorità: l'effetto funziona, va reso quello che era stato pensato.
 
@@ -151,7 +153,7 @@ Le forme delle macchie restano come sono.
 
 ---
 
-## 8. Google OAuth
+## 7. Google OAuth
 
 `googleOAuth: false` in produzione. Riduce l'attrito alla registrazione, che su
 una piattaforma a due lati conta. Il codice c'è: mancano le credenziali.
