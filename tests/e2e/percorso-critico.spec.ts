@@ -154,18 +154,40 @@ test.describe("la registrazione finisce da qualche parte", () => {
     //  · senza verifica → si entra davvero.
     // Quello che NON deve succedere è restare sulla pagina di registrazione o
     // essere sbattuti sul login.
-    await expect
-      .poll(async () => {
+    // ── Come questa attesa era scritta male ──
+    //
+    // Diceva `.not.toBe("rimbalzato-al-login")`, quindi passava anche quando
+    // l'esito era «fermo»: cioè quando la registrazione *non era finita da
+    // nessuna parte*, che è precisamente il difetto che questo test esiste per
+    // cogliere. Subito dopo, l'esito veniva dedotto con un ternario che
+    // considerava «verifica» tutto ciò che non era la dashboard — e il test
+    // falliva cercando un indirizzo email su una pagina di registrazione
+    // ancora aperta, dando la colpa alla schermata sbagliata.
+    //
+    // Ora si aspetta un esito **valido**, non l'assenza di quello cattivo. La
+    // differenza si vede quando qualcosa va storto: prima il messaggio parlava
+    // di un testo mancante, adesso dice che la registrazione non è arrivata da
+    // nessuna parte.
+    const esito = await new Promise<string>((risolvi) => {
+      const scadenza = Date.now() + 20_000;
+      const guarda = async () => {
         const url = page.url();
-        if (/\/dashboard/.test(url)) return "dentro";
+        if (/\/dashboard/.test(url)) return risolvi("dentro");
         if (await page.getByText(/conferma l'email|controlla/i).first().isVisible().catch(() => false))
-          return "verifica";
-        if (/\/accedi/.test(url)) return "rimbalzato-al-login";
-        return "fermo";
-      }, { timeout: 20_000 })
-      .not.toBe("rimbalzato-al-login");
+          return risolvi("verifica");
+        if (/\/accedi/.test(url)) return risolvi("rimbalzato-al-login");
+        if (Date.now() > scadenza) return risolvi("fermo");
+        setTimeout(guarda, 250);
+      };
+      void guarda();
+    });
 
-    const esito = /\/dashboard/.test(page.url()) ? "dentro" : "verifica";
+    expect(
+      esito,
+      esito === "fermo"
+        ? "la registrazione non è finita da nessuna parte: né dashboard né schermata di verifica"
+        : "chi si è appena iscritto è stato rimandato al modulo di accesso"
+    ).toMatch(/^(dentro|verifica)$/);
 
     if (esito === "verifica") {
       // L'indirizzo va ripetuto: chi non lo vede scritto non sa dove guardare,
@@ -242,9 +264,19 @@ test.describe("il sito è navigabile dal telefono", () => {
 });
 
 test.describe("area personale e sito pubblico sono due posti diversi", () => {
-  test("la barra superiore c'è sul sito pubblico", async ({ page }) => {
+  test("la barra superiore c'è sul sito pubblico", async ({ page, viewport }) => {
     await page.goto("/");
-    await expect(page.getByRole("navigation", { name: /navigazione principale/i })).toBeVisible();
+
+    // La stessa navigazione ha due forme: la fila orizzontale da 768px in su,
+    // il pulsante del menu sotto. Verificare solo la prima significava
+    // pretendere il layout da computer su un telefono, e fallire su tre
+    // profili su quattro per un comportamento voluto.
+    const barra =
+      (viewport?.width ?? 1280) >= 768
+        ? page.getByRole("navigation", { name: /navigazione principale/i })
+        : page.getByRole("button", { name: /apri il menu/i });
+
+    await expect(barra).toBeVisible();
   });
 
   test("dentro la dashboard non c'è", async ({ page }) => {

@@ -40,7 +40,12 @@ test.describe("accesso e registrazione", () => {
     await page.getByLabel("Email").fill("sicuramente-inesistente@example.com");
     await page.getByRole("button", { name: /invia il link/i }).click();
 
-    await expect(page.getByRole("status")).toContainText(/se esiste un account/i);
+    // `.first()` e non `getByRole("status")` da solo: le notifiche temporanee
+    // montano un'altra live region in fondo alla pagina. Il ruolo è stato
+    // tolto da quel contenitore (vedi `Toast.tsx`), ma la precisazione resta
+    // perché questo test cerca *il messaggio del modulo*, non «una qualunque
+    // regione di stato della pagina».
+    await expect(page.getByRole("status").first()).toContainText(/se esiste un account/i);
   });
 
   test("un token di verifica non valido non manda in errore la pagina", async ({ page }) => {

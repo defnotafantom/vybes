@@ -101,6 +101,13 @@ export default defineConfig({
         // prima.
         command: "npm run build:e2e && npm run start -- -p 3100",
         url: BASE_URL,
+        // Senza questa riga la sitemap dichiarerebbe gli URL del `.env` di
+        // sviluppo (porta 3000) mentre i test interrogano la 3100: il
+        // controllo «gli indirizzi in sitemap sono quelli del sito» fallirebbe
+        // per una discrepanza di configurazione e non per un difetto. È lo
+        // stesso vincolo che in produzione impedisce alla sitemap di
+        // dichiarare il dominio effimero del deployment.
+        env: { NEXT_PUBLIC_SITE_URL: BASE_URL },
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,
       },

@@ -7,6 +7,8 @@ import { PageHero } from "@/components/PageHero";
 import { JsonLd } from "@/components/JsonLd";
 import { itemListJsonLd } from "@/lib/jsonld";
 import { PROFILO_PUBBLICO } from "@/lib/visibilita";
+import { Suspense } from "react";
+import { SkeletonCitta } from "@/components/SkeletonCitta";
 
 export const revalidate = 86400;
 
@@ -18,7 +20,16 @@ export const metadata: Metadata = buildMetadata({
   keywords: ["artisti per città", "ingaggi locali", "musicisti nella mia città"],
 });
 
-export default async function CittaIndexPage() {
+/** Il confine di Suspense sta qui e non in un `loading.tsx`: vedi ADR-028. */
+export default function CittaIndexPage() {
+  return (
+    <Suspense fallback={<SkeletonCitta />}>
+      <Elenco />
+    </Suspense>
+  );
+}
+
+async function Elenco() {
   const cities = await prisma.city.findMany({ orderBy: { population: "desc" } });
 
   // Conteggi in due query aggregate invece di N+1 sulle città.

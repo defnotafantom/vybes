@@ -10,8 +10,26 @@ const ToastContext = createContext<{
 } | null>(null);
 
 /**
- * Notifiche temporanee. Il contenitore è una live region con `role="status"`:
- * chi usa uno screen reader sente il messaggio senza che il focus si sposti.
+ * Notifiche temporanee.
+ *
+ * ── Perché il contenitore non ha più `role="status"` ──
+ *
+ * Ce l'aveva, ed era un `role="status"` **sempre presente e quasi sempre
+ * vuoto**, in fondo a ogni pagina del sito. Due conseguenze.
+ *
+ * Per chi naviga a voce: una regione live vuota è rumore: compare
+ * nell'elenco delle regioni, si può raggiungere, e non contiene niente.
+ *
+ * Per chi cerca un messaggio di stato — un test automatico, ma anche uno
+ * screen reader che salta di regione in regione — la pagina ne dichiara due
+ * con lo stesso ruolo: quello vero e questo. La suite lo ha scoperto così,
+ * con uno «strict mode violation» su una pagina in cui il messaggio giusto
+ * c'era e veniva mostrato correttamente.
+ *
+ * Ora `aria-live` resta sul contenitore — deve esistere *prima* del
+ * messaggio, altrimenti l'inserimento non viene annunciato — mentre il ruolo
+ * sta su ogni singola notifica, che è la cosa che ha davvero uno stato da
+ * comunicare.
  */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -28,13 +46,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={value}>
       {children}
       <div
-        role="status"
         aria-live="polite"
         className="pointer-events-none fixed bottom-4 right-4 z-50 flex w-full max-w-sm flex-col gap-2"
       >
         {toasts.map((t) => (
           <div
             key={t.id}
+            role="status"
             className={`pointer-events-auto flex animate-slide-in-right items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-float ${
               t.kind === "success"
                 ? "border-green-300 bg-green-50 text-green-900 dark:border-green-900 dark:bg-green-950 dark:text-green-100"

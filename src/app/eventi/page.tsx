@@ -10,6 +10,8 @@ import { Pagination } from "@/components/Pagination";
 import { EmptyState } from "@/components/EmptyState";
 import { JsonLd } from "@/components/JsonLd";
 import { itemListJsonLd } from "@/lib/jsonld";
+import { Suspense } from "react";
+import { SkeletonEventi } from "@/components/SkeletonEventi";
 
 export const revalidate = 300;
 const PER_PAGE = 18;
@@ -42,8 +44,21 @@ export async function generateMetadata({
   });
 }
 
+/** Il confine di Suspense sta qui e non in un `loading.tsx`: vedi ADR-028. */
 export default async function EventiPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
+
+  return (
+    <Suspense
+      key={`${sp.categoria ?? ""}-${sp.citta ?? ""}-${sp.page ?? "1"}`}
+      fallback={<SkeletonEventi />}
+    >
+      <Elenco sp={sp} />
+    </Suspense>
+  );
+}
+
+async function Elenco({ sp }: { sp: Search }) {
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const cat = categoryFromSlug(sp.categoria);
 
