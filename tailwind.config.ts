@@ -24,6 +24,24 @@ export default {
         // si legge senza doverlo spiegare.
         gold: { 300: "#fcd34d", 400: "#fbbf24", 500: "#f59e0b", 600: "#d97706" },
 
+        // Esiti: verde per un sì, ambra per un'attesa. Sono tinte separate da
+        // `gold` proprio per non intaccarne la regola — l'oro significa
+        // compenso e basta, e riusarlo per «in attesa» costerebbe quella
+        // chiarezza in cambio di due valori esadecimali risparmiati.
+        //
+        // Manca volutamente un rosso. Un «no» a una candidatura non è un
+        // errore né un pericolo: colorarlo di rosso in un elenco che si
+        // guarda ogni giorno lo farebbe sembrare più grave di quanto sia.
+        // I rifiuti restano neutri e spenti, che è come vanno letti.
+        // I valori stanno in globals.css perché cambiano con il tema, come
+        // tutte le altre superfici: qui ci sono solo i nomi.
+        esito: {
+          ok: "rgb(var(--esito-ok-testo) / <alpha-value>)",
+          "ok-tinta": "rgb(var(--esito-ok-tinta) / <alpha-value>)",
+          attesa: "rgb(var(--esito-attesa-testo) / <alpha-value>)",
+          "attesa-tinta": "rgb(var(--esito-attesa-tinta) / <alpha-value>)",
+        },
+
         surface: "rgb(var(--surface) / <alpha-value>)",
         "surface-raised": "rgb(var(--surface-raised) / <alpha-value>)",
         "surface-sunken": "rgb(var(--surface-sunken) / <alpha-value>)",

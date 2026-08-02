@@ -26,6 +26,16 @@
   --border: 228 228 236;
   --border-strong: 208 208 220;
 
+  /* Esiti. Due valori per tinta: `-testo` è quello che regge il criterio AA
+     sopra la pillola tinta al 10%, `-tinta` è la tinta stessa. Un colore solo
+     non basta, perché il verde leggibile su bianco è troppo scuro per essere
+     un fondo e quello giusto come fondo è illeggibile come testo.
+     Rapporti misurati sul caso peggiore (--surface-sunken): 6.20:1 e 5.77:1. */
+  --esito-ok-testo: 6 95 70;
+  --esito-ok-tinta: 4 120 87;
+  --esito-attesa-testo: 146 64 14;
+  --esito-attesa-tinta: 180 83 9;
+
   --ring: 139 92 246;
 
   --dur-fast: 120ms;
@@ -57,6 +67,13 @@
 
   --border: 39 36 52;
   --border-strong: 56 52 74;
+
+  /* Sul tema scuro il rapporto si inverte: il testo è la tinta chiara e la
+     pillola resta la stessa tinta al 10%. 7.47:1 e 8.42:1 su --surface-raised. */
+  --esito-ok-testo: 52 211 153;
+  --esito-ok-tinta: 52 211 153;
+  --esito-attesa-testo: 251 191 36;
+  --esito-attesa-tinta: 251 191 36;
 
   --ring: 167 139 250;
 

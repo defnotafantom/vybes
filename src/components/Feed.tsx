@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { VerifiedBadge } from "@/components/ui/Badge";
 import { RichText } from "@/components/RichText";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { quandoRelativo } from "@/lib/date";
 
 type Post = {
   id: string;
@@ -104,7 +105,7 @@ export function Feed() {
               </span>
               <p className="text-xs muted">
                 Lv. {post.author.level} ·{" "}
-                <time dateTime={post.createdAt}>{new Date(post.createdAt).toLocaleString("it-IT")}</time>
+                <time dateTime={post.createdAt}>{quandoRelativo(post.createdAt)}</time>
               </p>
             </div>
           </header>

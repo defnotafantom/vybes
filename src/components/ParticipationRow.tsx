@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { PARTICIPATION_STATUS } from "@/lib/constants";
 import { Avatar } from "@/components/ui/Avatar";
-import { Badge } from "@/components/ui/Badge";
+import { StatoCandidatura } from "@/components/ui/StatoCandidatura";
 import { MessageSquare } from "lucide-react";
 import { reputazioneMassima } from "@/lib/reputazione";
+import { dataBreve } from "@/lib/date";
 
 type Participation = {
   id: string;
@@ -59,25 +59,40 @@ export function ParticipationRow({
         <div className="flex min-w-0 gap-3">
           <Avatar name={participation.user.name} size="sm" />
           <div className="min-w-0">
-          <Link href={`/artisti/${participation.user.slug}`} className="font-medium hover:text-brand-600">
-            {participation.user.name}
-          </Link>
-          <p className="text-sm muted">
-            {[participation.user.headline, participation.user.city].filter(Boolean).join(" · ")}
-          </p>
-          <p className="text-xs muted">
-            {/* Il livello era la prima cosa che un organizzatore leggeva di
-                un candidato, e misura quanto quella persona usa il sito.
-                Resta la reputazione, con la sua scala: da sola non basta per
-                scegliere, ma almeno è una risposta alla domanda giusta. */}
-            Reputazione {participation.user.reputation}/{reputazioneMassima()} · candidatura del{" "}
-            {new Date(participation.createdAt).toLocaleDateString("it-IT")}
-          </p>
-          {participation.message && (
-            <blockquote className="mt-3 border-l-2 pl-3 text-sm muted">
-              {participation.message}
-            </blockquote>
-          )}
+            <Link
+              href={`/artisti/${participation.user.slug}`}
+              className="text-fluid-sm font-semibold transition-colors hover:text-brand-400"
+            >
+              {participation.user.name}
+            </Link>
+
+            {(participation.user.headline || participation.user.city) && (
+              <p className="mt-0.5 truncate text-fluid-sm text-ink-muted">
+                {[participation.user.headline, participation.user.city].filter(Boolean).join(" · ")}
+              </p>
+            )}
+
+            <p className="mt-1.5 flex flex-wrap items-center gap-x-2 text-fluid-xs text-ink-faint">
+              {/* Il livello era la prima cosa che un organizzatore leggeva di
+                  un candidato, e misura quanto quella persona usa il sito.
+                  Resta la reputazione, con la sua scala: da sola non basta per
+                  scegliere, ma almeno è una risposta alla domanda giusta. */}
+              <span className="tabular-nums">
+                Reputazione {participation.user.reputation}/{reputazioneMassima()}
+              </span>
+              <span aria-hidden="true">·</span>
+              <span>candidatura del {dataBreve(participation.createdAt)}</span>
+            </p>
+
+            {/* Il messaggio è l'unica cosa che il candidato ha scritto di suo
+                pugno, ed era reso come nota a margine sotto due righe di
+                metadati. È la parte su cui si decide: va letta come una voce,
+                non come un attributo. */}
+            {participation.message && (
+              <blockquote className="mt-3 border-l-2 border-brand-500/40 pl-3 text-fluid-sm text-ink">
+                {participation.message}
+              </blockquote>
+            )}
           </div>
         </div>
 
@@ -92,9 +107,7 @@ export function ParticipationRow({
           </div>
         ) : (
           <div className="flex shrink-0 flex-col items-end gap-2">
-            <Badge tone={status === "ACCEPTED" ? "green" : status === "REJECTED" ? "red" : "amber"}>
-              {PARTICIPATION_STATUS[status as keyof typeof PARTICIPATION_STATUS] ?? status}
-            </Badge>
+            <StatoCandidatura stato={status} />
 
             {/* Accettare qualcuno e poi non avere un modo di scrivergli è il
                 punto in cui il prodotto si fermava. Da qui in avanti la

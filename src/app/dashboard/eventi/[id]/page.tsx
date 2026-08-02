@@ -7,6 +7,7 @@ import { DeleteEventButton } from "@/components/DeleteEventButton";
 import { PaginaHeader } from "@/components/dashboard/PaginaHeader";
 import { ExternalLink } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
+import { dataOra } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
         ritornoA="/dashboard/eventi"
         ritornoLabel="Tutti i tuoi ingaggi"
         titolo={event.title}
-        sottotitolo={`${event.city} · ${event.startsAt.toLocaleString("it-IT")} · ${
+        sottotitolo={`${event.city} · ${dataOra(event.startsAt)} · ${
           event.isPaid ? `${event.feeMin ?? 0} ${event.currency}` : "Non retribuito"
         }`}
         azioni={

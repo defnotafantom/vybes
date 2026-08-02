@@ -885,6 +885,63 @@ e le voci attuali restano valide come base.
 
 ---
 
+## ADR-026 · Colori che significano, e date che si leggono
+
+**Contesto.** Due dettagli piccoli che nell'uso quotidiano pesano più di
+qualunque schermata nuova.
+
+**Lo stato di una candidatura era sempre della stessa pillola viola.** «In
+attesa», «Confermata» e «Rifiutata» avevano lo stesso identico aspetto in un
+elenco dove lo stato è l'unica informazione che conta: bisognava leggere ogni
+riga per sapere com'era andata. Un elenco così non si scorre, si spoglia.
+
+**Le date erano sette `toLocaleDateString("it-IT")` sparsi**, che producono
+«2/8/2026»: corretto e illeggibile. Una data numerica va decodificata; «2 ago»
+si legge.
+
+**Decisione — i colori.** Due tinte semantiche nuove, `esito.ok` ed
+`esito.attesa`, con quattro scelte dietro:
+
+*Non riusare `gold`.* L'oro nel progetto significa **compenso**, e vale
+proprio perché significa una cosa sola. Usarlo anche per «in attesa»
+risparmierebbe due valori esadecimali al prezzo di quella regola.
+
+*Nessun rosso.* Un «no» a una candidatura non è un errore né un pericolo. In
+un elenco che si guarda ogni giorno, il rosso lo farebbe sembrare più grave di
+quanto sia. I rifiuti restano neutri e spenti, che è come vanno letti.
+
+*I valori stanno in `globals.css`, non nel config di Tailwind*, perché
+cambiano con il tema come tutte le altre superfici. Servono due variabili per
+tinta — `-testo` e `-tinta` — perché il verde leggibile su bianco è troppo
+scuro per essere un fondo, e quello giusto come fondo è illeggibile come
+testo. I rapporti sono stati misurati **sopra la pillola tinta al 10%**, non
+sul fondo nudo: 6.20:1 e 5.77:1 nel caso peggiore, contro i 4.43:1 e 4.09:1
+che davano i verdi e gli ambra scelti a occhio. È lo stesso errore già
+corretto su `--faint`: un colore che passa il criterio AA sul fondo può
+fallirlo dentro il componente in cui verrà davvero usato.
+
+*Il colore non è mai l'unico segnale.* Ogni pillola porta un punto colorato
+**e** il testo dello stato. Lo stesso vale per i messaggi non letti, dove il
+grassetto, il pallino e un `aria-label` dicono la stessa cosa in tre modi.
+
+**Decisione — le date.** Un modulo `src/lib/date.ts`, puro, con tre funzioni:
+`dataBreve` («2 ago», e l'anno solo quando non è quello corrente, perché
+ripeterlo su ogni riga è rumore), `dataOra` per le schede dove l'orario serve,
+`quandoRelativo` («ieri», «3 giorni fa») per le cose recenti — un messaggio
+ricevuto ieri si capisce meglio come «ieri» che come «1 ago», ma oltre la
+settimana la data torna a essere più utile della distanza.
+
+**Conseguenze.** `quandoRelativo` dipende da `Date.now()`, quindi in un
+componente client può in teoria divergere fra server e browser: solo a cavallo
+della mezzanotte, e per una parola. Il fuso non è fissato, quindi il server
+rende in UTC e il client nel proprio: irrilevante oggi perché quelle pagine
+sono dinamiche o rigenerate ogni ora, ma se comparisse una data sbagliata di
+un giorno, si risolve fissando `timeZone: "Europe/Rome"` in un posto solo. È
+esattamente il motivo per cui le date sono passate da sette chiamate sparse a
+un modulo.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

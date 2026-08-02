@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { haversineKm } from "@/lib/cities";
+import { dataBreve } from "@/lib/date";
 
 // Leaflet tocca window: caricato solo lato client, fuori dal bundle iniziale.
 const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
@@ -201,7 +202,7 @@ export function MapExplorer({
                 {p.title}
               </Link>
               <p className="text-sm muted">
-                {p.city} · {new Date(p.startsAt).toLocaleDateString("it-IT")} · {p.fee}
+                {p.city} · {dataBreve(p.startsAt)} · {p.fee}
               </p>
             </li>
           ))}

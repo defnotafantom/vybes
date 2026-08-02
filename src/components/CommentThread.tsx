@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition } from "react";
 import { MessageCircle } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { RichText } from "@/components/RichText";
+import { quandoRelativo } from "@/lib/date";
 
 type Comment = {
   id: string;
@@ -91,7 +92,7 @@ export function CommentThread({
                     {c.author.name}
                   </Link>{" "}
                   <time dateTime={c.createdAt} className="text-xs muted">
-                    {new Date(c.createdAt).toLocaleDateString("it-IT")}
+                    {quandoRelativo(c.createdAt)}
                   </time>
                 </p>
                 <p className="whitespace-pre-line text-sm">

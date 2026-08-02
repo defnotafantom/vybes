@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SearchForm } from "@/components/SearchForm";
 import { fromCsv } from "@/lib/slug";
 import { PROFILO_PUBBLICO } from "@/lib/visibilita";
+import { dataBreve } from "@/lib/date";
 
 // La pagina risultati non va indicizzata: contenuto duplicato e infinito.
 export const metadata: Metadata = buildMetadata({
@@ -109,7 +110,7 @@ export default async function SearchPage({
             {events.map((e) => (
               <li key={e.slug} className="card p-4">
                 <Link href={`/eventi/${e.slug}`} className="font-medium hover:text-brand-600">{e.title}</Link>
-                <p className="text-sm muted">{e.city} · {e.startsAt.toLocaleDateString("it-IT")}</p>
+                <p className="text-sm muted">{e.city} · {dataBreve(e.startsAt)}</p>
               </li>
             ))}
           </ul>

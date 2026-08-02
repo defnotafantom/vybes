@@ -3,9 +3,10 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PARTICIPATION_STATUS } from "@/lib/constants";
 import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { StatoCandidatura } from "@/components/ui/StatoCandidatura";
+import { dataBreve } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,14 @@ export default async function DashboardEventiPage() {
 
       <section>
         <h2 className="text-fluid-lg font-bold">Ingaggi che organizzi</h2>
+        {daDecidere > 0 && (
+          <p className="mt-1 text-fluid-sm text-ink-muted">
+            {daDecidere === 1
+              ? "Una persona aspetta una risposta."
+              : `${daDecidere} persone aspettano una risposta.`}{" "}
+            Ogni giorno che passa aspettano senza sapere.
+          </p>
+        )}
 
         {organized.length === 0 ? (
           <div className="mt-5">
@@ -74,17 +83,39 @@ export default async function DashboardEventiPage() {
         ) : (
           <ul className="mt-6 space-y-3">
             {organized.map((e) => (
-              <li key={e.id} className="card flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <Link href={`/eventi/${e.slug}`} className="font-medium hover:text-brand-600">{e.title}</Link>
-                  <p className="text-sm muted">
-                    {e.city} · {e.startsAt.toLocaleDateString("it-IT")} · {e._count.participations} candidature
+              <li
+                key={e.id}
+                // Le righe con qualcuno in attesa si distinguono dal bordo: in
+                // un elenco lungo il conteggio dentro il pulsante si perdeva,
+                // ed è l'unica cosa in pagina che chiede un'azione.
+                className={`card flex flex-wrap items-center justify-between gap-4 ${
+                  e.participations.length > 0 ? "border-esito-attesa-tinta/40" : ""
+                }`}
+              >
+                <div className="min-w-0">
+                  <Link
+                    href={`/eventi/${e.slug}`}
+                    className="text-fluid-sm font-semibold transition-colors hover:text-brand-400"
+                  >
+                    {e.title}
+                  </Link>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-2 text-fluid-xs text-ink-muted">
+                    <span>{e.city}</span>
+                    <span aria-hidden="true" className="text-ink-faint">·</span>
+                    <span>{dataBreve(e.startsAt)}</span>
+                    <span aria-hidden="true" className="text-ink-faint">·</span>
+                    {/* «0 candidature» dice qualcosa che «candidature: 0» non
+                        dice: che l'annuncio è vivo e nessuno ha risposto. */}
+                    <span>
+                      {e._count.participations}{" "}
+                      {e._count.participations === 1 ? "candidatura" : "candidature"}
+                    </span>
                   </p>
                 </div>
-                <Link href={`/dashboard/eventi/${e.id}`} className="btn-ghost">
+                <Link href={`/dashboard/eventi/${e.id}`} className="btn-ghost shrink-0">
                   Gestisci
                   {e.participations.length > 0 && (
-                    <span className="ml-1 rounded-full bg-brand-600 px-2 text-xs text-white">
+                    <span className="ml-1.5 rounded-full bg-esito-attesa-tinta/15 px-2 py-0.5 text-fluid-xs font-bold tabular-nums text-esito-attesa">
                       {e.participations.length}
                     </span>
                   )}
@@ -141,17 +172,18 @@ function EventRecap({ title, rows, vuoto }: { title: string; rows: Row[]; vuoto?
         <ul className="mt-4 space-y-2">
           {rows.map((p) => (
             <li key={p.id} className="card flex flex-wrap items-center justify-between gap-3 py-4">
-              <div>
-                <Link href={`/eventi/${p.event.slug}`} className="font-medium hover:text-brand-600">
+              <div className="min-w-0">
+                <Link
+                  href={`/eventi/${p.event.slug}`}
+                  className="text-fluid-sm font-semibold transition-colors hover:text-brand-400"
+                >
                   {p.event.title}
                 </Link>
-                <p className="text-sm muted">
-                  {p.event.city} · {p.event.startsAt.toLocaleDateString("it-IT")}
+                <p className="mt-1 text-fluid-xs text-ink-muted">
+                  {p.event.city} · {dataBreve(p.event.startsAt)}
                 </p>
               </div>
-              <span className="rounded bg-brand-50 px-2 py-1 text-xs font-medium text-brand-700 dark:bg-white/5 dark:text-brand-300">
-                {PARTICIPATION_STATUS[p.status as keyof typeof PARTICIPATION_STATUS] ?? p.status}
-              </span>
+              <StatoCandidatura stato={p.status} />
             </li>
           ))}
         </ul>

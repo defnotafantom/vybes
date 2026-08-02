@@ -8,6 +8,7 @@ import { EventCard } from "@/components/EventCard";
 import { EmptyState } from "@/components/EmptyState";
 import { JsonLd } from "@/components/JsonLd";
 import { itemListJsonLd } from "@/lib/jsonld";
+import { dataBreve } from "@/lib/date";
 
 export const revalidate = 900;
 
@@ -107,7 +108,7 @@ export default async function CityEventsPage({ params }: { params: Promise<{ cit
             {past.map((e) => (
               <li key={e.slug}>
                 <Link href={`/eventi/${e.slug}`} className="muted hover:text-brand-600">
-                  {e.title} — {e.startsAt.toLocaleDateString("it-IT")}
+                  {e.title} — {dataBreve(e.startsAt)}
                 </Link>
               </li>
             ))}
