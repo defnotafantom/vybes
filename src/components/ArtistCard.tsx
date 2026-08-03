@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { VerifiedBadge } from "@/components/ui/Badge";
+import { disciplineBySlug } from "@/lib/constants";
 
 export type ArtistCardData = {
   slug: string;
@@ -49,9 +50,20 @@ export function ArtistCard({
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2 text-fluid-xs">
+            {/* L'etichetta, non lo slug.
+                Qui compariva `cantanti`, `dj`, `videomaker`: le chiavi con cui
+                il database indicizza le discipline, minuscole e al plurale.
+                Dieci centimetri più in su, nella stessa pagina, i filtri
+                mostrano «Cantanti» e «DJ» perché passano da `DISCIPLINES` —
+                quindi il difetto non si notava confrontando, si notava solo
+                leggendo una scheda.
+
+                E non è una maiuscola: «cantanti» è una categoria, «Cantante»
+                è quello che quella persona fa. Sulla scheda di qualcuno serve
+                il secondo. */}
             {artist.disciplines.slice(0, 2).map((d) => (
               <span key={d} className="chip">
-                {d}
+                {disciplineBySlug(d)?.label ?? d}
               </span>
             ))}
             {artist.city && (

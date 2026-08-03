@@ -131,7 +131,14 @@ da chiedere, la formula di consenso e il formato del file. Poi
 npm run demo:popola                       # mostra e non scrive
 npm run demo:popola -- --conferma
 npm run demo:popola -- --rimuovi --conferma
+
+npm run dev:demo                          # il server di sviluppo su QUEL database
 ```
+
+`dev:demo` e non `dev`: lo script scrive su `DEMO_DATABASE_URL` — perché non
+deve toccare la produzione — mentre `npm run dev` legge `DATABASE_URL`. Senza,
+si popola un database e se ne guarda un altro: la pagina degli artisti ne
+mostra sette e sembra che l'importazione non sia riuscita.
 
 Trenta artisti, quattordici ingaggi, candidature in tutti gli stati.
 Deliberatamente **disuguali**: chi scrive trecento parole e chi tre, metà

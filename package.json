@@ -13,6 +13,7 @@
     "db:studio": "prisma studio",
     "db:verifica": "node scripts/verifica-connessioni.mjs",
     "dev": "next dev",
+    "dev:demo": "node scripts/dev-demo.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "next lint",
