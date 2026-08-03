@@ -124,7 +124,13 @@ for (const q of QUESTS) {
       create: {
         userId: chiara.id, slug: "verso-nord-chiara-bellandi", title: "Verso Nord",
         description: "Singolo autoprodotto, registrato in presa diretta in un capannone di Sesto San Giovanni.",
-        mediaUrl: "/uploads/demo/verso-nord.jpg", mediaType: "image", year: 2025, position: 0,
+        // `mediaType: "image"` con un percorso locale che non esiste dava, su
+        // ogni caricamento della pagina, il rettangolo rotto del browser più
+        // `⨯ The requested resource isn't a valid image` nei log del server.
+        // Un'immagine di esempio non ce l'abbiamo e non ha senso inventarla:
+        // dichiararlo `audio` è la verità — un singolo autoprodotto — e la
+        // griglia mostra il segnaposto per tipo (ADR-040) invece di un errore.
+        mediaUrl: "https://example.invalid/demo/verso-nord", mediaType: "audio", year: 2025, position: 0,
       },
       update: {},
     });

@@ -169,7 +169,13 @@ test.describe("la registrazione finisce da qualche parte", () => {
     // di un testo mancante, adesso dice che la registrazione non è arrivata da
     // nessuna parte.
     const esito = await new Promise<string>((risolvi) => {
-      const scadenza = Date.now() + 20_000;
+      // Quarantacinque secondi e non venti: sotto WebKit, con la suite in
+      // parallelo, la registrazione superava il limite e l'esito usciva
+      // «fermo» — cioè il test accusava il difetto che esiste per cogliere,
+      // ma per lentezza. Un rosso che non corrisponde a niente è peggio di
+      // nessun test: insegna a ignorare il rosso. Qui si verifica *dove si
+      // finisce*, non in quanto tempo.
+      const scadenza = Date.now() + 45_000;
       const guarda = async () => {
         const url = page.url();
         if (/\/dashboard/.test(url)) return risolvi("dentro");

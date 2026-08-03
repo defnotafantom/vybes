@@ -87,6 +87,27 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
+  /**
+   * Meno lavoratori del numero di core, e non è pigrizia.
+   *
+   * Con il valore predefinito — metà dei core, sei su questa macchina — i
+   * processi WebKit morivano prima ancora di aprire una pagina:
+   *
+   *     browserType.launch: Target page, context or browser has been closed
+   *     [pid=26032] <process did exit: exitCode=3236495362, signal=null>
+   *
+   * `3236495362` è `0xC0000142`, cioè «inizializzazione della DLL fallita»:
+   * su Windows è il sintomo classico dell'esaurimento della desktop heap,
+   * non di un difetto del sito. Tre browser diversi moltiplicati per sei
+   * processi contemporanei bastano ad arrivarci.
+   *
+   * Il costo di scendere è di qualche decina di secondi su una suite che ne
+   * impiega poco più di tre minuti. Il costo di restare è peggiore di così:
+   * fallimenti che sembrano regressioni, in test diversi a ogni giro, che
+   * fanno perdere tempo a cercare difetti che non esistono e insegnano a non
+   * fidarsi del rosso.
+   */
+  workers: process.env.CI ? 2 : 3,
   reporter: process.env.CI ? "github" : "list",
   use: { baseURL: BASE_URL, trace: "on-first-retry", locale: "it-IT" },
   projects: [

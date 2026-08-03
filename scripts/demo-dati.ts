@@ -46,7 +46,7 @@ import { join } from "node:path";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import sharp from "sharp";
-import { toSlug, toCsv } from "../src/lib/slug";
+import { toSlug, toCsv, uniqueSlug } from "../src/lib/slug";
 
 // ── La guardia ───────────────────────────────────────────────────────────
 
@@ -383,9 +383,31 @@ async function popola() {
   const creati: { id: string; nome: string }[] = [];
 
   for (const a of ARTISTI) {
-    const slug = toSlug(a.nome);
     const c = citta.get(a.citta)!;
-    const email = `${slug}${DOMINIO}`;
+    const email = `${toSlug(a.nome)}${DOMINIO}`;
+
+    /*
+     * Lo slug deve essere libero, non semplicemente derivato dal nome.
+     *
+     * La prima versione faceva `toSlug(nome)` e basta, e moriva su
+     * `Unique constraint failed on the fields: (slug)`: `npm run db:seed`
+     * crea già alcuni di questi artisti — Chiara Bellandi, Marco Ferretti —
+     * con indirizzi diversi ma lo stesso slug. L'`upsert` guardava l'email,
+     * trovava che non c'era, provava a inserire, e sbatteva contro il nome
+     * pubblico già occupato.
+     *
+     * `uniqueSlug` esisteva già in `src/lib/slug.ts` ed è quello che usa la
+     * registrazione: il secondo «Marco Rossi» diventa `marco-rossi-2`.
+     * L'eccezione sull'email serve al rilancio — chi ha già il proprio slug
+     * se lo tiene, altrimenti ogni esecuzione sposterebbe gli indirizzi.
+     */
+    const slug = await uniqueSlug(a.nome, async (candidato) => {
+      const occupato = await prisma.user.findUnique({
+        where: { slug: candidato },
+        select: { email: true },
+      });
+      return Boolean(occupato) && occupato!.email !== email;
+    });
 
     let image: string | null = null;
     if (a.foto) {

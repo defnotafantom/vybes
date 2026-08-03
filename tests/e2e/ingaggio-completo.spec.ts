@@ -111,9 +111,28 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
 
     await org.page.getByRole("button", { name: /pubblica ingaggio/i }).click();
 
-    // Si finisce sulla pagina pubblica dell'ingaggio: è la conferma che è
-    // stato creato **e** che è raggiungibile, che sono due cose diverse.
-    await org.page.waitForURL(/\/eventi\/[^/]+$/, { timeout: 30_000 });
+    /*
+     * Si finisce sulla pagina pubblica dell'ingaggio: è la conferma che è
+     * stato creato **e** che è raggiungibile, che sono due cose diverse.
+     *
+     * ── Com'era scritta male, la prima volta ──
+     *
+     * `waitForURL(/\/eventi\/[^/]+$/)`. Sembra ragionevole e non lo è: il
+     * modulo di pubblicazione **sta** su `/dashboard/eventi/nuovo`, che
+     * quell'espressione soddisfa già. L'attesa tornava subito, `urlIngaggio`
+     * restava l'indirizzo del modulo, e l'artista due passi dopo apriva la
+     * pagina di creazione invece dell'annuncio — fallendo con «heading non
+     * trovato», cioè dando la colpa al posto sbagliato.
+     *
+     * È lo stesso errore già registrato in `percorso-critico.spec.ts`:
+     * verificare la forma di un indirizzo invece di *dove si è finiti*. Qui
+     * si esclude esplicitamente l'area personale, che è l'unica cosa che
+     * distingue le due pagine.
+     */
+    await org.page.waitForURL(
+      (u) => /^\/eventi\/[^/]+$/.test(new URL(u).pathname),
+      { timeout: 30_000 }
+    );
     const urlIngaggio = org.page.url();
     await expect(org.page.getByRole("heading", { name: titolo })).toBeVisible();
 
