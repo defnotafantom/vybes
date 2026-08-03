@@ -165,11 +165,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true;
     },
 
+    /**
+     * ── Perché lo slug non entra nel token ──
+     *
+     * Ci entrava, e da lì lo leggevano il collegamento «Profilo pubblico» e i
+     * `revalidatePath` di tre route API. Un token è però una fotografia:
+     * scritto all'accesso, immutato fino alla scadenza. Cambiando lo slug di
+     * un profilo — cosa che `npm run user:slug` fa — il collegamento puntava a
+     * un 404 e, peggio, si rigenerava la cache di una pagina che non esiste
+     * più mentre quella vera restava vecchia, senza nessun errore.
+     *
+     * Lasciarcelo e ricordarsi di non usarlo sarebbe la solita regola che
+     * niente applica. Tolto dal tipo, il compilatore rifiuta chi ci riprova:
+     * si legge da `slugDi()`.
+     *
+     * `id` resta perché non cambia mai per definizione; `role` resta come
+     * scorciatoia, ma dove una revoca deve avere effetto immediato viene
+     * comunque riletto dal database — vedi il layout della dashboard.
+     */
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
         token.role = user.role;
-        token.slug = user.slug;
       }
       return token;
     },
@@ -178,7 +195,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Il JWT ha un index signature permissivo: si restringe qui.
         session.user.id = (token.id as string | undefined) ?? "";
         session.user.role = (token.role as string | undefined) ?? "ARTIST";
-        session.user.slug = (token.slug as string | undefined) ?? "";
       }
       return session;
     },

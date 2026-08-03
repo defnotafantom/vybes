@@ -1448,6 +1448,42 @@ a cercarli — cioè mai, che è tutto il contrario del motivo per cui esistono.
 
 ---
 
+## ADR-038 · Un token è una fotografia, non uno specchio
+
+**Contesto.** Cambiato lo slug del profilo da `kkkk` a `daniele`, la nuova
+pagina rispondeva e la vecchia dava 404 — corretto. Ma il collegamento
+«Profilo pubblico» della dashboard continuava a puntare a `/artisti/kkkk`,
+perché lo leggeva da `session.user.slug`, cioè dal JWT: scritto all'accesso e
+immutato fino alla scadenza.
+
+**Il danno visibile era il meno grave.** Lo stesso valore alimentava i
+`revalidatePath` di tre route API. Caricando un lavoro nel portfolio si
+rigenerava la cache di `/artisti/kkkk` — una pagina che non esiste più —
+mentre `/artisti/daniele` continuava a servire la versione vecchia. Nessun
+errore, nessun log: l'artista carica il proprio lavoro, non lo vede comparire
+sul proprio profilo, e non ha modo di capire perché. È la stessa categoria di
+ADR-035: il sistema dice di sì e non fa niente.
+
+**Decisione.** Lo slug esce dal tipo `Session` e si legge da `slugDi(userId)`.
+
+**Perché toglierlo dal tipo e non limitarsi a correggere i cinque punti.**
+Perché «c'è ma non usarlo» è la regola scritta da qualche parte che niente
+applica — lo schema che su questo progetto ha prodotto quasi tutti i difetti
+(ADR-034, 036). Tolto dal tipo, il compilatore rifiuta chi ci riprova, e la
+verifica non dipende più da chi rilegge.
+
+**Cosa resta nel token, e perché.** `id`, che per definizione non cambia mai.
+`role`, come scorciatoia — ma dove una revoca deve avere effetto immediato
+viene già riletto dal database: il layout della dashboard lo faceva da prima,
+con un commento che diceva esattamente questo. La regola c'era, applicata a un
+campo su due.
+
+**La regola generale.** In un token può stare solo ciò che non cambia, o ciò
+il cui ritardo è accettabile e dichiarato. Tutto il resto è una copia che
+diverge — e diverge in silenzio, perché nessuna copia sa di essere vecchia.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

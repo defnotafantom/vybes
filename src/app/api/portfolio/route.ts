@@ -5,6 +5,7 @@ import { uniqueSlug } from "@/lib/slug";
 import { progressQuest, grantXp, syncProfileQuest } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
 import { ricalcolaReputazione } from "@/lib/reputazione-server";
+import { slugDi } from "@/lib/utente";
 
 export async function GET(req: Request) {
   return handle(async () => {
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
     await progressQuest(g.user!.id, "first_portfolio");
     await syncProfileQuest(g.user!.id);
 
-    revalidatePath(`/artisti/${g.user!.slug}`);
+    revalidatePath(`/artisti/${await slugDi(g.user!.id)}`);
     return ok(item, { status: 201 });
   });
 }

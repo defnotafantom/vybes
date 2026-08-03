@@ -4,6 +4,7 @@ import { guard, ok, fail, handle } from "@/lib/api";
 import { notify } from "@/lib/notifications";
 import { grantXp } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
+import { slugDi } from "@/lib/utente";
 
 /**
  * Stato della relazione. Serve al bottone sul profilo pubblico, che è una
@@ -61,7 +62,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
       actorId: g.user!.id,
       type: "FOLLOW",
       body: `${g.user!.name} ha iniziato a seguirti`,
-      entityUrl: `/artisti/${g.user!.slug}`,
+      entityUrl: `/artisti/${await slugDi(g.user!.id)}`,
     });
 
     revalidatePath(`/artisti/${slug}`);

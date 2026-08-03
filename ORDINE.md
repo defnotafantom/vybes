@@ -273,25 +273,20 @@ cancellando la persona sbagliata.
 
 ---
 
-## 5-bis. Il tuo profilo sta su `/artisti/kkkk`
+## 5-bis. L'indirizzo del tuo profilo ✔ fatto il 3 agosto
 
-È l'indirizzo che compare cliccando «Profilo pubblico», ed è quello che
-aprirà chi arriva dal curriculum. Nasce dal nome scritto al momento della
-registrazione, e lo slug poi non cambia più: il modulo del profilo non lo
-espone, di proposito — non è una preferenza, è l'indirizzo di una pagina
-pubblica, e un campo modificabile a piacere significa collegamenti rotti a
-ogni ripensamento.
+`/artisti/daniele`. Il vecchio `/artisti/kkkk` risponde 404, che è corretto:
+la pagina non c'era ancora in nessun indice, quindi non c'era nessun
+collegamento da rompere — ed è per questo che l'operazione andava fatta prima
+di riempire il profilo, non dopo.
 
-```powershell
-npm run user:slug -- kkkk daniele
-npm run user:slug -- kkkk daniele --conferma
-```
-
-**Va fatto adesso, non dopo.** Lo script rifiuta di cambiare lo slug di un
-profilo che supera la soglia di indicizzazione, perché in quel caso il vecchio
-indirizzo può essere già noto a Google e cambiandolo smette di rispondere,
-senza nessun reindirizzamento. Finché il profilo è scarno quel costo non
-esiste: nessuno ci è mai arrivato. Riempilo **dopo** aver cambiato l'indirizzo.
+Ha però scoperto un difetto vero (ADR-038): il collegamento «Profilo
+pubblico» della dashboard leggeva lo slug dal token di sessione, che è una
+fotografia scritta all'accesso. Puntava ancora al 404 — e, peggio, lo stesso
+valore alimentava i `revalidatePath` di tre route API: caricando un lavoro
+nel portfolio si rigenerava la cache di una pagina inesistente mentre quella
+vera restava vecchia, senza nessun errore. Ora lo slug è fuori dal tipo
+`Session`, quindi il compilatore rifiuta chi prova a rileggerlo da lì.
 
 ---
 

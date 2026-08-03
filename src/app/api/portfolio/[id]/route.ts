@@ -3,6 +3,7 @@ import { portfolioSchema } from "@/lib/validations";
 import { guard, parseBody, ok, fail, handle } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import { deleteFile } from "@/lib/upload";
+import { slugDi } from "@/lib/utente";
 
 async function owned(id: string, userId: string) {
   const item = await prisma.portfolioItem.findUnique({
@@ -39,7 +40,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     });
 
     revalidatePath(`/portfolio/${updated.slug}`);
-    revalidatePath(`/artisti/${g.user!.slug}`);
+    revalidatePath(`/artisti/${await slugDi(g.user!.id)}`);
     return ok(updated);
   });
 }
@@ -57,7 +58,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     // Il record e' andato: si libera anche lo storage.
     if (check.item?.mediaUrl) await deleteFile(check.item.mediaUrl);
 
-    revalidatePath(`/artisti/${g.user!.slug}`);
+    revalidatePath(`/artisti/${await slugDi(g.user!.id)}`);
     return ok({ deleted: true });
   });
 }

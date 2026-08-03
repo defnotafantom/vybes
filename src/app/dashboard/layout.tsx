@@ -7,6 +7,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { DashboardSidebar, DashboardMobileNav } from "@/components/dashboard/Nav";
 import { puo } from "@/lib/moderazione";
 import { attenzioneDi } from "@/lib/attenzione";
+import { slugDi } from "@/lib/utente";
 import { PERMISSIONS } from "@/lib/permissions";
 import { Avatar } from "@/components/ui/Avatar";
 import { Logo } from "@/components/Logo";
@@ -41,6 +42,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // navigazione invece che una per sezione.
   const contatori = await attenzioneDi(session.user.id, puoModerare);
 
+  // Lo slug si legge dal database per lo stesso motivo del ruolo: il token è
+  // una fotografia scritta all'accesso, e questo collegamento puntava a
+  // `/artisti/kkkk` per tutta la durata della sessione dopo che lo slug era
+  // già cambiato in `daniele`. Vedi `slugDi()`.
+  const slug = await slugDi(session.user.id);
+
   return (
     <div className="container-page py-8">
       {/* Questa riga è l'unica cornice dell'area personale: senza la barra
@@ -62,13 +69,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="flex items-center gap-2">
           <NotificationBell />
           <ThemeToggle />
-          <Link
-            href={`/artisti/${session.user.slug}`}
-            className="btn-ghost hidden text-sm sm:inline-flex"
-          >
-            Profilo pubblico
-            <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
+          {slug && (
+            <Link href={`/artisti/${slug}`} className="btn-ghost hidden text-sm sm:inline-flex">
+              Profilo pubblico
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          )}
         </div>
       </div>
 
