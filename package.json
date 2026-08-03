@@ -31,6 +31,7 @@
     "user:elenco": "tsx scripts/elenca-utenti.ts",
     "user:elimina": "tsx scripts/elimina-account.ts",
     "user:password": "tsx scripts/reimposta-password.ts",
+    "user:slug": "tsx scripts/cambia-slug.ts",
     "verify": "npm run typecheck && npm run lint && npm run verify:seo && npm test",
     "verify:seo": "node scripts/verifica-canonical.mjs"
   },

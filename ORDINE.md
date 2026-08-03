@@ -204,30 +204,17 @@ di account.
 
 ---
 
-## 3. I tuoi dati da titolare, e un legale ⚠
+## 3. I tuoi dati da titolare ✔ fatto il 3 agosto
 
-**È il vero blocco all'apertura.** La pagina `/privacy` è online e
-indicizzata, e dichiara di sé: «Da completare prima dell'apertura al
-pubblico». Un'informativa senza titolare non identifica chi risponde del
-trattamento, quindi non è opponibile a nessuno — e intanto stai raccogliendo
-email e password di persone reali.
+`src/lib/titolare.ts` è compilato in tutti e cinque i campi, quindi
+`titolareCompleto()` è vero e l'avviso giallo è sparito da solo da `/privacy`
+e `/termini`. Il contatto è un indirizzo dedicato e non quello personale:
+finisce su una pagina indicizzata, quindi lo raccoglieranno anche i sistemi
+automatici che cercano indirizzi.
 
-**Ora si compila in un posto solo:** `src/lib/titolare.ts`. Cinque campi.
-L'avviso giallo su privacy e termini sparisce da solo quando sono tutti
-pieni, e ricompare se qualcuno ne svuota uno.
-
-```ts
-export const TITOLARE = {
-  nome: "",        // nome e cognome, o ragione sociale
-  indirizzo: "",   // via, numero, CAP, città, provincia
-  fiscale: "",     // partita IVA, oppure codice fiscale
-  email: "",       // meglio dedicato: finisce su una pagina indicizzata
-  foro: "",        // città del foro competente nei termini
-} as const;
-```
-
-Poi il testo va letto da un avvocato. È l'unica voce di questo elenco che può
-creare un problema legale invece che tecnico.
+**Resta il legale.** I due testi vanno letti da un avvocato — è l'unica voce
+di questo elenco che può creare un problema giuridico invece che tecnico, e
+l'unica su cui questo progetto non ha competenza.
 
 ---
 
@@ -283,6 +270,28 @@ npm run user:elimina -- kkkk il-tuo-nome --conferma
 Senza `--conferma` mostra solo cosa sparirebbe. Guarda i conteggi: un account
 di prova ha quasi sempre zero di tutto, e un numero alto è il segnale che stai
 cancellando la persona sbagliata.
+
+---
+
+## 5-bis. Il tuo profilo sta su `/artisti/kkkk`
+
+È l'indirizzo che compare cliccando «Profilo pubblico», ed è quello che
+aprirà chi arriva dal curriculum. Nasce dal nome scritto al momento della
+registrazione, e lo slug poi non cambia più: il modulo del profilo non lo
+espone, di proposito — non è una preferenza, è l'indirizzo di una pagina
+pubblica, e un campo modificabile a piacere significa collegamenti rotti a
+ogni ripensamento.
+
+```powershell
+npm run user:slug -- kkkk daniele
+npm run user:slug -- kkkk daniele --conferma
+```
+
+**Va fatto adesso, non dopo.** Lo script rifiuta di cambiare lo slug di un
+profilo che supera la soglia di indicizzazione, perché in quel caso il vecchio
+indirizzo può essere già noto a Google e cambiandolo smette di rispondere,
+senza nessun reindirizzamento. Finché il profilo è scarno quel costo non
+esiste: nessuno ci è mai arrivato. Riempilo **dopo** aver cambiato l'indirizzo.
 
 ---
 
