@@ -26,4 +26,8 @@ e2e.txt
 # Dati degli artisti in fase di reclutamento: contengono email e consensi di
 # persone reali. Vedi RECLUTAMENTO.md.
 /dati/
+
+# Immagini dei dati dimostrativi: generate da `npm run demo:popola`,
+# rigenerabili in un secondo, e non hanno niente da fare in un repository.
+/public/demo/
 /consensi/

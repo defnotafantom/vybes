@@ -125,6 +125,31 @@ Poi il testo va letto da un avvocato.
 da chiedere, la formula di consenso e il formato del file. Poi
 `npm run artisti:importa`.
 
+### Per lavorare sul frontend: dati finti, mai in produzione
+
+```powershell
+npm run demo:popola                       # mostra e non scrive
+npm run demo:popola -- --conferma
+npm run demo:popola -- --rimuovi --conferma
+```
+
+Trenta artisti, quattordici ingaggi, candidature in tutti gli stati.
+Deliberatamente **disuguali**: chi scrive trecento parole e chi tre, metà
+senza foto, qualcuno fermo al nome. Farli tutti completi darebbe griglie
+ordinate che nascondono esattamente i difetti che questo strumento esiste per
+mostrare.
+
+Lo script **rifiuta un database che non sia locale** se non gli si dichiara
+dove può scrivere (`DEMO_DATABASE_URL` in `.env.local`, va bene il branch
+Neon dei test). Profili finti su un dominio indicizzato sono pagine pubbliche
+di persone che non esistono: Google le trova alla prima scansione, e un
+organizzatore vero scriverebbe a un nome inventato.
+
+Le immagini sono generate in `public/demo/`, non versionata. Sono gradienti:
+dicono come si comporta il layout quando gli spazi sono pieni, **non** come
+starà una fotografia vera. Quel giudizio si può dare solo con le foto dei
+venti artisti veri.
+
 ### Prima di ogni push
 
 ```powershell
