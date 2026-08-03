@@ -136,6 +136,22 @@ test.describe("la destinazione non può portare fuori dal sito", () => {
 
 test.describe("la registrazione finisce da qualche parte", () => {
   test("dopo l'iscrizione si vede cosa fare, non un modulo di accesso", async ({ page }) => {
+    /*
+     * ── Perché il limite di questo test è alzato ──
+     *
+     * L'attesa qui sotto è a quarantacinque secondi, e il limite predefinito
+     * di Playwright è trenta: portando su la prima senza toccare il secondo
+     * il test moriva **prima** di poter concludere, e al posto di una
+     * diagnosi — «la registrazione non è finita da nessuna parte» — usciva un
+     * nudo «Test timeout of 30000ms exceeded», che non dice niente.
+     *
+     * La regola generale: una scadenza dentro un test deve stare sotto la
+     * scadenza del test, altrimenti il ramo che spiega l'errore non viene mai
+     * eseguito. Un test che scade prima di formulare la propria conclusione
+     * segnala che qualcosa è rotto e non dice cosa.
+     */
+    test.setTimeout(75_000);
+
     // Il difetto peggiore di tutti: in produzione la verifica dell'email è
     // richiesta, quindi l'accesso automatico non poteva riuscire. Il
     // fallimento non veniva guardato, si proseguiva verso la dashboard, il

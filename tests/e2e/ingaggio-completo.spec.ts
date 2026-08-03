@@ -180,10 +180,18 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
     });
 
     // ── 4. L'artista vede l'esito ──────────────────────────────────────────
+    //
+    // «Confermata» e non «accettata»: è la parola che il prodotto usa davvero,
+    // scelta perché a chi si è candidato interessa sapere che l'ingaggio è
+    // suo, non che l'organizzatore ha premuto un pulsante. La prima versione
+    // di questa riga cercava `/accettat/i` — il verbo del lato organizzatore —
+    // e falliva su un flusso che invece funzionava, accusando il prodotto al
+    // posto proprio. Se un giorno la parola cambia, questo test deve
+    // cambiare: è il suo lavoro accorgersi che è cambiata.
     await art.page.goto("/dashboard/eventi");
     await expect(
-      art.page.locator("li").filter({ hasText: titolo }).getByText(/accettat/i),
-      "l'artista non vede di essere stato accettato"
+      art.page.locator("li").filter({ hasText: titolo }).getByText("Confermata"),
+      "l'artista non vede che la candidatura è stata confermata"
     ).toBeVisible({ timeout: 20_000 });
 
     // ── 5. Si parlano ──────────────────────────────────────────────────────
