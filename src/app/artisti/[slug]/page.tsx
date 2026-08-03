@@ -18,6 +18,7 @@ import { Badge, VerifiedBadge } from "@/components/ui/Badge";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 import { Segnala } from "@/components/Segnala";
 import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
+import { concorda } from "@/lib/testo";
 
 /**
  * Cosa si vede al posto di un'anteprima che non c'è.
@@ -290,9 +291,31 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
             Al suo posto un fatto, non un giudizio: quanti lavori ci sono. */}
         <dl className="container-page grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-y-0">
+          {/* Le etichette concordano col proprio numero.
+              «1 LAVORI PUBBLICATI» è arrivato in produzione nello stesso
+              rilascio in cui `conta()` e `concorda()` sono state introdotte
+              proprio per impedirlo: scritte a mano, come stringhe fisse in un
+              elenco, non passavano da nessuna delle due. Che è la prova
+              migliore di quello che quell'ADR sostiene — finché concordare è
+              una cosa da ricordarsi, prima o poi non la si ricorda.
+              «Follower» resta invariato: in italiano non ha plurale. */}
           {[
-            { label: "Lavori pubblicati", value: artist.portfolioItems.length },
-            { label: "Ingaggi confermati", value: artist._count.participations },
+            {
+              label: concorda(
+                artist.portfolioItems.length,
+                "Lavoro pubblicato",
+                "Lavori pubblicati"
+              ),
+              value: artist.portfolioItems.length,
+            },
+            {
+              label: concorda(
+                artist._count.participations,
+                "Ingaggio confermato",
+                "Ingaggi confermati"
+              ),
+              value: artist._count.participations,
+            },
             { label: "Follower", value: artist._count.followers },
           ].map((s) => (
             <div key={s.label} className="py-6">

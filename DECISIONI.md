@@ -1415,6 +1415,23 @@ produzione in due giorni. È lo stesso schema di ADR-034 e di quasi tutti i
 difetti di questo progetto: la regola esiste, tutti la conoscono, e niente la
 applica.
 
+**Poscritto, mezz'ora dopo.** Nel rilascio successivo — quello che conteneva
+questo ADR — è arrivato in produzione **«1 LAVORI PUBBLICATI»**, scritto da
+me, sulla pagina pubblica di un artista. Le funzioni esistevano già; erano
+etichette fisse dentro un elenco, e scrivere una stringa in un array non
+incontra nessuna funzione.
+
+È la dimostrazione più netta possibile della tesi qui sopra, e vale più
+dell'argomento: *avere lo strumento non basta, se usarlo resta facoltativo.*
+La stessa forma era in tutta la dashboard — «1 CONVERSAZIONI», «1 LAVORI
+CARICATI», «1 URGENTI».
+
+La correzione è quindi nel **tipo**, non nelle stringhe: l'etichetta di un
+numero in `SezioneHeader` è ora `string | [singolare, plurale]`. Chi aggiunge
+un conteggio deve decidere se quella parola ha un plurale — «Livello» e «In
+attesa» non ce l'hanno, e la stringa singola resta legittima. Scegliere è
+obbligatorio; dimenticarsene non è più possibile.
+
 ---
 
 ## ADR-037 · Una casella di spunta è un controllo, non un residuo di sistema

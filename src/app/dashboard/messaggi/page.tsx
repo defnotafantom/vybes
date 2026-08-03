@@ -36,7 +36,7 @@ export default async function MessaggiPage() {
       <SezioneHeader
         titolo="Messaggi"
         sottotitolo="Qui si concordano le cose che l'annuncio non dice: orari, brani, chi porta cosa. Le conversazioni nascono da «Contatta» su un profilo o da una candidatura accettata."
-        numeri={parts.length > 0 ? [{ label: "Conversazioni", valore: parts.length }] : undefined}
+        numeri={parts.length > 0 ? [{ label: ["Conversazione", "Conversazioni"], valore: parts.length }] : undefined}
       />
 
       {parts.length === 0 ? (

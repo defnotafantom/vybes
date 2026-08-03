@@ -26,8 +26,8 @@ export default async function DashboardPortfolioPage() {
           </>
         }
         numeri={[
-          { label: "Lavori caricati", valore: items.length },
-          { label: "Pubblici", valore: items.filter((i) => i.isPublic).length },
+          { label: ["Lavoro caricato", "Lavori caricati"], valore: items.length },
+          { label: ["Pubblico", "Pubblici"], valore: items.filter((i) => i.isPublic).length },
         ]}
       />
       <div>

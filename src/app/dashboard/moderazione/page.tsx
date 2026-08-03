@@ -52,8 +52,8 @@ export default async function ModerazionePage() {
         sottotitolo="Ordinate per urgenza e poi per data di arrivo. Ogni decisione richiede una motivazione: viene comunicata a chi ha segnalato e a chi subisce la rimozione, che può contestarla."
         numeri={[
           { label: "In attesa", valore: coda.length },
-          { label: "Urgenti", valore: coda.filter((r) => eUrgente(r.reason as Motivo)).length },
-          { label: "Decise di recente", valore: chiuse.length },
+          { label: ["Urgente", "Urgenti"], valore: coda.filter((r) => eUrgente(r.reason as Motivo)).length },
+          { label: ["Decisa di recente", "Decise di recente"], valore: chiuse.length },
         ]}
       />
 

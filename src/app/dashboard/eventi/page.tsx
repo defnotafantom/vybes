@@ -79,9 +79,9 @@ export default async function DashboardEventiPage() {
         // sale e non scende mai non dice niente su oggi. Quello che conta è
         // quanti sono aperti adesso, perché è l'unico su cui si può agire.
         numeri={[
-          { label: "Aperti ora", valore: organizzatiAperti.length },
-          { label: "Candidature da decidere", valore: daDecidere },
-          { label: "Tue candidature attive", valore: upcoming.length },
+          { label: ["Aperto ora", "Aperti ora"], valore: organizzatiAperti.length },
+          { label: ["Candidatura da decidere", "Candidature da decidere"], valore: daDecidere },
+          { label: ["Tua candidatura attiva", "Tue candidature attive"], valore: upcoming.length },
         ]}
         azione={
           <Link href="/dashboard/eventi/nuovo" className="btn-primary">

@@ -1,4 +1,28 @@
 import type { ReactNode } from "react";
+import { concorda } from "@/lib/testo";
+
+/**
+ * L'etichetta di un numero.
+ *
+ * O una stringa, per le etichette che in italiano non hanno plurale
+ * («Livello», «In attesa»), o la coppia singolare/plurale — e in quel caso il
+ * componente la concorda da sé col valore.
+ *
+ * ── Perché il tipo, e non «ricordarsi di scriverla giusta» ──
+ *
+ * Perché «1 CONVERSAZIONI», «1 LAVORI CARICATI» e «1 URGENTI» erano tutte
+ * qui, scritte come stringhe fisse. E soprattutto perché «1 LAVORI
+ * PUBBLICATI» è arrivato in produzione **nello stesso rilascio** in cui
+ * `conta()` e `concorda()` sono state introdotte proprio per impedirlo: le
+ * funzioni c'erano, il difetto è passato lo stesso, perché scrivere
+ * un'etichetta in un elenco non le incontra.
+ *
+ * È la dimostrazione più netta della regola che questo progetto ripete da
+ * dieci ADR: una regola che si può non applicare, prima o poi non si applica.
+ * Con questo tipo, chi aggiunge un numero deve decidere se ha un plurale —
+ * scegliere è obbligatorio, dimenticarsene no.
+ */
+type Etichetta = string | readonly [singolare: string, plurale: string];
 
 /**
  * Intestazione delle sezioni dell'area personale.
@@ -34,9 +58,20 @@ export function SezioneHeader({
 }: {
   titolo: string;
   sottotitolo?: ReactNode;
-  numeri?: { label: string; valore: ReactNode }[];
+  numeri?: { label: Etichetta; valore: ReactNode }[];
   azione?: ReactNode;
 }) {
+  /**
+   * L'etichetta da stampare.
+   *
+   * La concordanza si applica solo quando il valore è davvero un numero:
+   * alcune voci mostrano una frase — «3 su 8», «80/203 XP» — e lì non c'è
+   * nulla con cui concordare.
+   */
+  const etichettaDi = (label: Etichetta, valore: ReactNode) =>
+    typeof label === "string"
+      ? label
+      : concorda(typeof valore === "number" ? valore : 2, label[0], label[1]);
   return (
     <header className="mb-8 border-b pb-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -57,12 +92,12 @@ export function SezioneHeader({
       {numeri && numeri.length > 0 && (
         <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
           {numeri.map((n) => (
-            <div key={n.label}>
+            <div key={typeof n.label === "string" ? n.label : n.label[1]}>
               {/* tabular-nums: le cifre hanno la stessa larghezza, così il
                   numero non balla quando cambia da 9 a 10. */}
               <dd className="text-fluid-xl font-bold tabular-nums">{n.valore}</dd>
               <dt className="mt-0.5 text-fluid-xs uppercase tracking-wider text-ink-faint">
-                {n.label}
+                {etichettaDi(n.label, n.valore)}
               </dt>
             </div>
           ))}
