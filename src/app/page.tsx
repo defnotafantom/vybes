@@ -13,7 +13,7 @@ import { BrandHero } from "@/components/BrandHero";
 import { Avatar } from "@/components/ui/Avatar";
 import { fromCsv } from "@/lib/slug";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
-import { inVetrina, giornoDi } from "@/lib/vetrina";
+import { inVetrina, giornoDi, POSTI_VETRINA } from "@/lib/vetrina";
 
 // Rigenerata ogni 10 minuti: HTML statico servito dalla CDN, dati freschi.
 /**
@@ -139,11 +139,17 @@ export default async function HomePage() {
 
   const [artistCount, eventCount, cityCount] = stats;
   /*
-   * Sei posti, e la finestra avanza di uno al giorno: chi torna domani trova
-   * cinque volti conosciuti e uno nuovo. Cambiare tutto ogni giorno farebbe
-   * sembrare un'altra pagina; non cambiare niente toglie il motivo di tornare.
+   * Tre posti — uno grande e due piccoli — perché tre sono le schede che
+   * questa griglia rende davvero: il resto sono i conteggi e l'invito a
+   * vedere tutti. Il numero sta in `POSTI_VETRINA` e non qui, perché la
+   * dashboard lo usa per dire a ciascuno fra quanti giorni tocca a lui: due
+   * copie che divergono significano promettere un turno che non arriva.
+   *
+   * La finestra avanza di uno al giorno: chi torna domani trova due volti
+   * conosciuti e uno nuovo. Cambiare tutto farebbe sembrare un'altra pagina;
+   * non cambiare niente toglie il motivo di tornare.
    */
-  const vetrina = inVetrina(featuredArtists, 6, giornoDi());
+  const vetrina = inVetrina(featuredArtists, POSTI_VETRINA, giornoDi());
   const hero = vetrina[0];
   const rest = vetrina.slice(1);
 

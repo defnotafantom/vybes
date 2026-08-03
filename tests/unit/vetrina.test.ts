@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { inVetrina, fraQuantiGiorni, giornoDi } from "@/lib/vetrina";
+import { inVetrina, fraQuantiGiorni, giornoDi, POSTI_VETRINA } from "@/lib/vetrina";
 
 const lista = (n: number) => Array.from({ length: n }, (_, i) => `a${i}`);
 
@@ -78,5 +78,20 @@ describe("giornoDi", () => {
     const a = giornoDi(new Date("2026-03-01T12:00:00Z"));
     const b = giornoDi(new Date("2026-03-02T12:00:00Z"));
     expect(b - a).toBe(1);
+  });
+});
+
+describe("POSTI_VETRINA", () => {
+  it("la home e la dashboard leggono lo stesso numero", () => {
+    // Erano due `6` scritti a mano in due file, e già sbagliati entrambi: la
+    // home rende tre schede, non sei. Metà della vetrina veniva caricata e
+    // buttata via, e la dashboard prometteva a quelle persone un turno che
+    // non sarebbe mai arrivato — il sistema che dice di sì e non fa niente.
+    //
+    // Questa prova non può accorgersi da sola di una nuova copia scritta a
+    // mano: quello che protegge è il fatto che il numero **esista** in un
+    // posto solo, e questa riga è dove si viene a scoprire perché.
+    expect(POSTI_VETRINA).toBeGreaterThan(0);
+    expect(inVetrina(lista(10), POSTI_VETRINA, 0)).toHaveLength(POSTI_VETRINA);
   });
 });

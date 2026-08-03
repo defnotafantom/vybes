@@ -43,6 +43,23 @@
  */
 
 /**
+ * Quanti profili stanno in vetrina, e sta scritto qui.
+ *
+ * Era un `6` scritto nella home e un altro `6` nella dashboard. Due numeri
+ * uguali per caso, e già sbagliati entrambi: la home rende **tre** schede —
+ * una grande e due piccole, il resto della griglia sono i conteggi e l'invito
+ * a vedere tutti — quindi con sei posti metà della vetrina veniva caricata e
+ * buttata via, e la dashboard prometteva un turno che a quelle persone non
+ * sarebbe mai arrivato.
+ *
+ * È il difetto peggiore possibile per un premio: il sistema dice di sì e non
+ * fa niente. Con la costante in un posto solo, cambiare il numero di schede
+ * in home cambia anche la promessa — che è l'unico modo perché le due non
+ * possano più divergere.
+ */
+export const POSTI_VETRINA = 3;
+
+/**
  * Il numero del giorno, per far ruotare la vetrina.
  *
  * Conta i giorni dall'epoca in ora italiana: il cambio avviene a mezzanotte

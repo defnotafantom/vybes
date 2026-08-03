@@ -8,7 +8,7 @@ import Link from "next/link";
 import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
 import { SchedaReputazione } from "@/components/dashboard/SchedaReputazione";
 import { SchedaVetrina } from "@/components/dashboard/SchedaVetrina";
-import { giornoDi, fraQuantiGiorni } from "@/lib/vetrina";
+import { giornoDi, fraQuantiGiorni, POSTI_VETRINA } from "@/lib/vetrina";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
 import { reputazioneMassima } from "@/lib/reputazione";
@@ -57,7 +57,6 @@ export default async function DashboardPage() {
     select: { id: true },
   });
   const mioIndice = rotazione.findIndex((u) => u.id === userId);
-  const POSTI_VETRINA = 6;
 
   const progress = levelProgress(me?.experience ?? 0);
   // Le stesse voci con cui il punteggio è stato calcolato: mostrarne una
