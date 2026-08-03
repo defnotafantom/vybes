@@ -28,9 +28,24 @@ export function ArtistCard({
   artist: ArtistCardData;
   priority?: boolean;
 }) {
+  /**
+   * ── Perché la scheda è alta quanto la riga, e cosa ci si fa dentro ──
+   *
+   * In una griglia le schede di una stessa riga vengono stirate alla più
+   * alta: è quello che le tiene allineate. Con contenuti disuguali — e in una
+   * directory vera lo sono sempre, chi scrive tre righe e chi niente — il
+   * testo restava però incollato in cima, e sotto avanzava metà scheda vuota.
+   * Non si legge come «questa persona ha scritto meno»: si legge come una
+   * scheda troncata, cioè come un guasto.
+   *
+   * La riga con discipline e città va quindi in fondo (`mt-auto`), dove si
+   * allinea con quella delle schede accanto. Lo spazio avanzato finisce fra
+   * il nome e le etichette, dove sembra respiro invece che mancanza — ed è lo
+   * stesso spazio, messo dove significa un'altra cosa.
+   */
   return (
-    <article className="card-glow card-interactive group">
-      <Link href={`/artisti/${artist.slug}`} className="flex items-start gap-4">
+    <article className="card-glow card-interactive group h-full">
+      <Link href={`/artisti/${artist.slug}`} className="flex h-full items-start gap-4">
         <Avatar
           name={artist.name}
           src={artist.image}
@@ -39,7 +54,7 @@ export function ArtistCard({
           className="transition-transform duration-250 ease-out group-hover:scale-105"
         />
 
-        <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col">
           <h3 className="flex items-center gap-1.5 truncate text-fluid-base font-semibold transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
             {artist.name}
             {artist.isVerified && <VerifiedBadge />}
@@ -49,7 +64,7 @@ export function ArtistCard({
             <p className="mt-1 line-clamp-2 text-fluid-sm text-ink-muted">{artist.headline}</p>
           )}
 
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-fluid-xs">
+          <div className="mt-auto flex flex-wrap items-center gap-2 pt-3 text-fluid-xs">
             {/* L'etichetta, non lo slug.
                 Qui compariva `cantanti`, `dj`, `videomaker`: le chiavi con cui
                 il database indicizza le discipline, minuscole e al plurale.

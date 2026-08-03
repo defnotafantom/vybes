@@ -28,7 +28,12 @@
  *   npm run pulisci:e2e
  *   npm run pulisci:e2e -- --conferma
  */
-import { prisma } from "../src/lib/prisma";
+import { PrismaClient } from "@prisma/client";
+import { config as caricaEnv } from "dotenv";
+
+// `.env.local` non lo legge Node da solo, e `E2E_DATABASE_URL` sta lì.
+caricaEnv({ path: ".env.local" });
+caricaEnv({ path: ".env" });
 
 /**
  * Lo stesso formato di `emailUnica()` nei test, scritto come espressione
@@ -40,7 +45,46 @@ const FORMATO = /^e2e-\d+-[a-z0-9]+@example\.com$/;
 
 const conferma = process.argv.includes("--conferma");
 
+/**
+ * Su quale database, ed è il punto che mancava.
+ *
+ * Questo script importava `prisma` da `src/lib/prisma`, che legge
+ * `DATABASE_URL`: la produzione. Aveva senso quando i test scrivevano lì —
+ * era il difetto che lo ha fatto nascere. Da quando `E2E_DATABASE_URL`
+ * esiste, gli account di prova nascono sul branch dedicato e questo script
+ * andava a cercarli dalla parte sbagliata: diceva «nessun account da
+ * rimuovere» mentre erano decine, e intanto la directory dimostrativa era
+ * piena di «Prova Artista» e «Prova Telefono».
+ *
+ * È la terza volta che succede la stessa cosa su questo progetto — la difesa
+ * sposta le scritture e gli strumenti non la seguono. Prima `npm run dev`,
+ * che guardava un database mentre `demo:popola` ne riempiva un altro; ora
+ * questo.
+ *
+ * La regola che ne esce: **quando si separa un database, vanno spostati con
+ * lui tutti gli strumenti che lo toccano.** Una separazione che ne lascia
+ * indietro uno non è più sicura, è solo più difficile da capire.
+ *
+ * Resta possibile pulire la produzione — `E2E_DATABASE_URL` vuota, oppure i
+ * residui di quando i test ci scrivevano davvero — ma va detto quale.
+ */
+function bersaglio(): { url: string | undefined; dove: string } {
+  const perTest = process.env.E2E_DATABASE_URL;
+  if (!perTest) return { url: undefined, dove: "DATABASE_URL (nessun branch di test dichiarato)" };
+  if (process.argv.includes("--produzione")) {
+    return { url: undefined, dove: "DATABASE_URL (richiesto con --produzione)" };
+  }
+  return { url: perTest, dove: "E2E_DATABASE_URL, dove i test scrivono davvero" };
+}
+
+const { url, dove } = bersaglio();
+// Senza `url` si lascia decidere a Prisma, che legge `DATABASE_URL` da sé.
+const prisma = url
+  ? new PrismaClient({ datasources: { db: { url } } })
+  : new PrismaClient();
+
 async function main() {
+  console.log(`Database: ${dove}\n`);
   // ── Perché non si filtra su `emailVerified: null` ──
   //
   // La prima versione lo faceva, dando per scontato che un account creato dai
