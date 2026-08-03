@@ -19,6 +19,8 @@ import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 import { Segnala } from "@/components/Segnala";
 import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
 import { concorda } from "@/lib/testo";
+import { distintiviOttenuti } from "@/lib/distintivi";
+import { Distintivi } from "@/components/Distintivi";
 
 /**
  * Cosa si vede al posto di un'anteprima che non c'è.
@@ -100,7 +102,19 @@ async function getArtist(slug: string) {
           startsAt: true, city: true, venueName: true, isPaid: true, feeMin: true, feeMax: true,
         },
       },
-      _count: { select: { followers: true, posts: true, participations: true } },
+      // I conteggi dei distintivi sono filtrati come in `reputazione-server`:
+      // «candidature» e «candidature accettate» sono due numeri diversi, e il
+      // secondo è l'unico che significhi qualcosa per chi legge il profilo —
+      // l'ha assegnato qualcun altro. `eventsCreated` conta solo i conclusi,
+      // perché pubblicare un annuncio non è organizzare una serata.
+      _count: {
+        select: {
+          followers: true,
+          posts: true,
+          participations: { where: { status: "ACCEPTED" } },
+          eventsCreated: { where: { status: "COMPLETED" } },
+        },
+      },
     },
   });
 }
@@ -164,6 +178,23 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   // trascurabile e in cambio la scheda non ripete a mano una regola che vive
   // altrove.
   const ottenute = (await dettaglioReputazioneDi(artist.id)).filter((v) => v.punti >= v.max);
+
+  /*
+   * I distintivi: cosa questa persona ha dimostrato.
+   *
+   * Stanno nell'intestazione, sotto il nome, e non in fondo alla colonna
+   * laterale — perché sono la risposta alle domande che un organizzatore si
+   * fa **prima** di decidere se continuare a leggere, non un riepilogo per
+   * chi è già arrivato in fondo. Vedi `lib/distintivi.ts`.
+   */
+  const distintivi = distintiviOttenuti({
+    isVerified: artist.isVerified,
+    createdAt: artist.createdAt,
+    ingaggiConfermati: artist._count.participations,
+    ingaggiOrganizzati: artist._count.eventsCreated,
+    portfolio: artist.portfolioItems.length,
+    raggiungibile: Boolean(artist.citySlug) && disciplines.length > 0,
+  });
 
   return (
     <>
@@ -244,6 +275,12 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                   </Link>
                 )}
               </div>
+
+              {distintivi.length > 0 && (
+                <div className="mt-5">
+                  <Distintivi distintivi={distintivi} />
+                </div>
+              )}
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href={`/dashboard/messaggi/nuovo?a=${artist.slug}`} className="btn-primary">
