@@ -62,7 +62,23 @@ test.describe("infrastruttura SEO", () => {
   test("le pagine di elenco espongono link reali, seguibili dai crawler", async ({ page }) => {
     await page.goto("/citta");
     const links = page.locator('main a[href^="/citta/"]');
-    expect(await links.count()).toBeGreaterThan(0);
+
+    /*
+     * `expect(await links.count()).toBeGreaterThan(0)` sembra la stessa cosa e
+     * non lo è: `count()` viene risolto **una volta**, prima che `expect`
+     * entri in gioco, quindi l'asserzione non ha niente da riprovare. Se la
+     * pagina non ha ancora reso l'elenco — su WebKit, con la suite in
+     * parallelo, capita — il numero è zero e resta zero.
+     *
+     * Il fallimento è particolarmente ingannevole: dice «0 link» su una
+     * pagina che in quel momento ne ha ventitré, e manda a cercare un difetto
+     * di rendering che non esiste.
+     *
+     * `expect(locator)` invece riprova finché non scade il tempo. La regola:
+     * risolvere una promessa **prima** di `expect` disattiva l'attesa
+     * automatica di Playwright.
+     */
+    await expect(links).not.toHaveCount(0);
   });
 
   test("le pagine private sono escluse dall'indice", async ({ page }) => {

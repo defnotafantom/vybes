@@ -25,11 +25,51 @@ export type RateLimitResult = {
   backend: "redis" | "memory";
 };
 
+/**
+ * Il limitatore si può spegnere, ma solo dichiarandolo, e mai in produzione.
+ *
+ * ── Perché serve ──
+ *
+ * La registrazione consente cinque tentativi al minuto per indirizzo IP. È
+ * una regola giusta per le persone — chi si iscrive lo fa una volta — ed è la
+ * prima difesa contro la creazione automatica di account su un sito con le
+ * registrazioni aperte.
+ *
+ * La suite end-to-end però ne fa una dozzina in tre minuti, tutte da
+ * `127.0.0.1`: quattro profili di browser, ognuno che registra due account
+ * per percorrere il flusso completo. Dal sesto in poi il modulo risponde
+ * «Troppe richieste, riprova tra poco», e i test falliscono accusando la
+ * registrazione di non funzionare.
+ *
+ * ── Perché uno spegnimento e non un limite più alto ──
+ *
+ * Perché alzare il limite vero per far passare i test significa indebolire la
+ * difesa in produzione per una ragione che con la produzione non c'entra. La
+ * soglia deve restare quella pensata per le persone, e il comportamento del
+ * limitatore ha i suoi test unitari — `rate-limit.test.ts` — che verificano
+ * la regola senza bisogno di un browser.
+ *
+ * ── Perché è sicuro ──
+ *
+ * Perché va dichiarato, e `env.ts` rifiuta l'avvio se lo trova impostato in
+ * produzione. Una scorciatoia che si può attivare per sbaglio sull'ambiente
+ * sbagliato non è una scorciatoia, è una vulnerabilità con un nome amichevole.
+ */
+function limitatoreSpento(): boolean {
+  return (
+    process.env.RATE_LIMIT_DISABILITATO === "1" && process.env.NODE_ENV !== "production"
+  );
+}
+
 export async function rateLimit(
   key: string,
   limit = 30,
   windowMs = 60_000
 ): Promise<RateLimitResult> {
+  if (limitatoreSpento()) {
+    return { ok: true, remaining: limit, resetAt: Date.now() + windowMs, backend: "memory" };
+  }
+
   const client = redis();
 
   if (client) {

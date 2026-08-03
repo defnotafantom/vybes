@@ -198,6 +198,14 @@ test.describe("la registrazione finisce da qualche parte", () => {
         if (await page.getByText(/conferma l'email|controlla/i).first().isVisible().catch(() => false))
           return risolvi("verifica");
         if (/\/accedi/.test(url)) return risolvi("rimbalzato-al-login");
+        // Il limitatore è un esito **osservabile**, e va nominato. Senza
+        // questo ramo il modulo mostrava «Troppe richieste, riprova tra poco»
+        // e questo test concludeva «la registrazione non è finita da nessuna
+        // parte»: una diagnosi falsa, che manda a cercare un difetto
+        // inesistente nel percorso di iscrizione. Un'attesa che enumera gli
+        // esiti deve enumerarli tutti, compresi quelli che non le piacciono.
+        if (await page.getByText(/troppe richieste/i).first().isVisible().catch(() => false))
+          return risolvi("limitato");
         if (Date.now() > scadenza) return risolvi("fermo");
         setTimeout(guarda, 250);
       };
@@ -208,7 +216,9 @@ test.describe("la registrazione finisce da qualche parte", () => {
       esito,
       esito === "fermo"
         ? "la registrazione non è finita da nessuna parte: né dashboard né schermata di verifica"
-        : "chi si è appena iscritto è stato rimandato al modulo di accesso"
+        : esito === "limitato"
+          ? "il limitatore ha respinto la registrazione: il server dei test deve partire con RATE_LIMIT_DISABILITATO=1 (vedi playwright.config.ts)"
+          : "chi si è appena iscritto è stato rimandato al modulo di accesso"
     ).toMatch(/^(dentro|verifica)$/);
 
     if (esito === "verifica") {

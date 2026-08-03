@@ -147,6 +147,31 @@ export default defineConfig({
         // dichiarare il dominio effimero del deployment.
         env: {
           NEXT_PUBLIC_SITE_URL: BASE_URL,
+          /**
+           * La suite registra una dozzina di account in tre minuti, tutti da
+           * `127.0.0.1`: quattro profili di browser, ognuno che ne crea due
+           * per percorrere il flusso completo. Il limite vero è cinque al
+           * minuto per indirizzo — giusto per le persone — quindi dal sesto
+           * in poi il modulo rispondeva «Troppe richieste» e i test
+           * accusavano la registrazione di non funzionare.
+           *
+           * Si spegne qui e non si alza la soglia: quella deve restare
+           * pensata per chi si iscrive davvero, e il comportamento del
+           * limitatore ha i propri test unitari, che non hanno bisogno di un
+           * browser. `env.ts` rifiuta l'avvio se questa variabile compare in
+           * produzione.
+           */
+          RATE_LIMIT_DISABILITATO: "1",
+          /**
+           * E soprattutto: il server dei test non deve toccare il Redis di
+           * produzione. Senza queste due righe vuote i contatori del
+           * limitatore sarebbero **gli stessi** che governano il traffico
+           * vero — una suite lanciata due volte di fila consumerebbe la quota
+           * di chi si sta iscrivendo in quel momento. È lo stesso principio
+           * per cui i test hanno un database separato.
+           */
+          UPSTASH_REDIS_REST_URL: "",
+          UPSTASH_REDIS_REST_TOKEN: "",
           // Il server dei test riceve il database dei test, se dichiarato.
           // Senza questa riga `E2E_DATABASE_URL` resterebbe una variabile che
           // nessuno legge: il controllo passerebbe e le scritture andrebbero

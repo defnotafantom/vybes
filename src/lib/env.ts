@@ -78,6 +78,22 @@ function crossChecks(env: Env): { fatal: string[]; warnings: string[] } {
     );
   }
 
+  // FATALE: lo spegnimento del limitatore esiste per la suite end-to-end, che
+  // fa una dozzina di registrazioni al minuto dallo stesso indirizzo. In
+  // produzione toglierebbe la prima difesa contro la creazione automatica di
+  // account su un sito con le registrazioni aperte — e lo farebbe in silenzio,
+  // perché un limitatore spento non produce nessun errore: produce traffico
+  // che passa. Una scorciatoia che si può attivare per sbaglio sull'ambiente
+  // sbagliato non è una scorciatoia, è una vulnerabilità con un nome
+  // amichevole. `rate-limit.ts` la ignora comunque quando NODE_ENV è
+  // production; questo controllo impedisce di arrivarci con quell'idea.
+  if (isProduction && process.env.RATE_LIMIT_DISABILITATO === "1") {
+    fatal.push(
+      "RATE_LIMIT_DISABILITATO=1 in produzione: serve solo ai test end-to-end, " +
+        "e qui toglierebbe la difesa contro la creazione automatica di account."
+    );
+  }
+
   if (env.NEXT_PUBLIC_SITE_URL?.endsWith("/")) {
     warnings.push("NEXT_PUBLIC_SITE_URL non deve finire con /");
   }

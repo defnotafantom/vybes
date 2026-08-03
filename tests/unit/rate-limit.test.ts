@@ -101,6 +101,44 @@ describe("rateLimit — backend Redis", () => {
   });
 });
 
+/**
+ * Lo spegnimento esiste per la suite end-to-end, che fa una dozzina di
+ * registrazioni al minuto dallo stesso indirizzo. Queste prove verificano la
+ * parte che conta: che **non si possa** portarlo in produzione.
+ */
+describe("rateLimit — lo spegnimento dichiarato", () => {
+  afterEach(() => {
+    delete process.env.RATE_LIMIT_DISABILITATO;
+    vi.unstubAllEnvs();
+  });
+
+  it("lascia passare tutto quando è dichiarato fuori produzione", async () => {
+    process.env.RATE_LIMIT_DISABILITATO = "1";
+    const key = `test-${Math.random()}`;
+    for (let i = 0; i < 20; i++) expect((await rateLimit(key, 3)).ok).toBe(true);
+  });
+
+  it("in produzione viene ignorato, comunque lo si imposti", async () => {
+    // È la ragione per cui la variabile è accettabile: anche se finisse
+    // sull'ambiente sbagliato per una copia distratta, il limitatore
+    // continuerebbe a fare il proprio lavoro. `env.ts` rifiuta comunque
+    // l'avvio, ma una difesa sola non basta per una difesa.
+    process.env.RATE_LIMIT_DISABILITATO = "1";
+    vi.stubEnv("NODE_ENV", "production");
+
+    const key = `test-${Math.random()}`;
+    for (let i = 0; i < 3; i++) expect((await rateLimit(key, 3)).ok).toBe(true);
+    expect((await rateLimit(key, 3)).ok).toBe(false);
+  });
+
+  it("un valore diverso da «1» non spegne niente", async () => {
+    process.env.RATE_LIMIT_DISABILITATO = "true";
+    const key = `test-${Math.random()}`;
+    for (let i = 0; i < 3; i++) expect((await rateLimit(key, 3)).ok).toBe(true);
+    expect((await rateLimit(key, 3)).ok).toBe(false);
+  });
+});
+
 describe("clientKey", () => {
   it("prende il primo IP della catena x-forwarded-for", () => {
     const req = new Request("https://x.it", { headers: { "x-forwarded-for": "1.2.3.4, 5.6.7.8" } });
