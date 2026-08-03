@@ -324,6 +324,21 @@ model QuestProgress {
   current     Int       @default(0)
   completedAt DateTime?
 
+  /// Quando la ricompensa e' stata riscossa.
+  ///
+  /// Completare e riscuotere sono due momenti distinti, di proposito.
+  /// L'XP arrivava da solo nel momento in cui la condizione era soddisfatta:
+  /// funzionava, ma non se ne accorgeva nessuno — il numero cambiava mentre
+  /// si stava facendo altro, e la pagina Quest diventava un archivio di cose
+  /// gia' successe. Separare i due momenti restituisce a chi fa la fatica il
+  /// momento in cui la incassa, ed e' anche cio' che permette all'elenco di
+  /// liberarsi: una quest riscossa esce di scena.
+  ///
+  /// Nullo finche' non e' riscossa. Le quest completate prima di questa
+  /// migrazione vengono marcate come gia' riscosse: l'XP l'avevano gia'
+  /// ricevuto, e lasciarle riscuotibili l'avrebbe raddoppiato.
+  riscossaIl  DateTime?
+
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
 

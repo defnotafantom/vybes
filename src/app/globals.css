@@ -739,3 +739,55 @@
   0%, 100% { opacity: 0; }
   10%, 70% { opacity: 0.7; }
 }
+
+/**
+ * Il volo dell'XP riscosso, dal pulsante della quest alla barra del livello.
+ *
+ * ── Perché un'animazione qui, e non altrove ──
+ *
+ * Perché rende visibile una relazione di causa: **questo** sforzo è diventato
+ * **quel** progresso. È l'unica informazione che il numero da solo non dà —
+ * ed è il motivo per cui prima l'XP passava inosservato, arrivando mentre si
+ * stava facendo altro su una pagina che non si stava guardando.
+ *
+ * Le distanze arrivano dal componente come `--dx` e `--dy`, misurate al
+ * momento del clic: la barra e il pulsante possono stare ovunque, a seconda
+ * di quante quest ci sono e di quanto è largo lo schermo, e nessun valore
+ * scritto qui dentro sarebbe giusto due volte di fila.
+ *
+ * Sale un po' prima di partire, e rimpicciolisce mentre arriva. È il gesto di
+ * qualcosa che viene raccolto e messo via, e vale più di una traiettoria
+ * dritta — che si legge come un elemento che scivola, non come un premio che
+ * viene incassato.
+ *
+ * Seicento millisecondi. Oltre il secondo un'animazione smette di essere una
+ * risposta e diventa un'attesa, e la si comincia a saltare.
+ */
+@keyframes volo-xp {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+  15% {
+    transform: translate(-50%, calc(-50% - 14px)) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.55);
+    opacity: 0;
+  }
+}
+
+/* Chi ha chiesto meno movimento non lo riceve. `prefers-reduced-motion` non è
+   una preferenza estetica: per chi soffre di disturbi vestibolari il movimento
+   sullo schermo provoca nausea reale.
+   Il componente salta già il volo da sé — legge la stessa preferenza in
+   JavaScript e va dritto al risultato. Questa regola è la seconda difesa, per
+   il caso in cui l'animazione venga applicata da qualche altra parte: una
+   difesa che sta in un posto solo dipende da chi si ricorda di chiamarla. */
+@media (prefers-reduced-motion: reduce) {
+  [style*="volo-xp"] {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}

@@ -1625,6 +1625,101 @@ sostituisce un'intera categoria di malintesi.
 
 ---
 
+## ADR-042 · La gamification premia con visibilità, non con monete
+
+**Contesto.** La proposta era ampia: quest riscuotibili con animazione, una
+roulette giornaliera che distribuisce monete, un negozio di vestiti e
+accessori per un avatar, minigiochi per trattenere le persone.
+
+**Decisione.** Si tiene tutta la **meccanica** — riscatto, animazione,
+rotazione, ritorno quotidiano, cosmetici da collezionare — e si cambia la
+**valuta**: si premia con visibilità e credibilità, non con monete.
+
+**Perché, in quattro punti che non sono opinioni.**
+
+**1. Il lato che paga se ne va.** Questa è una piattaforma a due lati, e
+quello difficile da procurarsi è l'organizzatore: il gestore del locale, chi
+produce la serata. Se apre il sito e trova una ruota della fortuna e un
+negozio di cappelli conclude «gioco», non «qui trovo un professionista per
+sabato». Si perde il lato che meno ci si può permettere di perdere — e senza
+di lui l'altro non ha motivo di restare.
+
+**2. Contraddice due decisioni già prese.** Il livello era stato tolto dal
+profilo pubblico perché *misura quanto una persona usa il sito, che non è un
+dato di cui un organizzatore debba tener conto per decidere se scriverle*. La
+reputazione è stata tolta dalle pagine pubbliche (ADR-039) perché un voto
+accanto a un nome si legge come un giudizio sulla persona. Un avatar con
+vestiti comprati è lo stesso argomento portato più avanti nella direzione
+opposta: rende ancora più visibile la misura del tempo passato qui dentro,
+proprio mentre si è deciso che quella misura non riguarda nessun altro.
+
+**3. Le monete sono pagamenti.** Valuta virtuale acquistabile, e una roulette
+che distribuisce premi è tecnicamente una loot box: in più giurisdizioni
+europee è materia sorvegliata, tocca la tutela dei minori, l'IVA e i diritti
+di recesso, e imporrebbe di riscrivere i termini di servizio. È una superficie
+giuridica più grande di tutto il resto del sito messo insieme, su un progetto
+i cui testi legali aspettano ancora una revisione.
+
+**4. Non risolve il problema che vuole risolvere.** I minigiochi trattengono
+chi è venuto per il minigioco. Qui il problema di ritorno è un altro: un
+artista non ha motivo di riaprire il sito finché nessuno lo contatta. Si
+risolve con notifiche che valgono qualcosa e con premi che migliorano la sua
+posizione, non con una ruota.
+
+**Cosa si fa invece.** Quest riscuotibili con serbatoio che si ricarica; una
+vetrina in home a rotazione, che si conquista con la costanza e che è scarsa —
+quindi desiderabile; distintivi sul profilo pubblico legati a fatti veri
+(identità verificata, dieci ingaggi confermati, primo anno); serie giornaliere
+sui comportamenti che fanno funzionare il mercato, come rispondere a tutte le
+candidature.
+
+**La differenza in una riga:** ogni premio deve rendere l'artista **più
+facile da ingaggiare**. Un cappello non lo fa; comparire in home sì.
+
+---
+
+## ADR-043 · Completare e riscuotere sono due momenti diversi
+
+**Contesto.** L'XP veniva assegnato nell'istante in cui la condizione di una
+quest era soddisfatta. Funzionava, e non se ne accorgeva nessuno: il numero
+cambiava mentre si stava facendo altro — si carica un lavoro nel portfolio e
+l'XP arriva su una pagina che non si sta guardando. La pagina Quest era
+diventata un archivio di cose già successe.
+
+**Decisione.** La quest si completa da sé, la ricompensa si riscuote con un
+gesto. L'XP vola dal pulsante alla barra del livello, la barra sale, la quest
+si chiude e sparisce lasciando il posto alla successiva.
+
+**Perché l'animazione non è decorazione.** Rende visibile una relazione di
+causa: *questo* sforzo è diventato *quel* progresso. È l'unica informazione
+che il numero da solo non dà, ed è esattamente quella che si perdeva. Dura
+seicento millisecondi: oltre il secondo un'animazione smette di essere una
+risposta e diventa un'attesa, e la si comincia a saltare.
+
+**Perché le riscosse spariscono.** Restavano nell'elenco, sbiadite, «per
+mostrare la strada fatta». Con otto voci significa che dopo un mese metà
+dell'elenco è fatto di cose su cui non c'è più niente da fare. La strada fatta
+la dicono già il livello e l'XP; un elenco di obiettivi serve a dire cosa
+manca. Ed è il riscatto a renderlo possibile: finché la ricompensa arrivava da
+sola, una quest completata non aveva motivo di uscire di scena.
+
+**Le tre difese sul doppio incasso.** La ricompensa la decide il server
+leggendo la quest dal database — il client dice quale, non quanto. Si riscuote
+solo ciò che risulta completato. E si riscuote una volta sola, perché
+`riscossaIl` viene scritto nella stessa `updateMany` che lo pretende ancora
+nullo: due richieste simultanee — due schede aperte, un doppio clic — ne
+trovano una sola con qualcosa da aggiornare. È la condizione di gara che, su
+qualunque cosa somigli a una moneta, arriva sempre.
+
+**La migrazione è la parte che si dimentica.** Chi aveva già completato delle
+quest quell'XP l'aveva già ricevuto: aggiungere la colonna e basta le avrebbe
+lasciate riscuotibili, e al primo accesso ognuno avrebbe incassato una seconda
+volta ricompense già avute. Non è un errore che si vede — i numeri salgono, e
+sembra che funzioni. La migrazione marca come già riscosso tutto ciò che
+risulta completato.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

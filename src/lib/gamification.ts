@@ -64,15 +64,71 @@ export async function progressQuest(userId: string, questKey: string, step = 1) 
   });
 
   if (justCompleted) {
-    await grantXp(userId, quest.xpReward);
+    // L'XP **non** viene assegnato qui: si riscuote. Vedi `riscuotiQuest`.
     await notify({
       recipientId: userId,
       type: "QUEST_COMPLETED",
-      body: `Quest completata: ${quest.title} (+${quest.xpReward} XP)`,
+      body: `Quest completata: ${quest.title} — ci sono ${quest.xpReward} XP da riscuotere`,
       entityId: quest.id,
       entityUrl: "/dashboard/quest",
     });
   }
+}
+
+export type EsitoRiscossione =
+  | { ok: true; xp: number; titolo: string }
+  | { ok: false; motivo: "sconosciuta" | "non-completata" | "gia-riscossa" };
+
+/**
+ * Incassa la ricompensa di una quest completata.
+ *
+ * ── Perché esiste, invece di premiare al completamento ──
+ *
+ * Premiare da soli funziona e non se ne accorge nessuno: il numero cambia
+ * mentre si sta facendo altro — si carica un lavoro nel portfolio e l'XP
+ * arriva su una pagina che non si sta guardando. La pagina Quest diventava
+ * così un archivio di cose già successe, e la parte che dovrebbe dare
+ * soddisfazione veniva consumata da una riga di notifica.
+ *
+ * Separare i due momenti restituisce a chi ha fatto la fatica l'istante in
+ * cui la incassa, ed è anche l'unica cosa che permette all'elenco di
+ * liberarsi: finché la ricompensa è automatica, una quest completata non ha
+ * motivo di uscire di scena, e resta lì a occupare spazio per sempre.
+ *
+ * ── Le tre difese ──
+ *
+ * La ricompensa la decide il **server**, leggendo la quest dal database: il
+ * client dice quale, non quanto. Si riscuote solo ciò che risulta completato.
+ * E si riscuote **una volta**: `riscossaIl` viene scritto nella stessa
+ * `updateMany` che lo pretende ancora nullo, quindi due richieste simultanee
+ * — due schede aperte, un doppio clic — ne trovano una sola con qualcosa da
+ * aggiornare. È la condizione di gara che, su qualunque cosa somigli a una
+ * moneta, arriva sempre.
+ */
+export async function riscuotiQuest(userId: string, questKey: string): Promise<EsitoRiscossione> {
+  const quest = await prisma.quest.findUnique({ where: { key: questKey } });
+  if (!quest) return { ok: false, motivo: "sconosciuta" };
+
+  const { count } = await prisma.questProgress.updateMany({
+    where: {
+      userId,
+      questId: quest.id,
+      completedAt: { not: null },
+      riscossaIl: null,
+    },
+    data: { riscossaIl: new Date() },
+  });
+
+  if (count === 0) {
+    const p = await prisma.questProgress.findUnique({
+      where: { userId_questId: { userId, questId: quest.id } },
+      select: { completedAt: true },
+    });
+    return { ok: false, motivo: p?.completedAt ? "gia-riscossa" : "non-completata" };
+  }
+
+  await grantXp(userId, quest.xpReward);
+  return { ok: true, xp: quest.xpReward, titolo: quest.title };
 }
 
 /** Ricalcola la quest "profilo completo" in base ai campi valorizzati. */
