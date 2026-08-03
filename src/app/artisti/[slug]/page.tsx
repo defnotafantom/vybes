@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, ExternalLink, MapPin, Image as ImageIcon, Video, Music } from "lucide-react";
+import { Check, ExternalLink, MapPin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata, absoluteUrl } from "@/lib/seo";
 import { artistJsonLd } from "@/lib/jsonld";
@@ -20,21 +20,9 @@ import { Segnala } from "@/components/Segnala";
 import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
 import { concorda } from "@/lib/testo";
 import { distintiviOttenuti } from "@/lib/distintivi";
+import { SfondoLavoro } from "@/components/AnteprimaLavoro";
 import { Distintivi } from "@/components/Distintivi";
 
-/**
- * Cosa si vede al posto di un'anteprima che non c'è.
- *
- * Una tinta e un'icona per tipo, come per le schede degli ingaggi: l'assenza
- * di immagine non deve significare assenza di identità. Le tinte sono diverse
- * fra loro perché in una griglia servono a distinguere un brano da un video
- * a colpo d'occhio, prima di leggere i titoli.
- */
-const ANTEPRIMA: Record<string, { tinta: string; Icona: typeof Music }> = {
-  image: { tinta: "from-brand-500/20 to-accent-500/[0.08]", Icona: ImageIcon },
-  video: { tinta: "from-accent-500/20 to-brand-500/[0.08]", Icona: Video },
-  audio: { tinta: "from-brand-400/20 to-esito-attesa-tinta/[0.08]", Icona: Music },
-};
 
 export const revalidate = 3600;
 export const dynamicParams = true; // i profili nuovi vengono generati on-demand
@@ -451,18 +439,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                             gestire meglio un caso che così degrada comunque in
                             qualcosa di voluto. */}
                         <div className="relative aspect-[4/3] overflow-hidden bg-surface-sunken">
-                          <span
-                            aria-hidden="true"
-                            className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br ${
-                              ANTEPRIMA[item.mediaType]?.tinta ?? ANTEPRIMA.image.tinta
-                            }`}
-                          >
-                            {(() => {
-                              const Icona =
-                                (ANTEPRIMA[item.mediaType] ?? ANTEPRIMA.image).Icona;
-                              return <Icona className="h-8 w-8 text-ink-faint" />;
-                            })()}
-                          </span>
+                          <SfondoLavoro tipo={item.mediaType} />
                           {item.mediaType === "image" && (
                             <Image
                               src={item.mediaUrl}

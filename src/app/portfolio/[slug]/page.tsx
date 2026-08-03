@@ -11,6 +11,7 @@ import { PROFILO_PUBBLICO } from "@/lib/visibilita";
 import { Segnala } from "@/components/Segnala";
 import { Avatar } from "@/components/ui/Avatar";
 import { MessageSquare } from "lucide-react";
+import { SfondoLavoro } from "@/components/AnteprimaLavoro";
 
 export const revalidate = 3600;
 
@@ -86,7 +87,19 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
           {item.user.city && ` · ${item.user.city}`}
         </p>
 
-        <div className="mt-8 overflow-hidden rounded-xl bg-brand-50 dark:bg-white/5">
+        {/* ── Perché c'è uno sfondo sotto il media ──
+            Un'immagine che non carica lasciava un rettangolo bianco alto
+            quattrocento pixel col simbolo rotto del browser, sulla pagina in
+            cui quel lavoro è il protagonista. E non è un caso teorico: in
+            produzione c'è un record il cui indirizzo punta a un file che non
+            esiste più.
+
+            Correggere quel record non sarebbe bastato: i dati già scritti
+            restano, e il prossimo file rimosso dal blob storage rifarebbe lo
+            stesso. La difesa sta nel componente, quindi vale anche per gli
+            sbagli di ieri. */}
+        <div className="relative mt-8 min-h-56 overflow-hidden rounded-xl bg-brand-50 dark:bg-white/5">
+          <SfondoLavoro tipo={item.mediaType} grande />
           {item.mediaType === "image" && (
             <Image
               src={item.mediaUrl}
@@ -94,16 +107,16 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
               width={1200}
               height={800}
               priority
-              className="h-auto w-full object-cover"
+              className="relative h-auto w-full object-cover"
             />
           )}
           {item.mediaType === "video" && (
-            <video controls preload="metadata" className="w-full" aria-label={item.title}>
+            <video controls preload="metadata" className="relative w-full" aria-label={item.title}>
               <source src={item.mediaUrl} />
             </video>
           )}
           {item.mediaType === "audio" && (
-            <audio controls preload="metadata" className="w-full p-6" aria-label={item.title}>
+            <audio controls preload="metadata" className="relative w-full p-6" aria-label={item.title}>
               <source src={item.mediaUrl} />
             </audio>
           )}
