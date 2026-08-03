@@ -588,6 +588,16 @@
    trasparente, non avrebbe nulla su cui agire. */
 .logo-link {
   transition: filter 250ms var(--ease);
+  /* Da telefono, tenere premuto un collegamento apre l'anteprima di sistema.
+     Sul logotipo non serve a niente — porta alla home, che è a un tocco — e
+     copre lo schermo per un gesto che nessuno voleva fare.
+
+     Qui si toglie **solo** il callout, non il menu contestuale: sul desktop
+     il tasto destro su un collegamento serve ad aprirlo in una scheda nuova,
+     ed è una cosa legittima che non c'è motivo di impedire. Il marchio grande
+     è un altro caso — non è un collegamento, è l'innesco di un'animazione, e
+     lì il menu non ha nessun uso sensato. */
+  -webkit-touch-callout: none;
 }
 .logo-link:hover,
 .logo-link:focus-visible {
@@ -611,6 +621,12 @@
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
+  /* Il menu lungo di iOS.
+     Tenendo premuto, Safari apriva il pannello di sistema — «copia»,
+     «condividi», e sull'SVG «salva immagine» — proprio sopra l'animazione che
+     quel gesto serve ad avviare. `user-select: none` da solo non basta:
+     il callout è un'altra cosa e vuole la sua riga. */
+  -webkit-touch-callout: none;
 }
 .brand-innesco:focus-visible {
   outline: 2px solid rgb(var(--ring));

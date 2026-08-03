@@ -176,6 +176,14 @@ export function BrandHero() {
           onPointerUp={rilascia}
           onPointerLeave={rilascia}
           onPointerCancel={rilascia}
+          /* Su Android tenere premuto apriva il menu contestuale sopra
+             l'animazione — e sull'SVG «salva immagine», che di questo marchio
+             salverebbe un fotogramma a caso.
+             Qui si può togliere senza rimpianti: non è un collegamento, è
+             l'innesco di un'animazione, e non esiste un uso sensato del tasto
+             destro su un innesco. Sul logotipo in barra invece il menu resta,
+             perché lì «apri in una scheda nuova» è una cosa che la gente fa. */
+          onContextMenu={(e) => e.preventDefault()}
           // Spazio e Invio: `repeat` scarta le ripetizioni automatiche del
           // tasto tenuto giù, che altrimenti farebbero ripartire il timer
           // decine di volte al secondo.
