@@ -302,8 +302,12 @@ const INGAGGI = [
 async function generaFoto(seme: string, percorso: string, larghezza: number, altezza: number) {
   let h = 0;
   for (const c of seme) h = (h * 31 + c.charCodeAt(0)) % 360;
-  const a = `hsl(${h} 55% 35%)`;
-  const b = `hsl(${(h + 70) % 360} 60% 18%)`;
+  // Luminosità alta e differenza contenuta fra i due estremi: la prima
+  // versione andava dal 35% al 18%, e su alcune tinte l'avatar risultava così
+  // scuro da confondersi con la scheda — sembrava che la foto mancasse, che è
+  // proprio il caso che questi dati servono a distinguere da quello pieno.
+  const a = `hsl(${h} 60% 58%)`;
+  const b = `hsl(${(h + 70) % 360} 55% 34%)`;
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${larghezza}" height="${altezza}">
     <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">

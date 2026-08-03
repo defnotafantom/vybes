@@ -1581,6 +1581,50 @@ gestito per costruzione, invece che un ramo da ricordarsi.
 
 ---
 
+## ADR-041 · Separare un database significa spostare anche chi lo guarda
+
+**Contesto.** In una sola giornata la stessa cosa è successa tre volte.
+
+1. I test scrivevano in produzione. Rimedio: `E2E_DATABASE_URL`, un branch
+   dedicato, e una guardia che non li fa partire senza (ADR-029).
+2. I dati dimostrativi non devono toccare la produzione. Rimedio:
+   `DEMO_DATABASE_URL` e la stessa forma di guardia.
+
+Entrambe le difese funzionano. Entrambe hanno lasciato indietro qualcosa:
+
+- **`npm run dev` guardava `DATABASE_URL`**, mentre `demo:popola` riempiva
+  l'altro database. Si popolava un posto e se ne guardava un altro: la pagina
+  degli artisti ne mostrava sette e sembrava che l'importazione non fosse
+  riuscita, mentre era riuscita benissimo altrove.
+- **`pulisci:e2e` cancellava da `DATABASE_URL`**, mentre gli account di prova
+  nascevano sul branch di test. Diceva «nessun account da rimuovere» mentre
+  erano **trentotto**, nove dei quali fermi lì dal giorno prima, tutti
+  pubblici, con slug `prova-percorso`, `prova-percorso-2`…
+
+**Il secondo caso è il più istruttivo**, perché la difesa ha *nascosto* il
+problema che quello strumento esisteva per risolvere. Prima della
+separazione i residui erano in produzione e si vedevano; dopo, erano in un
+posto che nessuno controllava più — e lo strumento di controllo diceva che
+era tutto a posto. Se quel branch fosse stato la produzione sarebbero state
+trentotto pagine pubbliche di persone inesistenti su un dominio indicizzato.
+
+**Decisione.** `npm run dev:demo` e `pulisci:e2e` che legge
+`E2E_DATABASE_URL`. Entrambi dichiarano in testa su quale database stanno
+lavorando: non ci si accorge di guardare il posto sbagliato se nessuno dice
+qual è il posto.
+
+**La regola.** Quando si separa un database, vanno spostati con lui **tutti**
+gli strumenti che lo toccano — quelli che scrivono, quelli che leggono e
+quelli che puliscono. Una separazione che ne lascia indietro uno non è più
+sicura: è solo più difficile da capire, perché lo strumento rimasto indietro
+continua a rispondere, e risponde di un posto che non è più quello giusto.
+
+**Corollario operativo:** ogni comando che parla con un database dice a quale
+si è collegato, prima di fare qualunque cosa. È una riga di output, e
+sostituisce un'intera categoria di malintesi.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

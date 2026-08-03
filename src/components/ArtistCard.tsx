@@ -45,13 +45,22 @@ export function ArtistCard({
    */
   return (
     <article className="card-glow card-interactive group h-full">
-      <Link href={`/artisti/${artist.slug}`} className="flex h-full items-start gap-4">
+      {/* `items-start` sulla riga — che c'era, e serviva a tenere l'avatar in
+          alto — impediva alla colonna del testo di allungarsi fino al fondo
+          della scheda. Senza quell'altezza `mt-auto` non ha niente su cui
+          spingere, e le etichette restavano dove capitava: sessantuno pixel
+          su una scheda, centododici su quella accanto.
+
+          L'allineamento in alto lo fa ora `self-start` sull'avatar, che
+          riguarda solo lui: la colonna del testo torna a occupare tutta
+          l'altezza, che è la condizione perché `mt-auto` significhi qualcosa. */}
+      <Link href={`/artisti/${artist.slug}`} className="flex h-full gap-4">
         <Avatar
           name={artist.name}
           src={artist.image}
           size="lg"
           priority={priority}
-          className="transition-transform duration-250 ease-out group-hover:scale-105"
+          className="self-start transition-transform duration-250 ease-out group-hover:scale-105"
         />
 
         <div className="flex min-w-0 flex-1 flex-col">
