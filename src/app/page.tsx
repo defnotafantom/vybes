@@ -13,6 +13,7 @@ import { BrandHero } from "@/components/BrandHero";
 import { Avatar } from "@/components/ui/Avatar";
 import { fromCsv } from "@/lib/slug";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
+import { inVetrina, giornoDi } from "@/lib/vetrina";
 
 // Rigenerata ogni 10 minuti: HTML statico servito dalla CDN, dati freschi.
 /**
@@ -24,6 +25,18 @@ import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
  */
 const SOGLIA_VANTO = 20;
 
+/*
+ * Dieci minuti, non ventiquattro ore.
+ *
+ * La vetrina ruota una volta al giorno, quindi in teoria basterebbe
+ * rigenerare a mezzanotte. Ma questa pagina mostra anche i prossimi ingaggi e
+ * i conteggi, che cambiano quando qualcuno pubblica: una cache giornaliera
+ * farebbe apparire un annuncio nuovo in home il giorno dopo.
+ *
+ * Dieci minuti servono la parte che cambia spesso; la rotazione, che dipende
+ * solo dalla data, resta identica per tutte le rigenerazioni dello stesso
+ * giorno — quindi non costa niente.
+ */
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
@@ -61,10 +74,29 @@ const FAQ = [
 
 export default async function HomePage() {
   const [featuredArtists, upcomingEvents, stats, cities] = await Promise.all([
+    /*
+     * ── Perché non più «i sei con la reputazione più alta» ──
+     *
+     * Sembra meritocratico e come incentivo è morto: i primi sei sono sempre
+     * gli stessi, chi è settimo non ci arriverà mai, e chi è primo non ha
+     * motivo di fare altro. Una classifica premia una volta e poi smette di
+     * chiedere qualcosa.
+     *
+     * Ora si prendono tutti quelli che superano la soglia — profilo pubblico,
+     * indirizzo confermato — e la vetrina ruota fra loro un giorno alla volta
+     * (`lib/vetrina.ts`). L'ordine è per data d'iscrizione perché deve essere
+     * **stabile**: ordinare per reputazione farebbe saltare il turno a
+     * qualcuno ogni volta che un numero cambia, senza che nessuno l'abbia
+     * deciso.
+     *
+     * Il limite a duecento è una difesa sul costo della query, non sulla
+     * regola: sopra quel numero il turno arriverebbe comunque una volta ogni
+     * sette mesi, e a quel punto la vetrina andrà ripensata per città.
+     */
     prisma.user.findMany({
       where: ARTISTA_PUBBLICO,
-      orderBy: [{ reputation: "desc" }, { experience: "desc" }],
-      take: 6,
+      orderBy: { createdAt: "asc" },
+      take: 200,
       select: {
         slug: true,
         name: true,
@@ -106,8 +138,14 @@ export default async function HomePage() {
   ]);
 
   const [artistCount, eventCount, cityCount] = stats;
-  const hero = featuredArtists[0];
-  const rest = featuredArtists.slice(1);
+  /*
+   * Sei posti, e la finestra avanza di uno al giorno: chi torna domani trova
+   * cinque volti conosciuti e uno nuovo. Cambiare tutto ogni giorno farebbe
+   * sembrare un'altra pagina; non cambiare niente toglie il motivo di tornare.
+   */
+  const vetrina = inVetrina(featuredArtists, 6, giornoDi());
+  const hero = vetrina[0];
+  const rest = vetrina.slice(1);
 
   return (
     <>

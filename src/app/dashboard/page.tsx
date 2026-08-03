@@ -7,6 +7,9 @@ import { Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
 import { SchedaReputazione } from "@/components/dashboard/SchedaReputazione";
+import { SchedaVetrina } from "@/components/dashboard/SchedaVetrina";
+import { giornoDi, fraQuantiGiorni } from "@/lib/vetrina";
+import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
 import { reputazioneMassima } from "@/lib/reputazione";
 
@@ -38,6 +41,23 @@ export default async function DashboardPage() {
       include: { progress: { where: { userId }, select: { current: true, completedAt: true } } },
     }),
   ]);
+
+  /*
+   * Il proprio posto nella fila della vetrina.
+   *
+   * Si legge lo stesso elenco che usa la home — stesso filtro, stesso ordine —
+   * perché due liste costruite separatamente divergono, e qui divergere
+   * significherebbe promettere un turno che non arriva. `select: { id }` e
+   * basta: serve solo la posizione.
+   */
+  const rotazione = await prisma.user.findMany({
+    where: ARTISTA_PUBBLICO,
+    orderBy: { createdAt: "asc" },
+    take: 200,
+    select: { id: true },
+  });
+  const mioIndice = rotazione.findIndex((u) => u.id === userId);
+  const POSTI_VETRINA = 6;
 
   const progress = levelProgress(me?.experience ?? 0);
   // Le stesse voci con cui il punteggio è stato calcolato: mostrarne una
@@ -165,6 +185,12 @@ export default async function DashboardPage() {
             </div>
           </dl>
         </div>
+
+        <SchedaVetrina
+          ammesso={mioIndice >= 0}
+          fraGiorni={fraQuantiGiorni(mioIndice, rotazione.length, POSTI_VETRINA, giornoDi())}
+          quanti={rotazione.length}
+        />
 
         <SchedaReputazione
           voci={voci}

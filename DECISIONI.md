@@ -1720,6 +1720,52 @@ risulta completato.
 
 ---
 
+## ADR-044 · La vetrina è una fila, non un podio
+
+**Contesto.** La home mostrava «i sei artisti con la reputazione più alta».
+Sembra meritocratico ed è un incentivo morto: i primi sei sono sempre gli
+stessi, chi è settimo non ci arriverà mai, e chi è primo non ha motivo di fare
+altro. Una classifica premia una volta e poi smette di chiedere qualcosa.
+
+**Decisione.** Si supera una soglia — profilo pubblico, indirizzo confermato —
+e da quel momento si è nella rotazione. La vetrina scorre di un posto al
+giorno: ognuno entra, resta sei giorni, esce, e riavrà il proprio turno.
+
+**Perché è questa la forma del premio quotidiano.** È la risposta alla
+richiesta di «una roulette giornaliera con dei premi» (ADR-042). Stessa
+funzione — un motivo per tornare, qualcosa che si vince — e premio diverso:
+non una moneta da spendere in un negozio, ma **il posto più visto del sito**.
+Per un artista è la cosa che vuole davvero, e per la directory è un
+miglioramento: chi arriva in home trova qualcuno di diverso ogni giorno invece
+della stessa fila di sempre.
+
+**La proprietà che conta è la raggiungibilità.** «Completa il profilo e prima
+o poi sei in home» è una cosa che una persona può decidere di fare. «Diventa
+il primo di trecento» no. Un incentivo che quasi nessuno può soddisfare non è
+un incentivo: è una decorazione per chi era già davanti.
+
+**La scarsità si regola da sé.** Più artisti superano la soglia, più raro è il
+proprio turno. È il contrario di una ricompensa che si svaluta man mano che la
+si distribuisce — e significa che il premio diventa più prezioso proprio
+mentre il sito diventa più utile.
+
+**Nessun processo programmato, nessuna scrittura.** La scelta è una funzione
+pura del giorno: niente lavoro notturno da tenere in piedi, niente colonna da
+aggiornare, niente stato che può divergere. Un premio quotidiano affidato a un
+processo programmato è un premio che il giorno in cui quel processo non parte
+non c'è — e nessuno se ne accorge finché non lo chiede qualcuno.
+
+**L'ordine dei candidati è per data d'iscrizione, mai per reputazione.** Deve
+essere stabile: un ordine che cambia da solo farebbe saltare il turno a
+qualcuno ogni volta che un numero si muove, senza che nessuno l'abbia deciso.
+
+**E si dice a chi aspetta quando tocca.** Un premio che non si sa di poter
+vincere non incentiva niente, e «sei in rotazione» non si può verificare. «Fra
+sei giorni» è un impegno: se il settimo giorno non è successo, chi legge se ne
+accorge — ed è giusto che se ne accorga.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:
