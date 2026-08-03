@@ -6,35 +6,13 @@ import { DISCIPLINES } from "@/lib/constants";
 import { profileSchema } from "@/lib/validations";
 import { FileUpload } from "@/components/FileUpload";
 import { SCAGLIONI_BIO } from "@/lib/reputazione";
-
-/**
- * Il messaggio d'errore di un campo.
- *
- * Esiste per una ragione precisa. Gli errori venivano raccolti in un
- * dizionario indicizzato per campo — `zod` ne produce uno per ogni regola
- * violata — ma solo quattro campi su undici lo mostravano. Un modulo che
- * rifiuta di salvare e non dice niente è peggio di uno che salva male: chi lo
- * usa ripreme «Salva» e conclude che il sito è rotto.
- *
- * Il difetto non è di quei sette campi: è che mostrare l'errore era una cosa
- * da ricordarsi. Qui è un componente solo, e più sotto ogni chiave rimasta
- * fuori viene stampata comunque — così una regola nuova in `profileSchema`
- * non può più diventare un rifiuto silenzioso.
- */
-function Errore({ msg }: { msg?: string }) {
-  if (!msg) return null;
-  return (
-    <p role="alert" className="mt-1 text-sm text-red-600 dark:text-red-400">
-      {msg}
-    </p>
-  );
-}
+import { Errore, ErroriOrfani } from "@/components/ui/Errore";
 
 /** I campi che hanno un posto in pagina dove mostrare il proprio errore. */
 const CAMPI_CON_ERRORE = [
   "name", "headline", "bio", "disciplines", "citySlug",
   "website", "instagram", "spotify", "youtube", "image",
-];
+] as const;
 
 type Initial = {
   name: string;
@@ -94,14 +72,6 @@ export function ProfileForm({
   const bioMax = SCAGLIONI_BIO[0];
   const bioProssimo = [...SCAGLIONI_BIO].reverse().find((s) => bioLen < s.da);
 
-  /**
-   * Gli errori che nessun campo ha mostrato.
-   *
-   * `_` è quello generico dell'API, ma qui finisce anche qualunque chiave che
-   * il server dovesse restituire per un campo non previsto. È la rete sotto
-   * il trapezio: senza, quell'errore sparirebbe e basta.
-   */
-  const erroriOrfani = Object.entries(errors).filter(([k]) => !CAMPI_CON_ERRORE.includes(k));
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -268,14 +238,27 @@ export function ProfileForm({
         <Errore msg={errors.image} />
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={form.isPublic} onChange={(e) => set("isPublic", e.target.checked)} />
-        Profilo pubblico e indicizzabile dai motori di ricerca
+      {/* «indicizzabile» era una promessa che il sito non mantiene da solo: un
+          profilo pubblico compare nell'indice soltanto se supera anche la
+          soglia di contenuto (ADR-018), che questa casella non governa. La
+          casella dice cosa fa davvero — togliere il profilo dalla vista — e
+          quanto manca all'indice lo dice la dashboard, che ha il dato. */}
+      <label className="flex min-h-11 items-start gap-3 text-sm">
+        <input
+          type="checkbox"
+          className="checkbox mt-0.5"
+          checked={form.isPublic}
+          onChange={(e) => set("isPublic", e.target.checked)}
+        />
+        <span>
+          Profilo visibile nella directory pubblica
+          <span className="mt-0.5 block text-xs muted">
+            Togliendo la spunta sparisci dagli elenchi e dai motori di ricerca.
+          </span>
+        </span>
       </label>
 
-      {erroriOrfani.map(([k, msg]) => (
-        <Errore key={k} msg={msg} />
-      ))}
+      <ErroriOrfani errori={errors} mostrati={CAMPI_CON_ERRORE} />
       {saved && (
         <p role="status" className="text-sm text-esito-ok">
           Profilo salvato.

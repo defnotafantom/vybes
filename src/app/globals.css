@@ -211,6 +211,30 @@
            sm:text-fluid-sm;
   }
 
+  /**
+   * La casella di spunta.
+   *
+   * Quelle native sono alte tredici pixel. Su un telefono è metà del bersaglio
+   * minimo raccomandato, e qui governano cose che non si vogliono sbagliare
+   * con un dito: sparire dalla directory pubblica, dichiarare un ingaggio
+   * retribuito, accogliere una segnalazione. Erano anche l'unico controllo del
+   * sito rimasto col grigio di sistema, in mezzo a campi che hanno tutti
+   * bordo, angoli e anello di fuoco propri.
+   *
+   * `accent-color` invece di ridisegnare la casella da zero: la spunta,
+   * l'indeterminato, il tratteggio del focus e il comportamento coi lettori di
+   * schermo restano quelli nativi, che nessuna riscrittura in CSS eguaglia. Si
+   * cambiano solo dimensione e colore, cioè le due cose che erano sbagliate.
+   *
+   * L'area cliccabile grande la dà `min-h-11` sulla `label` che la contiene:
+   * ingrandire la casella oltre i 20px la renderebbe sproporzionata rispetto
+   * al testo accanto.
+   */
+  .checkbox {
+    @apply h-5 w-5 shrink-0 cursor-pointer rounded border-line
+           accent-brand-600 dark:accent-brand-500;
+  }
+
   .chip {
     @apply inline-flex items-center gap-1 rounded-lg bg-brand-500/10 px-2.5 py-1
            text-fluid-xs font-semibold text-brand-700 transition-colors

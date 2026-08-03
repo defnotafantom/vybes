@@ -8,6 +8,7 @@ import { fromCsv } from "@/lib/slug";
 import { PROFILO_PUBBLICO } from "@/lib/visibilita";
 import { dataBreve } from "@/lib/date";
 import { ArtistCard } from "@/components/ArtistCard";
+import { conta } from "@/lib/testo";
 
 // La pagina risultati non va indicizzata: contenuto duplicato e infinito.
 export const metadata: Metadata = buildMetadata({
@@ -84,7 +85,7 @@ export default async function SearchPage({
 
       {term.length >= 2 && (
         <p className="mt-6 text-fluid-sm text-ink-muted">
-          {totalResults === 1 ? "1 risultato" : `${totalResults} risultati`} per{" "}
+          {conta(totalResults, "risultato", "risultati")} per{" "}
           <strong className="text-ink">{term}</strong>
         </p>
       )}

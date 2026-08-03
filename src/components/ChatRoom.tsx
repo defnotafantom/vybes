@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { conta } from "@/lib/testo";
 
 export type ChatMessage = {
   id: string;
@@ -87,7 +88,7 @@ export function ChatRoom({
   return (
     <div className="card p-0">
       <div className="flex items-center justify-between border-b px-4 py-2 text-xs muted" style={{ borderColor: "rgb(var(--border))" }}>
-        <span>{messages.length} messaggi</span>
+        <span>{conta(messages.length, "messaggio", "messaggi")}</span>
         <span aria-live="polite" className="flex items-center gap-1.5">
           <span
             aria-hidden="true"

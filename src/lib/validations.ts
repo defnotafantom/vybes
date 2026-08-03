@@ -43,10 +43,26 @@ export const postSchema = z.object({
   collaborationArtists: z.array(z.string()).max(10).default([]),
 });
 
+/**
+ * Descrizione minima di un annuncio.
+ *
+ * Esportata perché il modulo conta quanto manca mentre si scrive: era un `30`
+ * scritto nello schema e un «Minimo 30 caratteri» scritto nel JSX, cioè due
+ * copie della stessa regola in due file — e la seconda non contava niente,
+ * lasciando scoprire di non averlo raggiunto solo premendo «Pubblica».
+ */
+export const MIN_DESCRIZIONE_INGAGGIO = 30;
+
 export const eventSchema = z
   .object({
     title: z.string().min(4, "Titolo troppo corto").max(120),
-    description: z.string().min(30, "Descrivi l'ingaggio in almeno 30 caratteri").max(5000),
+    description: z
+      .string()
+      .min(
+        MIN_DESCRIZIONE_INGAGGIO,
+        `Descrivi l'ingaggio in almeno ${MIN_DESCRIZIONE_INGAGGIO} caratteri`
+      )
+      .max(5000),
     category: z.enum(["LIVE", "CASTING", "WORKSHOP", "CONTEST", "JAM"]).default("LIVE"),
     startsAt: z.coerce.date(),
     endsAt: z.coerce.date().optional().nullable(),
@@ -69,6 +85,45 @@ export const eventSchema = z
     message: "Indica il compenso minimo",
     path: ["feeMin"],
   });
+
+/**
+ * Un annuncio nuovo deve avere una data futura.
+ *
+ * ── Cosa succedeva senza ──
+ *
+ * Niente, apparentemente: il modulo accettava, l'API rispondeva 201, la
+ * pagina dell'ingaggio si apriva. Ma `/eventi`, `/citta/…/eventi` e la mappa
+ * filtrano tutte per `startsAt >= adesso`, quindi l'annuncio **non compariva
+ * da nessuna parte**. Chi lo pubblica non ha modo di accorgersene: ha visto
+ * la conferma, ha visto la sua pagina, e aspetta candidature che non
+ * arriveranno.
+ *
+ * È il difetto peggiore di questa categoria — non un errore che si vede, ma
+ * un successo che non è successo. Ed è già capitato: in produzione c'è un
+ * ingaggio datato 3 marzo 2024.
+ *
+ * ── Perché è una regola a parte e non dentro `eventSchema` ──
+ *
+ * Perché la modifica usa lo stesso schema, e correggere un refuso nel titolo
+ * di una serata dell'anno scorso deve restare possibile. Vietare la data
+ * passata in assoluto renderebbe immodificabile tutto l'archivio: una
+ * validazione che impedisce di sistemare i propri errori è peggio del
+ * problema che risolve.
+ *
+ * Quindi: `eventNuovoSchema` per la creazione, `eventSchema` per la modifica.
+ *
+ * ── Perché esattamente «dopo adesso» ──
+ *
+ * Perché è alla lettera la condizione con cui la directory decide se
+ * mostrarlo. Una soglia più generosa — «non prima di ieri» — rimetterebbe in
+ * circolo annunci pubblicabili e invisibili, cioè il difetto di partenza in
+ * versione più piccola. La promessa che questa regola mantiene è una sola: se
+ * la pubblichi, si vede.
+ */
+export const eventNuovoSchema = eventSchema.refine((d) => d.startsAt > new Date(), {
+  message: "La data è già passata: un annuncio con data passata non compare in nessun elenco.",
+  path: ["startsAt"],
+});
 
 export const portfolioSchema = z.object({
   title: z.string().min(2).max(120),

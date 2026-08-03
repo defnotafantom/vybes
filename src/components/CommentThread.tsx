@@ -6,6 +6,7 @@ import { MessageCircle } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { RichText } from "@/components/RichText";
 import { quandoRelativo } from "@/lib/date";
+import { conta } from "@/lib/testo";
 
 type Comment = {
   id: string;
@@ -74,7 +75,7 @@ export function CommentThread({
         onClick={() => setOpen((v) => !v)}
       >
         <MessageCircle className="h-4 w-4" aria-hidden="true" />
-        {count} {count === 1 ? "commento" : "commenti"}
+        {conta(count, "commento", "commenti")}
       </button>
 
       {open && (

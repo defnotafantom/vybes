@@ -81,12 +81,12 @@ export function DecisioneForm({ id, stato }: { id: string; stato: string }) {
           anche rimuovere il contenuto, e la casella da spuntare si dimentica.
           Resta disattivabile per le segnalazioni fondate che non richiedono
           una restrizione — un dato sbagliato si corregge, non si nasconde. */}
-      <label className="mt-3 flex cursor-pointer items-start gap-2.5 text-fluid-xs">
+      <label className="mt-3 flex min-h-11 cursor-pointer items-start gap-3 text-fluid-xs">
         <input
           type="checkbox"
           checked={oscura}
           onChange={(e) => setOscura(e.target.checked)}
-          className="mt-0.5 accent-brand-500"
+          className="checkbox mt-0.5"
         />
         <span>
           Rendi il contenuto non visibile accogliendo la segnalazione

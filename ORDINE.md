@@ -61,18 +61,45 @@ mai guardata da dentro con una sessione aperta. Cinque difetti, tutti corretti
 **Sightengine è configurato**: `/api/health` riporta `moderazioneImmagini:
 true`. La voce 3-bis è chiusa.
 
+**Terzo giro, sulle pagine dell'area personale rimaste** — portfolio,
+pubblicazione di un ingaggio, conversazione, coda di moderazione (ADR-035,
+036, 037):
+
+- **Si poteva pubblicare un ingaggio con data già passata.** Il modulo
+  accettava, l'API rispondeva 201, la pagina si apriva — e l'annuncio non
+  compariva in nessun elenco, perché tutte le directory filtrano per
+  `startsAt >= adesso`. È il difetto peggiore trovato finora: non un errore
+  che si vede, un successo che non è successo. È così che è nato l'ingaggio
+  del 3 marzo 2024.
+- «1 messaggi» in cima a una conversazione: lo stesso «1 ARTISTI» corretto
+  due giorni prima. Ora `conta()` e `concorda()`, e i sei punti già giusti
+  convertiti insieme.
+- Le caselle di spunta erano quelle native, tredici pixel, col grigio di
+  sistema — e governano lo sparire dalla directory e il dichiarare un
+  compenso.
+- Da telefono i contatori delle cose in attesa stavano dentro un pannello
+  chiuso: si vedevano solo dopo essere andati a cercarli.
+- `EventForm` mostrava sette errori su sedici, stesso difetto di
+  `ProfileForm`. Ora entrambi usano `Errore` e `ErroriOrfani`.
+
+Coperti da prove nuove: `tests/unit/validations.test.ts` (data passata),
+`tests/unit/testo.test.ts`, e un blocco «dentro l'area personale» in
+`tests/e2e/mobile.spec.ts` — che è anche la prima volta che l'area privata
+viene percorsa da uno schermo stretto.
+
 ### Cosa manca per aprire davvero al pubblico
 
-Due cose, e nessuna è codice.
+**1. L'indirizzo email del titolare** — `src/lib/titolare.ts`, l'unico campo
+rimasto vuoto. Meglio `privacy@vybeshub.art` che una casella personale: finisce
+su una pagina indicizzata, e se cambi provider un alias resta lo stesso mentre
+un indirizzo personale no — e un contatto pubblicato che smette di funzionare
+significa richieste di cancellazione che rimbalzano. Cloudflare Email Routing
+se il DNS è lì, altrimenti ImprovMX; entrambi gratis.
 
-**1. I tuoi dati da titolare** — `src/lib/titolare.ts`, cinque campi. Dieci
-minuti, ed è l'unico blocco rimasto. Finché sono vuoti, `/privacy` è online e
-dichiara di sé «Da completare prima dell'apertura al pubblico», mentre stai
-raccogliendo email e password di persone reali. L'avviso sparisce da solo
-quando li compili.
+Da controllare anche il campo `indirizzo`: è di tredici caratteri, e non ci
+stanno via, numero, CAP, città e provincia.
 
-Poi il testo va letto da un avvocato: è l'unica voce che può creare un
-problema giuridico invece che tecnico.
+Poi il testo va letto da un avvocato.
 
 **2. I venti artisti** — `RECLUTAMENTO.md` ha il messaggio, le quattro cose
 da chiedere, la formula di consenso e il formato del file. Poi

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { haversineKm } from "@/lib/cities";
 import { dataBreve } from "@/lib/date";
+import { conta } from "@/lib/testo";
 
 // Leaflet tocca window: caricato solo lato client, fuori dal bundle iniziale.
 const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
@@ -229,8 +230,8 @@ export function MapExplorer({
 
           <p className="mt-3 text-fluid-sm text-ink-muted">
             {filtraPerRaggio
-              ? `${visible.length} ${visible.length === 1 ? "ingaggio" : "ingaggi"} entro ${radius} km`
-              : `${visible.length} ${visible.length === 1 ? "ingaggio" : "ingaggi"} in tutta Italia`}
+              ? `${conta(visible.length, "ingaggio", "ingaggi")} entro ${radius} km`
+              : `${conta(visible.length, "ingaggio", "ingaggi")} in tutta Italia`}
           </p>
         </div>
 

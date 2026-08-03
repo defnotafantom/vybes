@@ -1355,6 +1355,99 @@ dashboard, che ha il dato.
 
 ---
 
+## ADR-035 · Un annuncio con data passata è un successo che non è successo
+
+**Contesto.** `eventSchema` non chiedeva che la data fosse futura. Il modulo
+accettava, l'API rispondeva 201, la pagina dell'ingaggio si apriva — e
+l'annuncio **non compariva in nessun elenco**, perché `/eventi`, le directory
+di città e la mappa filtrano tutte per `startsAt >= adesso`.
+
+Chi lo pubblica non ha modo di accorgersene: ha visto la conferma, ha visto la
+sua pagina, e aspetta candidature che non arriveranno. In produzione c'era già
+un ingaggio datato 3 marzo 2024, pubblicato e invisibile.
+
+**È la categoria peggiore.** Non un errore che si vede — un errore che si
+vede lo si segnala, e nel frattempo si riprova. Qui il sistema dice di sì e
+non fa niente, e l'unico modo di scoprirlo è aspettare abbastanza a lungo da
+insospettirsi. Su una piattaforma a due lati significa perdere l'organizzatore
+al primo tentativo, cioè il lato più difficile da procurarsi.
+
+**Decisione.** `eventNuovoSchema` — `eventSchema` più il vincolo sulla data —
+usato dalla creazione, sia nel modulo sia nella POST. La modifica continua a
+usare `eventSchema`: correggere un refuso nel titolo di una serata dell'anno
+scorso deve restare possibile, e una validazione che impedisce di sistemare i
+propri errori è peggio del problema che risolve. Il campo ha anche `min`, che
+è solo un aiuto del browser — la difesa vale anche per chi la richiesta la
+manda senza passare dal modulo.
+
+**La soglia è esattamente «dopo adesso»**, cioè alla lettera la condizione con
+cui la directory decide se mostrarlo. Una più generosa — «non prima di ieri» —
+rimetterebbe in circolo annunci pubblicabili e invisibili: il difetto di
+partenza in versione più piccola e più difficile da trovare. La promessa che
+questa regola mantiene è una sola: **se lo pubblichi, si vede.**
+
+**La regola generale.** Ogni volta che una vista filtra, il modulo che
+scrive deve conoscere quel filtro. Un dato che si può salvare ma che nessuna
+pagina mostrerà è un modo silenzioso di perdere il lavoro di qualcuno.
+
+---
+
+## ADR-036 · Il plurale non può essere facoltativo
+
+**Contesto.** «1 ARTISTI» sulla pagina delle città. Corretto. Due giorni
+dopo, «1 messaggi» in cima a una conversazione. In altri sei punti del sito
+la stessa frase era scritta giusta, con un ternario a mano.
+
+**Perché non è un dettaglio.** Chi legge «1 messaggi» non deduce che c'è un
+difetto: deduce che dietro non c'è nessuno che guarda. Su un dominio nuovo,
+che deve convincere venti artisti a fidarsi, è il genere di segnale che costa
+più di quanto valga la riga di codice che lo produce.
+
+**Decisione.** `conta()` e `concorda()` in `src/lib/testo.ts`, e i sei punti
+già corretti convertiti insieme a quello sbagliato.
+
+**L'obiezione, e la risposta.** Convertire sei chiamate che funzionavano è
+churn: il ternario inline è leggibile e non era rotto. Ma il difetto non
+stava nei sei corretti né nei due sbagliati — stava nel fatto che **concordare
+il plurale era una scelta**, ripetuta a mano ogni volta. Finché lo è, ogni
+conteggio nuovo è un'altra occasione, e questa è arrivata due volte in
+produzione in due giorni. È lo stesso schema di ADR-034 e di quasi tutti i
+difetti di questo progetto: la regola esiste, tutti la conoscono, e niente la
+applica.
+
+---
+
+## ADR-037 · Una casella di spunta è un controllo, non un residuo di sistema
+
+**Contesto.** Le tre caselle del sito — «profilo visibile», «ingaggio
+retribuito», «oscura il contenuto» — erano quelle native del browser: alte
+tredici pixel, col grigio di sistema, in mezzo a campi che hanno tutti bordo,
+angoli e anello di fuoco propri. Governano però le cose che meno si vogliono
+sbagliare con un dito: sparire dalla directory, dichiarare un compenso,
+rimuovere il contenuto di qualcuno.
+
+**Decisione.** Una classe `.checkbox` con `accent-color` e venti pixel di
+lato, e `min-h-11` sull'etichetta che la contiene.
+
+**Perché `accent-color` e non una casella ridisegnata.** La ricetta diffusa è
+`appearance: none` più uno pseudo-elemento per la spunta. Costa il segno di
+spunta, lo stato indeterminato, il tratteggio del fuoco e — la parte che
+nessuno riscrive bene — il comportamento coi lettori di schermo e con le
+impostazioni di contrasto elevato del sistema operativo. Qui erano sbagliate
+due cose, dimensione e colore, e si cambiano quelle due.
+
+**L'area grande la dà l'etichetta, non la casella.** Portare la casella a
+44px la renderebbe sproporzionata rispetto al testo accanto; portare a 44px
+l'etichetta che la contiene dà lo stesso bersaglio al dito senza toccare
+l'aspetto.
+
+**Insieme, da telefono:** il pulsante che apre il menu dell'area personale
+mostra ora quante cose aspettano una risposta. I contatori accanto alle voci
+stavano dentro un pannello chiuso, quindi si vedevano solo dopo essere andati
+a cercarli — cioè mai, che è tutto il contrario del motivo per cui esistono.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

@@ -7,6 +7,7 @@ import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { StatoCandidatura } from "@/components/ui/StatoCandidatura";
 import { dataBreve } from "@/lib/date";
+import { conta } from "@/lib/testo";
 
 export const dynamic = "force-dynamic";
 
@@ -223,7 +224,7 @@ function RigaOrganizzata({ e, concluso = false }: { e: Organizzato; concluso?: b
           <span>
             {concluso && n === 0
               ? "nessuna candidatura ricevuta"
-              : `${n} ${n === 1 ? "candidatura" : "candidature"}`}
+              : conta(n, "candidatura", "candidature")}
           </span>
         </p>
       </div>

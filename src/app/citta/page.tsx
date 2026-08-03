@@ -9,6 +9,7 @@ import { itemListJsonLd } from "@/lib/jsonld";
 import { PROFILO_PUBBLICO } from "@/lib/visibilita";
 import { Suspense } from "react";
 import { SkeletonCitta } from "@/components/SkeletonCitta";
+import { concorda } from "@/lib/testo";
 
 export const revalidate = 86400;
 
@@ -133,7 +134,7 @@ async function Elenco() {
                           {/* «1 ARTISTI» è la cosa che rende evidente che
                               dietro non c'è nessuno. Costa una condizione. */}
                           <dt className="text-fluid-xs uppercase tracking-wider text-ink-faint">
-                            {artists === 1 ? "artista" : "artisti"}
+                            {concorda(artists, "artista", "artisti")}
                           </dt>
                         </div>
                         <div>
@@ -145,7 +146,7 @@ async function Elenco() {
                             {events}
                           </dd>
                           <dt className="text-fluid-xs uppercase tracking-wider text-ink-faint">
-                            {events === 1 ? "ingaggio" : "ingaggi"}
+                            {concorda(events, "ingaggio", "ingaggi")}
                           </dt>
                         </div>
                       </dl>

@@ -242,6 +242,19 @@ export function DashboardMobileNav({
 
   const current = items.find((i) => isActive(i.href, i.exact));
 
+  /**
+   * Quante cose aspettano una risposta, in tutto.
+   *
+   * Da telefono la colonna laterale non c'è, quindi i contatori accanto alle
+   * voci stanno **dentro un pannello chiuso**: un organizzatore con tre
+   * candidature in attesa non vede niente finché non apre il menu, cioè fino
+   * a quando non è già andato a cercarle. Un indicatore che si vede solo se
+   * lo si va a cercare non serve a niente — ed è tutto il motivo per cui
+   * quei contatori esistono.
+   */
+  const inAttesa =
+    (contatori.candidature ?? 0) + (contatori.messaggi ?? 0) + (contatori.segnalazioni ?? 0);
+
   return (
     <div className="lg:hidden">
       <button
@@ -249,13 +262,22 @@ export function DashboardMobileNav({
         onClick={() => setOpen(true)}
         aria-expanded={open}
         aria-haspopup="dialog"
+        /* Il testo visibile è il nome della sezione, che da solo non dice che
+           il pulsante apre qualcosa. L'etichetta lo aggiunge **conservando**
+           quel testo: un'etichetta che lo sostituisse impedirebbe a chi
+           comanda il browser con la voce di dire «premi Profilo» (WCAG 2.5.3,
+           l'etichetta nel nome). */
+        aria-label={`${current?.label ?? "Menu"} — apri il menu delle sezioni`}
         className="btn-ghost min-h-11 w-full justify-between"
       >
         <span className="flex items-center gap-2">
           {current && <current.icon className="h-4 w-4" aria-hidden="true" />}
           {current?.label ?? "Menu"}
         </span>
-        <Menu className="h-4 w-4" aria-hidden="true" />
+        <span className="flex items-center gap-2">
+          <Badge n={inAttesa} cosa="cose che aspettano una risposta" />
+          <Menu className="h-4 w-4" aria-hidden="true" />
+        </span>
       </button>
 
       {open && (

@@ -144,3 +144,126 @@ test("senza sessione la dashboard porta al login, non a una pagina rotta", async
   );
   expect(sfora).toBe(false);
 });
+
+/**
+ * ── L'area personale da telefono ──
+ *
+ * Le prove qui sopra si fermano tutte alla porta: verificano che senza
+ * sessione si finisca al login. Ma è **dentro** che un artista passa il
+ * tempo — compila il profilo, carica i lavori, risponde a una candidatura —
+ * e quella metà del sito non è mai stata percorsa da uno schermo stretto.
+ *
+ * Nessuna di queste prove verifica l'aspetto. Verificano che si possa fare
+ * qualcosa: raggiungere le sezioni, leggere senza trascinare la pagina di
+ * lato, toccare le caselle senza mancarle.
+ *
+ * L'account viene creato al momento e non riutilizzato: i profili del browser
+ * girano in parallelo, e due prove che si passano lo stesso utente falliscono
+ * a giorni alterni per motivi che non c'entrano con quello che verificano.
+ * Servono `E2E_DATABASE_URL` e lo script `pulisci:e2e` — vedi ORDINE.md.
+ */
+test.describe("dentro l'area personale", () => {
+  /** Entra, oppure salta: senza sessione non c'è niente da verificare qui. */
+  async function entra(page: import("@playwright/test").Page) {
+    const email = `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+
+    await page.goto("/registrati");
+    await page.getByLabel(/nome/i).fill("Prova Telefono");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill("PasswordValida1");
+    await page.getByRole("button", { name: /crea account/i }).click();
+
+    await page.waitForURL(/\/dashboard|\/registrati|\/accedi/, { timeout: 20_000 }).catch(() => {});
+    test.skip(
+      !/\/dashboard/.test(page.url()),
+      "verifica dell'email attiva: l'accesso automatico non avviene"
+    );
+  }
+
+  test("ogni sezione si raggiunge dal menu, e nessuna scorre di lato", async ({ page }) => {
+    await entra(page);
+
+    // Il menu laterale a colonna è nascosto sotto i 1024px: da telefono
+    // l'unica via è il pannello, e se non si apre l'area personale è un
+    // vicolo cieco con dentro tutto il lavoro di chi si è iscritto.
+    for (const [voce, percorso] of [
+      ["Profilo", "/dashboard/profilo"],
+      ["Portfolio", "/dashboard/portfolio"],
+      ["Ingaggi", "/dashboard/eventi"],
+      ["Quest", "/dashboard/quest"],
+    ] as const) {
+      await page.goto("/dashboard");
+      await page.getByRole("button", { name: /apri il menu delle sezioni/i }).click();
+
+      const pannello = page.getByRole("dialog", { name: /menu/i });
+      const link = pannello.getByRole("link", { name: voce, exact: true });
+      await link.scrollIntoViewIfNeeded();
+      await link.click();
+
+      await expect(page).toHaveURL(new RegExp(percorso.replace(/\//g, "\\/")));
+
+      const sfora = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
+      );
+      expect(sfora, `${percorso} scorre in orizzontale`).toBe(false);
+    }
+  });
+
+  test("i campi dell'area personale non fanno ingrandire la pagina", async ({ page }) => {
+    // Stesso difetto di iOS delle pagine pubbliche, su moduli molto più
+    // lunghi: qui l'inquadratura salta a metà compilazione, non all'inizio.
+    await entra(page);
+
+    for (const percorso of ["/dashboard/profilo", "/dashboard/eventi/nuovo"]) {
+      await page.goto(percorso);
+      const campi = page.locator(
+        "input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]), textarea, select"
+      );
+      const quanti = await campi.count();
+      for (let i = 0; i < quanti; i++) {
+        const px = await campi.nth(i).evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+        expect(px, `${percorso}, campo ${i} a ${px}px: iOS ingrandirebbe`).toBeGreaterThanOrEqual(16);
+      }
+    }
+  });
+
+  test("le caselle di spunta si toccano senza mancarle", async ({ page }) => {
+    // Governano cose che non si vogliono sbagliare con un dito: sparire dalla
+    // directory pubblica, dichiarare un ingaggio retribuito. Quelle native
+    // sono alte tredici pixel, cioè metà del bersaglio minimo.
+    await entra(page);
+    await page.goto("/dashboard/profilo");
+
+    const casella = page.locator('input[type=checkbox]').first();
+    await casella.scrollIntoViewIfNeeded();
+    const box = await casella.boundingBox();
+    expect(box!.height, "casella troppo piccola per un dito").toBeGreaterThanOrEqual(19);
+
+    // L'area cliccabile vera è l'etichetta che la contiene, che deve arrivare
+    // ai 44px: ingrandire la casella oltre i 20px la renderebbe sproporzionata.
+    const etichetta = page.locator("label").filter({ has: casella });
+    const boxEtichetta = await etichetta.boundingBox();
+    expect(boxEtichetta!.height).toBeGreaterThanOrEqual(43);
+  });
+
+  test("un annuncio con data passata non si pubblica", async ({ page }) => {
+    // Il difetto: si pubblicava, l'API rispondeva 201, e l'annuncio non
+    // compariva in nessun elenco perché tutte le directory filtrano per
+    // `startsAt >= adesso`. Un successo che non è successo.
+    await entra(page);
+    await page.goto("/dashboard/eventi/nuovo");
+
+    await page.getByLabel("Titolo").fill("Prova con data passata");
+    await page
+      .getByLabel("Descrizione")
+      .fill("Descrizione sufficientemente lunga per superare il minimo richiesto dal modulo.");
+    await page.getByLabel("Inizio").fill("2020-01-01T20:00");
+    await page.getByLabel("Città").selectOption({ index: 1 });
+
+    await page.getByRole("button", { name: /pubblica ingaggio/i }).click();
+
+    // Deve restare qui e dirlo, non festeggiare e sparire.
+    await expect(page.getByRole("alert").filter({ hasText: /data è già passata/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard\/eventi\/nuovo/);
+  });
+});

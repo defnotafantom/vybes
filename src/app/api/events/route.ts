@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { eventSchema } from "@/lib/validations";
+import { eventNuovoSchema } from "@/lib/validations";
 import { guard, parseBody, ok, fail, handle } from "@/lib/api";
 import { uniqueSlug } from "@/lib/slug";
 import { progressQuest, grantXp } from "@/lib/gamification";
@@ -10,7 +10,10 @@ export async function POST(req: Request) {
     const g = await guard(req, { scope: "events-write", limit: 10 });
     if (g.error) return g.error;
 
-    const { data, error } = await parseBody(req, eventSchema);
+    // `eventNuovoSchema` e non `eventSchema`: qui si crea, e un annuncio con
+    // data passata non comparirebbe in nessun elenco. La modifica usa lo
+    // schema senza quel vincolo — vedi la nota in `validations.ts`.
+    const { data, error } = await parseBody(req, eventNuovoSchema);
     if (error) return error;
 
     const city = await prisma.city.findUnique({ where: { slug: data.citySlug } });
