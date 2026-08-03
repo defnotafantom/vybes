@@ -11,6 +11,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "demo:popola": "tsx scripts/demo-dati.ts",
     "db:studio": "prisma studio",
+    "db:verifica": "node scripts/verifica-connessioni.mjs",
     "dev": "next dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
