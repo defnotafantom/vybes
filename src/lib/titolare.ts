@@ -29,11 +29,11 @@
 
 export const TITOLARE = {
   /** Nome e cognome, oppure ragione sociale se c'è una società. */
-  nome: "",
+  nome: "Daniele Mirko Bucca",
   /** Indirizzo completo: via, numero, CAP, città, provincia. */
-  indirizzo: "",
+  indirizzo: "Via Croce, 12, 98051, Barcellona Pozzo di Gotto (ME), Italia",
   /** Partita IVA se c'è, altrimenti codice fiscale. */
-  fiscale: "",
+  fiscale: "BCCDLM00M22A638L",
   /**
    * Indirizzo email per l'esercizio dei diritti (artt. 15-22 GDPR) e per le
    * comunicazioni relative ai termini.
@@ -42,7 +42,7 @@ export const TITOLARE = {
    * personale: finisce su una pagina pubblica e indicizzata, quindi lo
    * raccoglieranno anche i sistemi automatici che cercano indirizzi.
    */
-  email: "",
+  email: "privacy.vybes@gmail.com",
   /**
    * Città del foro competente nei termini di servizio.
    *
@@ -50,7 +50,7 @@ export const TITOLARE = {
    * causa. Resta comunque salvo il foro del consumatore, che la legge non
    * consente di derogare — ed è già scritto nei termini.
    */
-  foro: "",
+  foro: "Barcellona Pozzo di Gotto",
 } as const;
 
 /**
