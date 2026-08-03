@@ -7,6 +7,7 @@ import { SearchForm } from "@/components/SearchForm";
 import { fromCsv } from "@/lib/slug";
 import { PROFILO_PUBBLICO } from "@/lib/visibilita";
 import { dataBreve } from "@/lib/date";
+import { ArtistCard } from "@/components/ArtistCard";
 
 // La pagina risultati non va indicizzata: contenuto duplicato e infinito.
 export const metadata: Metadata = buildMetadata({
@@ -39,7 +40,7 @@ export default async function SearchPage({
               ],
             },
             take: 12,
-            select: { slug: true, name: true, headline: true, city: true, disciplines: true },
+            select: { slug: true, name: true, headline: true, image: true, city: true, disciplines: true, reputation: true, isVerified: true },
           }),
           prisma.event.findMany({
             where: {
@@ -75,42 +76,52 @@ export default async function SearchPage({
   return (
     <div className="container-page py-10">
       <Breadcrumbs items={[{ name: "Cerca", path: "/cerca" }]} />
-      <h1 className="text-3xl font-bold">Cerca su Vybes</h1>
+      <h1 className="text-fluid-2xl">Cerca su Vybes</h1>
 
       <div className="mt-6 max-w-xl">
         <SearchForm initialQuery={term} />
       </div>
 
       {term.length >= 2 && (
-        <p className="mt-6 text-sm muted">
-          {totalResults} risultati per <strong>{term}</strong>
+        <p className="mt-6 text-fluid-sm text-ink-muted">
+          {totalResults === 1 ? "1 risultato" : `${totalResults} risultati`} per{" "}
+          <strong className="text-ink">{term}</strong>
         </p>
       )}
 
+      {/* ── Perché qui si usano le stesse schede degli elenchi ──
+          I risultati erano strisce di testo a tutta larghezza: nome in
+          grassetto e una riga di dettagli separati da puntini. Funzionava, ma
+          era l'unica pagina del sito a non somigliare alle altre — e la
+          ricerca è raggiunta dalla barra principale, quindi molti la vedono
+          prima della directory.
+
+          Chi arriva qui ha già in mente cosa cerca: riconoscere un artista
+          nella stessa forma in cui lo vedrà ovunque costa meno che imparare
+          un secondo modo di leggere gli stessi dati. */}
       {artists.length > 0 && (
         <section className="mt-10">
-          <h2 className="text-xl font-bold">Artisti</h2>
-          <ul className="mt-4 space-y-2">
+          <h2 className="text-fluid-lg font-bold">Artisti</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {artists.map((a) => (
-              <li key={a.slug} className="card p-4">
-                <Link href={`/artisti/${a.slug}`} className="font-medium hover:text-brand-600">{a.name}</Link>
-                <p className="text-sm muted">
-                  {[a.headline, a.city, fromCsv(a.disciplines).join(", ")].filter(Boolean).join(" · ")}
-                </p>
-              </li>
+              <ArtistCard key={a.slug} artist={{ ...a, disciplines: fromCsv(a.disciplines) }} />
             ))}
-          </ul>
+          </div>
         </section>
       )}
 
       {events.length > 0 && (
         <section className="mt-10">
-          <h2 className="text-xl font-bold">Ingaggi</h2>
+          <h2 className="text-fluid-lg font-bold">Ingaggi</h2>
           <ul className="mt-4 space-y-2">
             {events.map((e) => (
-              <li key={e.slug} className="card p-4">
-                <Link href={`/eventi/${e.slug}`} className="font-medium hover:text-brand-600">{e.title}</Link>
-                <p className="text-sm muted">{e.city} · {dataBreve(e.startsAt)}</p>
+              <li key={e.slug}>
+                <Link href={`/eventi/${e.slug}`} className="card-interactive block">
+                  <span className="block text-fluid-sm font-semibold">{e.title}</span>
+                  <span className="mt-1 block text-fluid-xs text-ink-muted">
+                    {e.city} · {dataBreve(e.startsAt)}
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
@@ -119,12 +130,14 @@ export default async function SearchPage({
 
       {portfolio.length > 0 && (
         <section className="mt-10">
-          <h2 className="text-xl font-bold">Portfolio</h2>
+          <h2 className="text-fluid-lg font-bold">Portfolio</h2>
           <ul className="mt-4 space-y-2">
             {portfolio.map((p) => (
-              <li key={p.slug} className="card p-4">
-                <Link href={`/portfolio/${p.slug}`} className="font-medium hover:text-brand-600">{p.title}</Link>
-                <p className="text-sm muted">di {p.user.name}</p>
+              <li key={p.slug}>
+                <Link href={`/portfolio/${p.slug}`} className="card-interactive block">
+                  <span className="block text-fluid-sm font-semibold">{p.title}</span>
+                  <span className="mt-1 block text-fluid-xs text-ink-muted">di {p.user.name}</span>
+                </Link>
               </li>
             ))}
           </ul>

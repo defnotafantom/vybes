@@ -130,8 +130,10 @@ async function Elenco() {
                       <dl className="mt-5 flex gap-6">
                         <div>
                           <dd className="text-fluid-lg font-bold tabular-nums">{artists}</dd>
+                          {/* «1 ARTISTI» è la cosa che rende evidente che
+                              dietro non c'è nessuno. Costa una condizione. */}
                           <dt className="text-fluid-xs uppercase tracking-wider text-ink-faint">
-                            artisti
+                            {artists === 1 ? "artista" : "artisti"}
                           </dt>
                         </div>
                         <div>
@@ -143,7 +145,7 @@ async function Elenco() {
                             {events}
                           </dd>
                           <dt className="text-fluid-xs uppercase tracking-wider text-ink-faint">
-                            ingaggi
+                            {events === 1 ? "ingaggio" : "ingaggi"}
                           </dt>
                         </div>
                       </dl>
