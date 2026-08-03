@@ -87,6 +87,26 @@ Coperti da prove nuove: `tests/unit/validations.test.ts` (data passata),
 `tests/e2e/mobile.spec.ts` — che è anche la prima volta che l'area privata
 viene percorsa da uno schermo stretto.
 
+**Quarto giro, sulle pagine pubbliche** — profilo artista e ingaggio, dove
+arriva chi viene da Google (ADR-039, 040):
+
+- **«53/110 · Reputazione»** era il primo numero della pagina di un artista.
+  Trenta punti su centodieci richiedono ingaggi che su un sito nuovo non
+  esistono per nessuno: ogni profilo mostrerà per mesi un voto sotto la metà.
+  Non dice «vale poco», dice «il sito è nuovo» — ma accanto a un nome si legge
+  nel primo modo, e stiamo per chiedere a venti persone di accettare quella
+  pagina. Tolto; al suo posto quanti lavori ci sono.
+- **La colonna principale poteva essere del tutto vuota**: senza biografia,
+  lavori e ingaggi, una voragine larga metà schermo. È lo stato di ogni
+  artista appena importato.
+- **Dietro le anteprime del portfolio non c'era niente**: riquadro vuoto per
+  brani e video, e rettangolo rotto per un'immagine che non carica — cosa che
+  in produzione capitava già.
+- **La mappa era bianca** su ogni pagina di ingaggio e di città: il filtro di
+  ieri era stato messo solo sulla mappa interattiva.
+- L'avatar era allineato al fondo dei pulsanti, quindi la faccia finiva
+  centosessanta pixel sotto il proprio nome — e peggiorava coi profili pieni.
+
 ### Cosa manca per aprire davvero al pubblico
 
 **1. L'indirizzo email del titolare** — `src/lib/titolare.ts`, l'unico campo

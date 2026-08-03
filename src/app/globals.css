@@ -290,7 +290,20 @@
 
      Non è una mappa disegnata scura: è una mappa chiara invertita, e da
      vicino si vede. Ma costa zero e sta dentro il tema. */
-  .dark .mappa-tema .leaflet-tile-pane {
+  /* Due selettori e una sola dichiarazione, di proposito.
+
+     Il filtro era stato messo solo sulla mappa interattiva di `/mappa`, e la
+     mappa di ogni pagina di ingaggio — che è un `iframe` di OpenStreetMap,
+     un componente diverso — è rimasta bianca. È lo stesso difetto ricorrente
+     di questo progetto: la regola esiste, applicata in un posto solo.
+     Tenendole nella stessa dichiarazione non possono più divergere.
+
+     Sull'iframe il filtro non può limitarsi alle tile: il contenuto è di un
+     altro dominio e dall'esterno è opaco, quindi si inverte tutto — marker e
+     attribuzione compresi. Sono pochi pixel, e `hue-rotate` riporta comunque
+     il pin a un colore vicino al suo. */
+  .dark .mappa-tema .leaflet-tile-pane,
+  .dark .mappa-incorporata {
     /* `brightness(0.95)` era troppo blando: la mappa passava da bianca a
        verde oliva, cioè restava comunque più chiara di tutto il resto e
        continuava a tirare l'occhio. 0.62 la porta al livello delle superfici

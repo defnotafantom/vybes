@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, ExternalLink, MapPin } from "lucide-react";
+import { Check, ExternalLink, MapPin, Image as ImageIcon, Video, Music } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata, absoluteUrl } from "@/lib/seo";
 import { artistJsonLd } from "@/lib/jsonld";
@@ -17,8 +17,21 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Badge, VerifiedBadge } from "@/components/ui/Badge";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 import { Segnala } from "@/components/Segnala";
-import { reputazioneMassima } from "@/lib/reputazione";
 import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
+
+/**
+ * Cosa si vede al posto di un'anteprima che non c'è.
+ *
+ * Una tinta e un'icona per tipo, come per le schede degli ingaggi: l'assenza
+ * di immagine non deve significare assenza di identità. Le tinte sono diverse
+ * fra loro perché in una griglia servono a distinguere un brano da un video
+ * a colpo d'occhio, prima di leggere i titoli.
+ */
+const ANTEPRIMA: Record<string, { tinta: string; Icona: typeof Music }> = {
+  image: { tinta: "from-brand-500/20 to-accent-500/[0.08]", Icona: ImageIcon },
+  video: { tinta: "from-accent-500/20 to-brand-500/[0.08]", Icona: Video },
+  audio: { tinta: "from-brand-400/20 to-esito-attesa-tinta/[0.08]", Icona: Music },
+};
 
 export const revalidate = 3600;
 export const dynamicParams = true; // i profili nuovi vengono generati on-demand
@@ -139,6 +152,10 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   if (!artist) notFound();
 
   const disciplines = fromCsv(artist.disciplines);
+  /** «Cantante e musicista», per una frase — non per un elenco di etichette. */
+  const disciplineLeggibili = disciplines
+    .map((d) => (disciplineBySlug(d)?.label ?? d).toLowerCase())
+    .join(" e ");
   const sameAs = [artist.website, artist.instagram, artist.spotify, artist.youtube].filter(
     (v): v is string => Boolean(v)
   );
@@ -179,7 +196,15 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
             ]}
           />
 
-          <div className="flex flex-col gap-8 sm:flex-row sm:items-end">
+          {/* `items-end` allineava il fondo dell'avatar al fondo dei pulsanti.
+              Su un profilo pieno il blocco di testo è alto il doppio
+              dell'avatar, quindi la faccia della persona — la cosa più
+              importante di questa pagina — finiva relegata in basso a
+              sinistra, centosessanta pixel sotto il proprio nome, e sembrava
+              staccata dal resto. Peggiorava man mano che il profilo si
+              riempiva, cioè esattamente al contrario di quello che serve.
+              `items-start` non dipende da quanto contenuto c'è. */}
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
             <Avatar name={artist.name} src={artist.image} size="xl" rounded="xl" priority />
 
             <div className="min-w-0 flex-1">
@@ -243,23 +268,37 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
         {/* Tre colonne su 320px darebbero a «Ingaggi confermati» una
             colonna da 90px: l'etichetta va a capo tre volte e il numero
             perde la propria riga. Sotto sm si impilano. */}
+        {/* ── Perché la reputazione non compare più qui ──
+            Non perché sia un segreto: è spiegata voce per voce a chi la
+            possiede, nella propria area personale, e continua a decidere
+            l'ordine della directory.
+
+            Il problema è il denominatore. Trenta dei centodieci punti
+            richiedono ingaggi confermati od organizzati, che su una
+            piattaforma appena nata non esistono per nessuno: un artista con
+            profilo completo, biografia lunga, cinque lavori e identità
+            verificata arriva a ottanta, e senza la verifica a sessantacinque.
+            Vuol dire che «53/110» non dice «questa persona vale poco» — dice
+            «il sito è nuovo» — ma stampato accanto a un nome si legge nel
+            primo modo.
+
+            È già la ragione per cui il punteggio era stato tolto dalle schede
+            in elenco; la stessa ragione vale, più forte, sulla pagina
+            personale di qualcuno. Stiamo per chiedere a venti artisti veri di
+            accettare questa pagina: un voto sotto la metà accanto al proprio
+            nome è un ottimo motivo per dire di no.
+
+            Al suo posto un fatto, non un giudizio: quanti lavori ci sono. */}
         <dl className="container-page grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-y-0">
           {[
-            {
-              label: "Reputazione",
-              value: `${artist.reputation}`,
-              suffisso: `/${reputazioneMassima()}`,
-            },
+            { label: "Lavori pubblicati", value: artist.portfolioItems.length },
             { label: "Ingaggi confermati", value: artist._count.participations },
             { label: "Follower", value: artist._count.followers },
           ].map((s) => (
             <div key={s.label} className="py-6">
-              <dd className="text-fluid-2xl font-bold tabular-nums">
-                {s.value}
-                {"suffisso" in s && (
-                  <span className="text-fluid-sm font-semibold text-ink-faint">{s.suffisso}</span>
-                )}
-              </dd>
+              {/* Il suffisso «/110» serviva solo alla reputazione, che qui non
+                  compare più: tre numeri interi non hanno bisogno di scala. */}
+              <dd className="text-fluid-2xl font-bold tabular-nums">{s.value}</dd>
               <dt className="mt-0.5 text-fluid-xs uppercase tracking-wider text-ink-faint">
                 {s.label}
               </dt>
@@ -271,6 +310,41 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
       <div className="container-page py-16">
         <div className="grid gap-14 lg:grid-cols-[1fr_300px]">
           <article className="min-w-0 space-y-14">
+            {/* ── Il caso in cui non c'è niente ──
+                Tutte e tre le sezioni sotto sono condizionate, quindi un
+                profilo senza biografia, senza lavori e senza ingaggi
+                pubblicati rendeva una colonna **completamente vuota**: una
+                voragine larga metà schermo con la barra laterale sospesa
+                accanto. Non è un caso raro — è lo stato di ogni artista appena
+                importato, e di chiunque si iscriva, cioè la prima impressione
+                che il sito dà di sé.
+
+                Non è nemmeno una pagina inutile: nome, disciplina e città ci
+                sono, e sono ciò per cui qualcuno l'ha aperta. Manca il resto,
+                e dirlo è più onesto che lasciare un buco — che chi legge
+                interpreta come un errore del sito, non come un profilo nuovo. */}
+            {!artist.bio &&
+              artist.portfolioItems.length === 0 &&
+              artist.eventsCreated.length === 0 && (
+                <section className="card">
+                  <h2 className="text-fluid-lg font-bold">Profilo appena aperto</h2>
+                  <p className="mt-3 max-w-xl text-fluid-sm text-ink-muted">
+                    {artist.name.split(" ")[0]} non ha ancora aggiunto una
+                    presentazione né caricato lavori. Quello che sappiamo è qui
+                    sopra
+                    {artist.city ? `: ${disciplineLeggibili || "artista"} a ${artist.city}` : ""}.
+                    Se è la persona che cerchi, scriverle è il modo più veloce
+                    per sapere il resto.
+                  </p>
+                  <Link
+                    href={`/dashboard/messaggi/nuovo?a=${artist.slug}`}
+                    className="btn-ghost mt-5 inline-flex"
+                  >
+                    Contatta {artist.name.split(" ")[0]}
+                  </Link>
+                </section>
+              )}
+
             {artist.bio && (
               <section>
                 <p className="eyebrow">Il profilo</p>
@@ -296,7 +370,39 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                         href={`/portfolio/${item.slug}`}
                         className="card-interactive group block overflow-hidden p-0"
                       >
+                        {/* ── Cosa c'è sotto l'immagine, e perché ──
+                            Prima non c'era niente: un riquadro 4:3 vuoto per
+                            ogni lavoro che non sia una fotografia — un brano,
+                            un video — cioè metà del portfolio di un musicista.
+                            Ed è la stessa causa dei sette difetti trovati
+                            nell'audit precedente: spazio riservato a immagini
+                            che non ci sono.
+
+                            Il segnaposto sta **dietro**, sempre presente, e
+                            l'immagine gli si sovrappone. Così copre due casi
+                            con una cosa sola: il tipo di file senza anteprima,
+                            e l'immagine che non carica — un file rimosso dal
+                            blob storage, un indirizzo sbagliato — dove prima
+                            restava il rettangolo bianco del browser.
+
+                            Nessun `onError`, che richiederebbe un componente
+                            client: questa è la pagina su cui poggia tutta la
+                            strategia di ricerca, e non vale idratarla per
+                            gestire meglio un caso che così degrada comunque in
+                            qualcosa di voluto. */}
                         <div className="relative aspect-[4/3] overflow-hidden bg-surface-sunken">
+                          <span
+                            aria-hidden="true"
+                            className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br ${
+                              ANTEPRIMA[item.mediaType]?.tinta ?? ANTEPRIMA.image.tinta
+                            }`}
+                          >
+                            {(() => {
+                              const Icona =
+                                (ANTEPRIMA[item.mediaType] ?? ANTEPRIMA.image).Icona;
+                              return <Icona className="h-8 w-8 text-ink-faint" />;
+                            })()}
+                          </span>
                           {item.mediaType === "image" && (
                             <Image
                               src={item.mediaUrl}

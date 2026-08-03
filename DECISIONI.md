@@ -1484,6 +1484,86 @@ diverge — e diverge in silenzio, perché nessuna copia sa di essere vecchia.
 
 ---
 
+## ADR-039 · Un punteggio non si stampa accanto al nome di una persona
+
+**Contesto.** La pagina pubblica di un artista si apriva con tre numeri
+grandi, e il primo era **«53/110 · Reputazione»**. Su un profilo curato —
+biografia, discipline, portfolio, identità verificata.
+
+**Il problema è il denominatore.** Trenta dei centodieci punti richiedono
+ingaggi confermati od organizzati, che su una piattaforma appena nata non
+esistono per nessuno. Un artista con tutto compilato arriva a ottanta, e senza
+la verifica dell'identità — che assegniamo noi, a mano — a sessantacinque.
+Vuol dire che per mesi **ogni profilo del sito mostrerà un numero sotto la
+metà**. «53/110» non significa «questa persona vale poco», significa «il sito
+è nuovo»; ma stampato accanto a un nome si legge nel primo modo.
+
+**E c'è il costo pratico.** Il passo successivo del progetto è chiedere a
+venti artisti veri di accettare una pagina con il proprio nome, le proprie
+foto e il proprio lavoro. Un voto sotto la metà accanto al nome è un ottimo
+motivo per dire di no — e ci sta pochissimo a diventare la ragione per cui
+questo progetto non parte.
+
+**Decisione.** Il punteggio sparisce dalla pagina pubblica. Continua a
+decidere l'ordine della directory, ed è spiegato voce per voce a chi lo
+possiede, nella propria area personale. Al suo posto un fatto e non un
+giudizio: quanti lavori ci sono.
+
+**Non è nascondere il criterio.** Era già stato tolto dalle schede in elenco
+per lo stesso motivo; qui la scelta valeva di più e non era stata portata
+fino in fondo. Chi ha diritto di sapere come si costruisce quel numero è la
+persona che ne è misurata, e lo vede per intero. Un visitatore non ha nulla
+da farci: sulla pagina di un singolo non c'è niente con cui confrontarlo.
+
+**La regola.** Una metrica interna diventa un giudizio pubblico nel momento in
+cui la si stampa accanto a un nome proprio. Prima di mostrarne una, va
+chiesto: chi la legge, cosa ci fa — e la persona misurata l'ha accettata?
+
+---
+
+## ADR-040 · Il caso vuoto, la terza volta
+
+Tre difetti sulla pagina pubblica del profilo e su quella dell'ingaggio,
+tutti figli della stessa causa già registrata due volte.
+
+**La colonna principale poteva essere completamente vuota.** Biografia,
+portfolio e ingaggi pubblicati erano tre sezioni condizionate, e un profilo
+che non ha nessuna delle tre rendeva una voragine larga metà schermo con la
+barra laterale sospesa accanto. Non è un caso raro: è lo stato di **ogni
+artista appena importato** e di chiunque si iscriva, cioè la prima impressione
+che il sito dà di sé. Ora quel caso ha un testo suo, che dice cosa sappiamo e
+invita a scrivere — perché la pagina non è inutile, è solo nuova, e un buco
+chi legge lo interpreta come un guasto.
+
+**Dietro le anteprime del portfolio non c'era niente.** Il riquadro 4:3
+conteneva un'immagine solo per i lavori di tipo `image`: per un brano o un
+video restava vuoto, cioè metà del portfolio di un musicista. Il segnaposto —
+tinta e icona per tipo — sta ora **dietro**, sempre presente, e l'immagine gli
+si sovrappone. Una cosa sola copre due casi: il tipo senza anteprima e
+l'immagine che non carica, che in produzione capitava già e mostrava il
+rettangolo rotto del browser. Nessun `onError`: richiederebbe un componente
+client sulla pagina su cui poggia tutta la strategia di ricerca, e il caso
+degrada comunque in qualcosa di voluto.
+
+**La mappa era bianca**, sul tema scuro, su ogni pagina di ingaggio e di
+città. Il filtro di inversione esisteva da ieri — applicato alla mappa
+interattiva di `/mappa` e non all'`iframe` che usano le altre due, perché sono
+componenti diversi. Ora i due selettori condividono una dichiarazione sola, e
+non possono più divergere.
+
+**Anche l'avatar** era allineato al fondo dei pulsanti: su un profilo pieno il
+blocco di testo è alto il doppio, quindi la faccia della persona finiva
+relegata centosessanta pixel sotto il proprio nome — e peggiorava man mano che
+il profilo si riempiva, cioè al contrario di quello che serve.
+
+**Cosa aggiunge alla regola di ieri.** Non basta disegnare il caso vuoto: va
+disegnato **per ogni tipo di contenuto**, e la difesa va messa dove non si
+possa applicare a metà. Il segnaposto dietro l'immagine e la dichiarazione CSS
+condivisa fra le due mappe sono la stessa idea — rendere l'assenza un caso
+gestito per costruzione, invece che un ramo da ricordarsi.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:
