@@ -126,7 +126,20 @@ type Demo = {
 };
 
 /**
- * Trenta profili, deliberatamente **disuguali**.
+ * Venticinque profili, deliberatamente **disuguali**.
+ *
+ * ── Nessuno di questi lo crea gia' `db:seed` ──
+ *
+ * La prima versione ne ripeteva sei — Chiara Bellandi, Marco Ferretti, Duo
+ * Lanterne e altri — che il seed crea con indirizzi diversi. `uniqueSlug` ha
+ * evitato lo schianto e ha prodotto la conseguenza peggiore: due profili con
+ * lo stesso nome, uno con la foto e uno senza, affiancati nella directory,
+ * nella ricerca e nella pagina di Milano. Chi guardava concludeva che il sito
+ * duplica le persone.
+ *
+ * I due elenchi vanno tenuti disgiunti a mano: il seed e' il minimo per far
+ * partire il progetto, questo e' il riempimento per guardarlo pieno. Prima di
+ * aggiungerne uno qui, si controlla che non sia gia' in `prisma/seed.ts`.
  *
  * La tentazione sarebbe farli tutti completi: griglie ordinate, schede della
  * stessa altezza, tutto bello. Sarebbe inutile — anzi dannoso, perché
@@ -140,14 +153,6 @@ type Demo = {
  */
 const ARTISTI: Demo[] = [
   // ── Milano: la città densa ──
-  { nome: "Chiara Bellandi", citta: "milano", discipline: ["cantanti", "musicisti"], foto: true,
-    headline: "Cantautrice indie-pop, voce e chitarra. Disponibile per club e festival.",
-    bio: "Milanese, tre EP autoprodotti e oltre 120 date in Italia. Ho iniziato suonando nei circoli della periferia est e negli ultimi anni ho aperto per band che ascoltavo da ragazzina.\n\nFormazione: voce e chitarra acustica in solo, oppure trio con basso e batteria. Il repertorio è mio, con qualche rilettura di cantautorato italiano quando la serata lo chiede.",
-    lavori: ["image", "audio", "video", "image"] },
-  { nome: "Marco Ferretti", citta: "milano", discipline: ["dj"], foto: true,
-    headline: "DJ house e disco, resident in due club milanesi.",
-    bio: "Selezione vinilica tra disco italiana, house e nu-disco. Set da due a sei ore, con o senza scaletta concordata.",
-    lavori: ["audio", "audio"] },
   { nome: "Elisa Torrisi", citta: "milano", discipline: ["ballerini"], foto: true,
     headline: "Danzatrice contemporanea, lavora su progetti site-specific.",
     bio: "Formazione tra Milano e Bruxelles. Da cinque anni porto avanti un lavoro sul rapporto fra corpo e architettura industriale: cortili, capannoni, scale antincendio.\n\nDisponibile per performance singole, residenze e laboratori.",
@@ -196,10 +201,6 @@ const ARTISTI: Demo[] = [
     headline: "Chitarra elettrica, sessioni e sostituzioni last minute." },
 
   // ── Roma ──
-  { nome: "Collettivo Ostro", citta: "roma", discipline: ["band", "musicisti"], foto: true,
-    headline: "Quintetto strumentale tra jazz mediterraneo ed elettronica.",
-    bio: "Nati a San Lorenzo nel 2019. Due album e tournée in Italia e Grecia. Dal vivo il set cambia molto: portiamo una scaletta ma la si rompe quasi sempre.",
-    lavori: ["audio", "video", "image"] },
   { nome: "Livia Sforza", citta: "roma", discipline: ["attori", "comici"], foto: true,
     headline: "Attrice e autrice, teatro comico e improvvisazione.",
     bio: "Dieci anni di palco fra teatri off e festival. Scrivo i miei spettacoli e faccio improvvisazione con due compagnie romane.",
@@ -218,10 +219,6 @@ const ARTISTI: Demo[] = [
   { nome: "I Cardellini", citta: "roma", discipline: ["band"], foto: true },
 
   // ── Bologna ──
-  { nome: "Duo Lanterne", citta: "bologna", discipline: ["musicisti", "band"], foto: true,
-    headline: "Chitarra e violoncello: dal barocco al minimalismo.",
-    bio: "Perfetti per matrimoni, inaugurazioni e rassegne di musica da camera. Repertorio adattabile alla durata e allo spazio.",
-    lavori: ["audio", "image"] },
   { nome: "Sofia Mandelli", citta: "bologna", discipline: ["cantanti", "musicisti"],
     headline: "Voce jazz e pianoforte.",
     bio: "Standard, bossa e qualche cosa di mio. Faccio serate in duo o in trio; anche solo voce se c'è già un accompagnamento.",
@@ -235,10 +232,6 @@ const ARTISTI: Demo[] = [
     lavori: ["video", "image", "image"] },
 
   // ── Napoli ──
-  { nome: "Sara Iovine", citta: "napoli", discipline: ["ballerini"], foto: true,
-    headline: "Danzatrice contemporanea e coreografa.",
-    bio: "Formazione tra Napoli e Bruxelles. Lavoro su progetti site-specific e insegno in laboratori aperti a chi non ha formazione accademica.",
-    lavori: ["video", "image"] },
   { nome: "Gennaro Esposito", citta: "napoli", discipline: ["musicisti", "cantanti"],
     headline: "Mandolino e voce, canzone napoletana classica.",
     bio: "Repertorio dell'Ottocento e primo Novecento, eseguito com'era scritto. Suono in duo con chitarra battente.",
@@ -247,10 +240,6 @@ const ARTISTI: Demo[] = [
     headline: "Illustrazione e fotografia per progetti musicali." },
 
   // ── Torino ──
-  { nome: "Tobia Renna", citta: "torino", discipline: ["fotografi", "videomaker"], foto: true,
-    headline: "Fotografo di concerti e ritrattista per musicisti.",
-    bio: "Dieci anni di backstage. Servizi per press kit, cover e reportage live.",
-    lavori: ["image", "image", "image"] },
   { nome: "Klara Nowak", citta: "torino", discipline: ["musicisti"],
     headline: "Fisarmonica, dal repertorio dell'est al tango.",
     bio: "Polacca, a Torino dal 2018. Suono in trio e da sola; faccio anche musica per spettacoli teatrali.",
@@ -258,30 +247,18 @@ const ARTISTI: Demo[] = [
   { nome: "Andrea Pittaluga", citta: "torino", discipline: ["comici"], foto: true },
 ];
 
-/** Quattordici ingaggi, sparsi fra le città e le categorie. */
+/** Otto ingaggi, anch'essi disgiunti da quelli del seed. */
 const INGAGGI = [
-  { titolo: "Cercasi cantautore per rassegna d'autunno", citta: "milano", categoria: "CASTING", giorni: 21, pagato: true, min: 250, max: 400, locale: "Circolo Arci Bellezza",
-    descrizione: "Cerchiamo tre cantautori per la rassegna d'autunno del circolo. Set da 45 minuti, formazione acustica o trio. Service audio e fonico inclusi, backline disponibile. Rimborso viaggio per chi arriva da fuori regione." },
-  { titolo: "DJ set serata disco italiana", citta: "milano", categoria: "LIVE", giorni: 9, pagato: true, min: 300, locale: "Loft 34",
-    descrizione: "Serata mensile dedicata alla disco italiana anni 70-80. Cerchiamo un DJ con selezione vinilica per il secondo set, dall'una alle tre. Impianto Funktion-One, due giradischi Technics." },
   { titolo: "Duo acustico per aperitivo in cortile", citta: "milano", categoria: "LIVE", giorni: 6, pagato: true, min: 180, max: 220, locale: "Cascina Nascosta",
     descrizione: "Due ore di musica di sottofondo per l'aperitivo estivo in cortile. Repertorio jazz, bossa o cantautorato. Impianto voce e due DI a disposizione, niente batteria." },
   { titolo: "Fotografo per press kit di band emergente", citta: "milano", categoria: "CASTING", giorni: 12, pagato: true, min: 300, max: 500, locale: "Studio Lambrate",
     descrizione: "Cerchiamo un fotografo per il press kit di un quintetto: ritratti di gruppo e singoli, mezza giornata in studio più un'ora in esterni. Consegna di dieci scatti ritoccati." },
   { titolo: "Ballerini per videoclip in bianco e nero", citta: "milano", categoria: "CASTING", giorni: 18, pagato: true, min: 200, locale: "Ex Fornace",
     descrizione: "Due giornate di riprese per un videoclip. Cerchiamo quattro danzatori con esperienza in contemporanea. Coreografia già scritta, due giorni di prove pagati a parte." },
-  { titolo: "Contest per band emergenti", citta: "torino", categoria: "CONTEST", giorni: 48, pagato: true, min: 150, locale: "Hiroshima Mon Amour",
-    descrizione: "Contest per band emergenti piemontesi e non. Sei finaliste, giuria di addetti ai lavori, in palio una data di apertura e una sessione di registrazione. Rimborso spese a tutte le finaliste." },
-  { titolo: "Jam session settimanale, cercasi house band", citta: "roma", categoria: "JAM", giorni: 5, pagato: false, locale: "Big Mama",
-    descrizione: "Jam aperta a tutti gli strumentisti, ogni mercoledì. Cerchiamo la house band per il trimestre: basso, batteria e tastiere. Non retribuita ma con consumazione e visibilità sul cartellone." },
   { titolo: "Attori per lettura scenica in biblioteca", citta: "roma", categoria: "CASTING", giorni: 26, pagato: true, min: 120, locale: "Biblioteca Rispoli",
     descrizione: "Lettura scenica di racconti del Novecento italiano, tre serate. Cerchiamo due attori. Due prove di due ore, compenso a serata." },
-  { titolo: "Live acustico per apertura enoteca", citta: "bologna", categoria: "LIVE", giorni: 14, pagato: true, min: 200, max: 280, locale: "Enoteca Cardinale",
-    descrizione: "Inaugurazione della nuova sede. Cerchiamo un duo acustico per un set di due ore, volume da sottofondo. Repertorio jazz, bossa o cantautorato italiano." },
   { titolo: "Workshop di illustrazione per manifesti", citta: "bologna", categoria: "WORKSHOP", giorni: 40, pagato: true, min: 400, locale: "Serra Madre",
     descrizione: "Due giornate di laboratorio sulla serigrafia applicata ai manifesti di concerti. Cerchiamo un docente con pratica di stampa. Materiali forniti." },
-  { titolo: "Workshop di danza contemporanea", citta: "napoli", categoria: "WORKSHOP", giorni: 35, pagato: false, locale: "Spazio Kairos",
-    descrizione: "Tre giorni di laboratorio aperto a danzatori con esperienza. Cerchiamo due assistenti alla docenza. Non retribuito ma con vitto, alloggio e attestato; possibilità di entrare nel cast della produzione successiva." },
   { titolo: "Mandolino e voce per matrimonio sul golfo", citta: "napoli", categoria: "LIVE", giorni: 55, pagato: true, min: 500, max: 700, locale: "Villa Nausicaa",
     descrizione: "Cerimonia e aperitivo, circa tre ore complessive. Repertorio classico napoletano. Impianto fornito dal service della villa." },
   { titolo: "Comico per serata di apertura", citta: "torino", categoria: "LIVE", giorni: 11, pagato: true, min: 150, max: 200, locale: "Blah Blah",
