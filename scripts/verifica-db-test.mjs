@@ -108,4 +108,48 @@ if (perTest.trim() === attuale.trim()) {
   process.exit(1);
 }
 
-console.log(`  ✓ database dei test: ${host(perTest)}`);
+/**
+ * Dichiarata e diversa: resta da sapere se **risponde**.
+ *
+ * ── Perché il controllo non finiva qui ──
+ *
+ * Perché fin qui verificava una stringa, non un database. Un branch Neon
+ * inattivo viene sospeso, e la prima connessione dopo la sospensione può
+ * fallire invece di aspettare il risveglio. Il risultato che si vede è questo:
+ *
+ *     [WebServer] Build error occurred
+ *     [WebServer] Failed to collect page data for /eventi/[slug]
+ *     Error: Process from config.webServer was not able to start.
+ *
+ * La riga che spiega davvero cosa è successo sta in mezzo a una traccia di
+ * Prisma dentro l'output di Playwright, dieci righe più su, e chi legge
+ * conclude che si è rotto il codice — cerca il difetto nell'ultima cosa che
+ * ha toccato, e non lo trova perché non c'è.
+ *
+ * Una connessione di prova costa un secondo e sposta l'errore dove si capisce.
+ * Ed è anche il modo più semplice di **svegliare** il branch: il tentativo che
+ * fallisce avvia comunque il compute, quindi al secondo colpo è già in piedi.
+ */
+try {
+  const { PrismaClient } = await import("@prisma/client");
+  const prisma = new PrismaClient({ datasources: { db: { url: perTest } } });
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    console.log(`  ✓ database dei test: ${host(perTest)}`);
+  } finally {
+    await prisma.$disconnect();
+  }
+} catch (e) {
+  const msg = String(e?.message ?? e);
+  const sospeso = /Can't reach database server|ETIMEDOUT|ECONNREFUSED/i.test(msg);
+  console.error(
+    `\n  Il database dei test non risponde: ${host(perTest)}\n` +
+      (sospeso
+        ? "\n  Su Neon un branch inattivo viene sospeso, e la prima connessione" +
+          "\n  dopo la sospensione fallisce invece di aspettare. Il tentativo lo" +
+          "\n  ha comunque svegliato: rilancia fra qualche secondo.\n"
+        : `\n  ${msg.split("\n").find((r) => r.trim()) ?? ""}\n` +
+          "\n  `npm run db:verifica` prova tutte le connessioni e dice quale.\n")
+  );
+  process.exit(1);
+}
