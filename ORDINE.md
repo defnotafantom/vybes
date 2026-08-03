@@ -3,7 +3,7 @@
 Cosa resta da fare, in ordine di urgenza. Ogni voce dice **perché** viene prima
 delle altre, e cosa succede se la si salta.
 
-Aggiornato al 2 agosto 2026. Produzione in linea su `vybeshub.art`, salute
+Aggiornato al 3 agosto 2026. Produzione in linea su `vybeshub.art`, salute
 verde. Scelta di apertura: **registrazioni aperte a chiunque**.
 
 ---
@@ -33,64 +33,53 @@ Cinque cose sono già state chiuse in preparazione:
 
 ---
 
-## Dove eravamo rimasti — 2 agosto, sera
+## Dove eravamo rimasti — 3 agosto
 
-**Suite verde: 171 test, quattro profili — computer, Android, iPhone,
-iPhone SE a 320px.** I 13 saltati sono i test da telefono sul profilo
-desktop e viceversa: si escludono da soli, come devono.
+**Il sito è stato guardato in un browser vero, pagina per pagina.** Sono usciti
+dieci difetti che nessun test poteva vedere, tutti corretti. Sette su dieci
+avevano la stessa causa: **spazi riservati a immagini che non ci sono**. È il
+difetto strutturale di un layout progettato assumendo contenuto ricco e poi
+riempito con contenuto reale, che all'inizio è sempre povero.
+
+La regola che ne è uscita, e che vale per ogni componente nuovo: **un
+componente va disegnato per il caso vuoto quanto per quello pieno.** Avatar
+con iniziali colorate, card con tinta e icona per categoria — assenza di
+immagine non deve significare assenza di identità.
+
+### Cosa manca per aprire davvero al pubblico
+
+Tre cose, e nessuna è codice.
+
+**1. I tuoi dati da titolare** — `src/lib/titolare.ts`, cinque campi. Dieci
+minuti. Finché sono vuoti, `/privacy` è online e dichiara di sé «Da
+completare prima dell'apertura al pubblico», mentre stai raccogliendo email e
+password di persone reali. L'avviso sparisce da solo quando li compili.
+
+Poi il testo va letto da un avvocato: è l'unica voce che può creare un
+problema giuridico invece che tecnico.
+
+**2. Due variabili per il filtro immagini** — sightengine.com, piano
+gratuito, Dashboard → API credentials. `SIGHTENGINE_USER` e
+`SIGHTENGINE_SECRET` (quest'ultima Sensitive) su Vercel, poi Redeploy.
+Verifica: `/api/health` deve riportare `moderazioneImmagini: true`.
+
+**3. I venti artisti** — `RECLUTAMENTO.md` ha il messaggio, le quattro cose
+da chiedere, la formula di consenso e il formato del file. Poi
+`npm run artisti:importa`.
+
+### Prima di ogni push
 
 ```powershell
-npm run verify            # tipi, lint, canonical, unit test
-npm run test:e2e:setup    # UNA VOLTA SOLA, e dopo ogni aggiornamento di Playwright
-npm run test:e2e
-git push origin main
+npm run verify
+npm run test:e2e:setup    # una volta sola, e dopo ogni aggiornamento di Playwright
+npm run test:e2e          # chiudi `npm run dev` prima
 ```
 
-**Chiudi `npm run dev` prima dei test.** I due processi si contendono la
-cartella `.next`. La causa più frequente di rottura — `prisma generate` che
-non riesce a sostituire `query_engine-windows.dll.node` e muore con `EPERM` —
-è stata rimossa, ma la cartella condivisa resta.
+Serve `E2E_DATABASE_URL` in `.env.local` — c'è già, punta al branch Neon di
+test. Senza, i test si rifiutano di partire: creano account veri e non devono
+farlo in produzione.
 
-**`test:e2e:setup` non è opzionale.** Playwright tiene i browser in una
-cartella di sistema versionata a parte: quando il pacchetto si aggiorna, i
-binari scaricati prima non valgono più e *tutti* i test falliscono con
-«Executable doesn't exist», compresi quelli che prima passavano.
-
-### Un comando che va lanciato una volta sola
-
-```powershell
-npm run reputazione:ricalcola -- --prova   # mostra e non scrive
-npm run reputazione:ricalcola              # applica
-```
-
-Già eseguito il 2 agosto su nove account. Serve di nuovo **solo** se cambiano
-i pesi in `src/lib/reputazione.ts`: è idempotente, calcola dallo stato.
-
-### Cosa provare appena è online
-
-Nessuna di queste cose è stata vista su un browser vero.
-
-**Da telefono** — è lì che stavano i difetti:
-
-1. Da anonimo, **«Accedi» si vede subito**, senza aprire il menu.
-2. Tocca un campo del modulo di accesso: su iPhone **la pagina non si
-   ingrandisce**.
-3. Accedi, poi torna sul sito pubblico: in alto a destra **l'avatar**, non
-   «Accedi / Iscriviti». Da lì «Esci».
-4. Naviga fra artisti, città e profili per qualche minuto: **non devi essere
-   rimandato al login**.
-5. Il menu dell'area personale **deve scorrere** fino in fondo, «Esci»
-   compreso.
-6. La mappa non deve occupare più di due terzi dello schermo.
-
-**Da computer:**
-
-7. Dashboard: livello e reputazione sono due schede distinte, e la reputazione
-   dice **cosa la fa salire**.
-8. Portfolio: «Elimina» chiede conferma, e i lavori si **vedono**.
-9. `/artisti`: l'ordine è cambiato, il punteggio è stato ricalcolato.
-10. Un indirizzo inventato tipo `/artisti/non-esisto` deve dare **404**, non
-    uno scheletro di caricamento.
+---
 
 ---
 
