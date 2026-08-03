@@ -8,6 +8,8 @@ import { ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Conversazione" };
+
 export default async function ConversationPage({
   params,
 }: {

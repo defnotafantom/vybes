@@ -6,6 +6,8 @@ import { Check } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Quest" };
+
 export default async function QuestPage() {
   const session = await auth();
   const userId = session!.user.id;

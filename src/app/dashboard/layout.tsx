@@ -13,7 +13,19 @@ import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { RoleBadge } from "@/components/ui/Badge";
 
-// L'intera area privata resta fuori dall'indice.
+/**
+ * L'intera area privata resta fuori dall'indice.
+ *
+ * Nessuna di queste pagine dichiarava però un proprio titolo, quindi ognuna
+ * ereditava il `default` del layout radice: undici schede del browser tutte
+ * chiamate «Vybes — La rete che connette artisti e chi li ingaggia», e la
+ * cronologia altrettanto. Qui non è un problema di posizionamento — con
+ * `noindex` nessun motore le legge — ma di orientamento: chi lavora tiene
+ * aperte il profilo e l'ingaggio da gestire, e non riesce a distinguerli.
+ *
+ * Ogni pagina esporta quindi `metadata.title`, che il modello `%s | Vybes`
+ * del layout radice completa da sé.
+ */
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

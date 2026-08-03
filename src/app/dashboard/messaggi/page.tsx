@@ -9,6 +9,8 @@ import { quandoRelativo } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Messaggi" };
+
 export default async function MessaggiPage() {
   const session = await auth();
   const userId = session!.user.id;

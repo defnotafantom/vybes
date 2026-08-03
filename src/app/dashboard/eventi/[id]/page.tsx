@@ -11,6 +11,8 @@ import { dataOra } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Gestisci l’ingaggio" };
+
 export default async function ManageEventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await auth();

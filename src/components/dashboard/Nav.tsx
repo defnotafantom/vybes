@@ -111,7 +111,29 @@ function useIsActive() {
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Colonna laterale su desktop, con indicatore della sezione corrente. */
+/**
+ * Colonna laterale su desktop, con indicatore della sezione corrente.
+ *
+ * ── Perché `sticky` sta qui e non sull'elenco ──
+ *
+ * Ci stava, e il risultato era che scorrendo una pagina lunga le voci del
+ * menu scivolavano **sopra** «Esplora il sito» e «Esci», che invece
+ * scorrevano via: testo stampato su altro testo, «Ingaggi» sovrapposto a
+ * «Esci». Un elemento appiccicato dentro una colonna che scorre si stacca dal
+ * resto della colonna — è il comportamento corretto di `sticky`, applicato al
+ * pezzo sbagliato.
+ *
+ * Il motivo per cui era finito sull'elenco è però reale, e va detto: questa
+ * `nav` è una cella di griglia, e una cella di griglia si allunga per
+ * default fino all'altezza della riga. Un elemento alto quanto il contenuto
+ * accanto non si appiccica mai a niente, perché non ha margine entro cui
+ * scorrere. Serve `self-start`, che le ridà l'altezza del proprio contenuto:
+ * senza quello, spostare `sticky` sulla `nav` lo disattiverebbe e basta.
+ *
+ * `max-h` e `overflow-y-auto` coprono il caso opposto: su uno schermo basso
+ * — un portatile da tredici pollici con dieci voci — un menu appiccicato più
+ * alto della finestra nasconde le ultime voci senza modo di raggiungerle.
+ */
 export function DashboardSidebar({
   puoModerare = false,
   contatori = {},
@@ -123,8 +145,11 @@ export function DashboardSidebar({
   const items = voci(puoModerare);
 
   return (
-    <nav aria-label="Sezioni dell'area personale" className="hidden lg:block">
-      <ul className="sticky top-24 space-y-1">
+    <nav
+      aria-label="Sezioni dell'area personale"
+      className="sticky top-24 hidden max-h-[calc(100dvh-8rem)] self-start overflow-y-auto overscroll-contain pr-1 lg:block"
+    >
+      <ul className="space-y-1">
         {items.map((item) => {
           const active = isActive(item.href, item.exact);
           const Icon = item.icon;

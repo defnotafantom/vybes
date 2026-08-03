@@ -12,6 +12,8 @@ import { reputazioneMassima } from "@/lib/reputazione";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Feed" };
+
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user.id;

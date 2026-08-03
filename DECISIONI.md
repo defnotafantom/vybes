@@ -1258,6 +1258,103 @@ non è opponibile a nessuno.
 
 ---
 
+## ADR-032 · `sticky` va sulla colonna, non su un pezzo di colonna
+
+**Contesto.** Nella barra laterale dell'area personale `sticky top-24` stava
+sull'elenco delle sezioni. Sotto quell'elenco, dentro la stessa `nav`, ci sono
+«Esplora il sito» e «Esci». Scorrendo una pagina lunga il primo restava fermo
+e gli altri due scorrevano via **sotto di lui**: testo stampato su altro
+testo, «Ingaggi» sovrapposto a «Esci», l'ordine delle voci apparentemente
+mescolato. Non un'imprecisione di qualche pixel — due elementi leggibili nello
+stesso punto.
+
+**Perché era finito lì.** La `nav` è una cella di griglia, e una cella di
+griglia si allunga fino all'altezza della riga. Un elemento alto quanto la
+colonna del contenuto non ha margine entro cui scorrere, quindi `sticky` sulla
+`nav` non faceva niente: spostarlo sull'elenco, che invece è alto quanto il
+proprio contenuto, «funzionava». Funzionava per la metà del menu che qualcuno
+aveva guardato.
+
+**Decisione.** `sticky` sulla `nav`, con `self-start` che le restituisce
+l'altezza del proprio contenuto, più `max-h` e `overflow-y-auto` per lo
+schermo basso — un menu appiccicato più alto della finestra nasconde le ultime
+voci senza modo di raggiungerle.
+
+**La regola.** `position: sticky` applicato a una parte di un gruppo che
+scorre insieme stacca quella parte dal resto. Se le voci vanno tenute insieme,
+l'elemento appiccicato è il loro contenitore comune — e se il contenitore non
+si appiccica, la causa è quasi sempre che qualcosa gli sta imponendo
+un'altezza, non che `sticky` non funzioni.
+
+---
+
+## ADR-033 · Il tempo passa anche per gli annunci
+
+**Contesto.** In «Ingaggi che organizzi» comparivano tutti gli annunci
+pubblicati, dal più recente. In produzione questo significava vedere un
+ingaggio del **3 marzo 2024** presentato esattamente come uno aperto: stessa
+scheda, stesso pulsante «Gestisci», stessa riga «0 candidature» — il cui
+commento nel codice diceva testualmente che serve a comunicare «l'annuncio è
+vivo e nessuno ha risposto».
+
+**Il punto interessante non è il difetto, è dove stava.** La directory
+pubblica filtra già per `startsAt >= adesso`. Le proprie candidature erano già
+divise in attive / concluse / archivio. `now` veniva calcolato **in questa
+stessa funzione** e usato ovunque tranne che nell'unico elenco in cui
+mancava — cioè la nozione di «passato» esisteva tre volte nel file e non era
+applicata al quarto caso.
+
+**Decisione.** Due sezioni, e il significato che cambia con lo stato: «0
+candidature» su un annuncio aperto è un invito a rilanciarlo, su uno concluso
+diventa «nessuna candidatura ricevuta»; «Gestisci» diventa «Vedi» quando non
+resta niente da decidere. Il conteggio in cima passa da «Pubblicati» — che
+sale e non scende mai — ad «Aperti ora», che è l'unico su cui si può agire.
+Il bordo di chi aspetta una risposta resta anche sui conclusi: qualcuno che si
+è candidato e non ha mai ricevuto risposta è un debito che la data non
+cancella.
+
+**La regola, e vale oltre questo caso.** Quando una scheda afferma qualcosa
+per iscritto — «vivo», «in attesa», «0 candidature» — quell'affermazione è una
+promessa sui dati, e va verificata dal codice che la stampa. Qui il commento
+descriveva correttamente l'intenzione e il codice la contraddiceva per una
+riga di annunci su cui nessuno aveva provato.
+
+---
+
+## ADR-034 · Un modulo che rifiuta e tace
+
+**Contesto.** `ProfileForm` raccoglieva gli errori di `zod` in un dizionario
+indicizzato per campo e ne mostrava **quattro su undici**. Per gli altri il
+`submit` si interrompeva senza scrivere niente in pagina: chi lo usa ripreme
+«Salva», non succede nulla, e conclude che il sito è rotto.
+
+Nella forma attuale dello schema quasi nessuna di quelle regole è
+raggiungibile — `maxLength` nel DOM taglia già headline e biografia. Ma il
+difetto non è nei sette campi: è che *mostrare l'errore era una cosa da
+ricordarsi*. La prima regola nuova in `profileSchema`, o il primo `details`
+inatteso dall'API, diventa un rifiuto silenzioso.
+
+**Decisione.** Un componente `Errore` solo, presente su ogni campo, e in fondo
+al modulo la stampa di ogni chiave rimasta senza posto. Il caso «errore che
+nessuno mostra» smette di essere possibile invece di essere corretto un campo
+alla volta.
+
+**Insieme:** il contatore della biografia. La scheda della reputazione, dieci
+centimetri più in alto, chiede quattrocento caratteri; il campo non ne mostrava
+nessuno, mentre l'headline — una soglia sola, e meno peso — il contatore ce
+l'aveva. Le soglie non sono ricopiate: `SCAGLIONI_BIO` è esportato da
+`reputazione.ts` e usato sia per assegnare i punti sia per dire quanto manca.
+Due copie della stessa regola divergono alla prima modifica, ed è il modo in
+cui su questo progetto è nata metà dei difetti.
+
+**Cosa il modulo non dice**, deliberatamente: la soglia di indicizzazione.
+Quella regola è «almeno 120 caratteri **oppure** un lavoro nel portfolio», e
+il modulo non sa quanti lavori ci siano. Dirla a metà significherebbe scrivere
+«non compari su Google» a qualcuno che invece ci compare. La dice la
+dashboard, che ha il dato.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

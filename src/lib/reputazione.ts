@@ -58,6 +58,30 @@ export type FattiReputazione = {
 type Voce = { label: string; punti: number; max: number; come: string };
 
 /**
+ * Gli scaglioni della biografia, dal più alto.
+ *
+ * A scaglioni e non lineare: la differenza fra zero e duecento caratteri è
+ * enorme, fra ottocento e mille non significa niente.
+ *
+ * Sono esportati perché il modulo del profilo li dice a chi scrive, mentre
+ * scrive. Erano un'espressione condizionale scritta a mano qui dentro, e il
+ * contatore accanto al campo avrebbe dovuto ricopiarne i numeri: due copie
+ * della stessa regola divergono alla prima modifica, ed è il modo in cui su
+ * questo progetto sono nati metà dei difetti. Chi cambia il punteggio deve
+ * cambiare anche quello che il modulo promette, senza doverselo ricordare.
+ */
+export const SCAGLIONI_BIO = [
+  { da: 400, punti: 15 },
+  { da: 200, punti: 10 },
+  { da: 120, punti: 5 },
+] as const;
+
+/** Punti della biografia per una lunghezza in caratteri. */
+export function puntiBio(caratteri: number): number {
+  return SCAGLIONI_BIO.find((s) => caratteri >= s.da)?.punti ?? 0;
+}
+
+/**
  * Il dettaglio del punteggio.
  *
  * Restituisce le voci e non solo il totale perché la reputazione va spiegata:
@@ -95,9 +119,7 @@ export function dettaglioReputazione(f: FattiReputazione): Voce[] {
     },
     {
       label: "Biografia",
-      // A scaglioni e non lineare: la differenza fra zero e duecento caratteri
-      // è enorme, fra ottocento e mille non significa niente.
-      punti: bio >= 400 ? 15 : bio >= 200 ? 10 : bio >= 120 ? 5 : 0,
+      punti: puntiBio(bio),
       max: 15,
       come: "Racconta chi sei in almeno quattrocento caratteri.",
     },

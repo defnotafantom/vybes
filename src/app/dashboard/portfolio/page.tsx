@@ -5,6 +5,8 @@ import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Portfolio" };
+
 export default async function DashboardPortfolioPage() {
   const session = await auth();
   const items = await prisma.portfolioItem.findMany({

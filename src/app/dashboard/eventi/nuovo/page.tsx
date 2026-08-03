@@ -4,6 +4,8 @@ import { PaginaHeader } from "@/components/dashboard/PaginaHeader";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Pubblica un ingaggio" };
+
 export default async function NuovoEventoPage() {
   const cities = await prisma.city.findMany({
     orderBy: { name: "asc" },

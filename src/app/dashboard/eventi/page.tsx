@@ -10,6 +10,8 @@ import { dataBreve } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Ingaggi" };
+
 export default async function DashboardEventiPage() {
   const session = await auth();
   const userId = session!.user.id;
@@ -31,6 +33,31 @@ export default async function DashboardEventiPage() {
     }),
   ]);
 
+  /**
+   * Gli annunci che hai pubblicato, separati dalla data.
+   *
+   * Erano un elenco solo, ordinato dal più recente. In produzione questo
+   * significava vedere un ingaggio del **3 marzo 2024** presentato esattamente
+   * come uno aperto — stessa scheda, stesso pulsante «Gestisci», stessa riga
+   * «0 candidature», il cui commento nel codice diceva testualmente che serve
+   * a dire «l'annuncio è vivo e nessuno ha risposto». Per una data passata
+   * quella frase è falsa, e la scheda affermava una cosa che i dati
+   * smentivano.
+   *
+   * Non è un dettaglio estetico. La directory pubblica filtra già per
+   * `startsAt >= adesso`, e le proprie candidature erano già divise in attive
+   * / concluse / archivio: `now` veniva calcolato in questa stessa funzione e
+   * usato ovunque tranne che qui. Chi organizza dieci serate all'anno si
+   * trovava le nove passate davanti alla sola che chiede attenzione.
+   *
+   * Gli aperti vanno dal più vicino: è l'ordine dell'urgenza. I conclusi dal
+   * più recente, che è l'ordine con cui si ripesca qualcosa.
+   */
+  const organizzatiAperti = organized
+    .filter((e) => e.startsAt >= now)
+    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+  const organizzatiConclusi = organized.filter((e) => e.startsAt < now);
+
   // Recap richiesto: in corso / futuri / conclusi / archivio.
   const upcoming = myApplications.filter((p) => p.event.startsAt >= now && p.status !== "REJECTED");
   const completed = myApplications.filter((p) => p.event.startsAt < now && p.status === "ACCEPTED");
@@ -47,8 +74,11 @@ export default async function DashboardEventiPage() {
       <SezioneHeader
         titolo="Ingaggi"
         sottotitolo="Quelli che hai pubblicato e quelli a cui ti sei candidato. Un annuncio con data, luogo e compenso in chiaro riceve risposte pertinenti; senza compenso ne riceve poche."
+        // «Pubblicati» contava anche gli annunci di due anni fa: un numero che
+        // sale e non scende mai non dice niente su oggi. Quello che conta è
+        // quanti sono aperti adesso, perché è l'unico su cui si può agire.
         numeri={[
-          { label: "Pubblicati", valore: organized.length },
+          { label: "Aperti ora", valore: organizzatiAperti.length },
           { label: "Candidature da decidere", valore: daDecidere },
           { label: "Tue candidature attive", valore: upcoming.length },
         ]}
@@ -80,51 +110,39 @@ export default async function DashboardEventiPage() {
               ctaHref="/dashboard/eventi/nuovo"
             />
           </div>
+        ) : organizzatiAperti.length === 0 ? (
+          // Avere solo annunci passati non è come non averne mai pubblicati:
+          // il primo l'hai già scritto, quindi non serve spiegare a cosa
+          // serve — serve dire che in questo momento non c'è niente di aperto,
+          // che è il fatto rilevante e altrimenti si dedurrebbe da un elenco
+          // di date da leggere una per una.
+          <p className="mt-5 text-fluid-sm text-ink-muted">
+            Nessun annuncio aperto in questo momento.
+          </p>
         ) : (
           <ul className="mt-6 space-y-3">
-            {organized.map((e) => (
-              <li
-                key={e.id}
-                // Le righe con qualcuno in attesa si distinguono dal bordo: in
-                // un elenco lungo il conteggio dentro il pulsante si perdeva,
-                // ed è l'unica cosa in pagina che chiede un'azione.
-                className={`card flex flex-wrap items-center justify-between gap-4 ${
-                  e.participations.length > 0 ? "border-esito-attesa-tinta/40" : ""
-                }`}
-              >
-                <div className="min-w-0">
-                  <Link
-                    href={`/eventi/${e.slug}`}
-                    className="text-fluid-sm font-semibold transition-colors hover:text-brand-600 dark:hover:text-brand-400"
-                  >
-                    {e.title}
-                  </Link>
-                  <p className="mt-1 flex flex-wrap items-center gap-x-2 text-fluid-xs text-ink-muted">
-                    <span>{e.city}</span>
-                    <span aria-hidden="true" className="text-ink-faint">·</span>
-                    <span>{dataBreve(e.startsAt)}</span>
-                    <span aria-hidden="true" className="text-ink-faint">·</span>
-                    {/* «0 candidature» dice qualcosa che «candidature: 0» non
-                        dice: che l'annuncio è vivo e nessuno ha risposto. */}
-                    <span>
-                      {e._count.participations}{" "}
-                      {e._count.participations === 1 ? "candidatura" : "candidature"}
-                    </span>
-                  </p>
-                </div>
-                <Link href={`/dashboard/eventi/${e.id}`} className="btn-ghost shrink-0">
-                  Gestisci
-                  {e.participations.length > 0 && (
-                    <span className="ml-1.5 rounded-full bg-esito-attesa-tinta/15 px-2 py-0.5 text-fluid-xs font-bold tabular-nums text-esito-attesa">
-                      {e.participations.length}
-                    </span>
-                  )}
-                </Link>
-              </li>
+            {organizzatiAperti.map((e) => (
+              <RigaOrganizzata key={e.id} e={e} />
             ))}
           </ul>
         )}
       </section>
+
+      {organizzatiConclusi.length > 0 && (
+        <section>
+          <h2 className="text-fluid-lg font-bold">Ingaggi conclusi che hai organizzato</h2>
+          <p className="mt-1 text-fluid-sm text-ink-muted">
+            La data è passata. Restano qui perché le candidature ricevute sono
+            la base della tua reputazione, e perché un annuncio riuscito è il
+            più facile da riscrivere.
+          </p>
+          <ul className="mt-6 space-y-3">
+            {organizzatiConclusi.map((e) => (
+              <RigaOrganizzata key={e.id} e={e} concluso />
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* Solo la prima mostra qualcosa quando è vuota: è l'unica in cui il
           vuoto ha un rimedio. «Nessun ingaggio concluso» non si risolve
@@ -141,9 +159,83 @@ export default async function DashboardEventiPage() {
           />
         }
       />
-      <EventRecap title="Ingaggi conclusi" rows={completed} />
+      {/* «Ingaggi conclusi» sarebbe stato il titolo naturale, ma ora esiste
+          anche «Ingaggi conclusi che hai organizzato» e due sezioni quasi
+          omonime nella stessa pagina si leggono male. Sono comunque due cose
+          diverse: là hai pagato, qui sei stato pagato. */}
+      <EventRecap title="Ingaggi che hai fatto" rows={completed} />
       <EventRecap title="Archivio" rows={archived} />
     </div>
+  );
+}
+
+type Organizzato = {
+  id: string;
+  slug: string;
+  title: string;
+  city: string;
+  startsAt: Date;
+  _count: { participations: number };
+  participations: { id: string }[];
+};
+
+/**
+ * Una riga fra i propri annunci.
+ *
+ * `concluso` non cambia i dati, cambia quello che significano. «0
+ * candidature» su un annuncio aperto è un invito a rilanciarlo; sullo stesso
+ * annuncio a data passata è un consuntivo, e scritto uguale sarebbe una
+ * bugia. Stessa cosa per il pulsante: «Gestisci» promette che c'è qualcosa da
+ * decidere, e quando non c'è più si chiama «Vedi».
+ *
+ * Il bordo d'attesa resta anche sui conclusi, e di proposito: qualcuno che si
+ * è candidato e non ha mai ricevuto risposta è un debito che la data non
+ * cancella.
+ */
+function RigaOrganizzata({ e, concluso = false }: { e: Organizzato; concluso?: boolean }) {
+  const inAttesa = e.participations.length;
+  const n = e._count.participations;
+
+  return (
+    <li
+      // Le righe con qualcuno in attesa si distinguono dal bordo: in un elenco
+      // lungo il conteggio dentro il pulsante si perdeva, ed è l'unica cosa in
+      // pagina che chiede un'azione.
+      className={`card flex flex-wrap items-center justify-between gap-4 ${
+        inAttesa > 0 ? "border-esito-attesa-tinta/40" : ""
+      } ${concluso ? "opacity-75" : ""}`}
+    >
+      <div className="min-w-0">
+        <Link
+          href={`/eventi/${e.slug}`}
+          className="text-fluid-sm font-semibold transition-colors hover:text-brand-600 dark:hover:text-brand-400"
+        >
+          {e.title}
+        </Link>
+        <p className="mt-1 flex flex-wrap items-center gap-x-2 text-fluid-xs text-ink-muted">
+          <span>{e.city}</span>
+          <span aria-hidden="true" className="text-ink-faint">·</span>
+          <span>{dataBreve(e.startsAt)}</span>
+          <span aria-hidden="true" className="text-ink-faint">·</span>
+          {/* Su un annuncio aperto «0 candidature» dice qualcosa che
+              «candidature: 0» non dice: che è vivo e nessuno ha risposto. Su
+              uno concluso quella lettura non regge più. */}
+          <span>
+            {concluso && n === 0
+              ? "nessuna candidatura ricevuta"
+              : `${n} ${n === 1 ? "candidatura" : "candidature"}`}
+          </span>
+        </p>
+      </div>
+      <Link href={`/dashboard/eventi/${e.id}`} className="btn-ghost shrink-0">
+        {concluso && inAttesa === 0 ? "Vedi" : "Gestisci"}
+        {inAttesa > 0 && (
+          <span className="ml-1.5 rounded-full bg-esito-attesa-tinta/15 px-2 py-0.5 text-fluid-xs font-bold tabular-nums text-esito-attesa">
+            {inAttesa}
+          </span>
+        )}
+      </Link>
+    </li>
   );
 }
 

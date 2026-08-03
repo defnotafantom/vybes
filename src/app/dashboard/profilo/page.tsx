@@ -12,6 +12,8 @@ import { reputazioneMassima } from "@/lib/reputazione";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Profilo" };
+
 export default async function ProfiloPage() {
   const session = await auth();
 

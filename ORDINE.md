@@ -35,35 +35,46 @@ Cinque cose sono già state chiuse in preparazione:
 
 ## Dove eravamo rimasti — 3 agosto
 
-**Il sito è stato guardato in un browser vero, pagina per pagina.** Sono usciti
-dieci difetti che nessun test poteva vedere, tutti corretti. Sette su dieci
-avevano la stessa causa: **spazi riservati a immagini che non ci sono**. È il
-difetto strutturale di un layout progettato assumendo contenuto ricco e poi
-riempito con contenuto reale, che all'inizio è sempre povero.
+**Due giri col browser, non uno.** Il primo, sulle pagine pubbliche, ha
+trovato dieci difetti; sette avevano la stessa causa — spazi riservati a
+immagini che non ci sono — e la regola che ne è uscita vale per ogni
+componente nuovo: **un componente va disegnato per il caso vuoto quanto per
+quello pieno.**
 
-La regola che ne è uscita, e che vale per ogni componente nuovo: **un
-componente va disegnato per il caso vuoto quanto per quello pieno.** Avatar
-con iniziali colorate, card con tinta e icona per categoria — assenza di
-immagine non deve significare assenza di identità.
+Il secondo, sull'**area personale**, che il primo non aveva toccato: è dove un
+artista appena reclutato passa tutto il tempo, ed era l'unica parte del sito
+mai guardata da dentro con una sessione aperta. Cinque difetti, tutti corretti
+(ADR-032, 033, 034):
+
+- Il menu laterale si stampava **sopra** «Esplora il sito» e «Esci»: `sticky`
+  era su un pezzo della colonna invece che sulla colonna.
+- Un ingaggio del **3 marzo 2024** compariva identico a uno aperto — stesso
+  «Gestisci», stesso «0 candidature» — mentre `now` era già calcolato due
+  righe sopra e usato in ogni altro elenco della stessa pagina.
+- Il modulo del profilo raccoglieva undici errori e ne mostrava quattro: gli
+  altri sette erano un rifiuto silenzioso in attesa di succedere.
+- La biografia, che il sito chiede lunga quattrocento caratteri, non ne
+  mostrava il conto. L'headline sì.
+- Undici pagine dell'area personale avevano tutte lo stesso titolo nella
+  scheda del browser.
+
+**Sightengine è configurato**: `/api/health` riporta `moderazioneImmagini:
+true`. La voce 3-bis è chiusa.
 
 ### Cosa manca per aprire davvero al pubblico
 
-Tre cose, e nessuna è codice.
+Due cose, e nessuna è codice.
 
 **1. I tuoi dati da titolare** — `src/lib/titolare.ts`, cinque campi. Dieci
-minuti. Finché sono vuoti, `/privacy` è online e dichiara di sé «Da
-completare prima dell'apertura al pubblico», mentre stai raccogliendo email e
-password di persone reali. L'avviso sparisce da solo quando li compili.
+minuti, ed è l'unico blocco rimasto. Finché sono vuoti, `/privacy` è online e
+dichiara di sé «Da completare prima dell'apertura al pubblico», mentre stai
+raccogliendo email e password di persone reali. L'avviso sparisce da solo
+quando li compili.
 
 Poi il testo va letto da un avvocato: è l'unica voce che può creare un
 problema giuridico invece che tecnico.
 
-**2. Due variabili per il filtro immagini** — sightengine.com, piano
-gratuito, Dashboard → API credentials. `SIGHTENGINE_USER` e
-`SIGHTENGINE_SECRET` (quest'ultima Sensitive) su Vercel, poi Redeploy.
-Verifica: `/api/health` deve riportare `moderazioneImmagini: true`.
-
-**3. I venti artisti** — `RECLUTAMENTO.md` ha il messaggio, le quattro cose
+**2. I venti artisti** — `RECLUTAMENTO.md` ha il messaggio, le quattro cose
 da chiedere, la formula di consenso e il formato del file. Poi
 `npm run artisti:importa`.
 
@@ -193,26 +204,15 @@ creare un problema legale invece che tecnico.
 
 ---
 
-## 3-bis. Moderazione delle immagini
+## 3-bis. Moderazione delle immagini ✔ fatto il 3 agosto
 
-Il codice c'è, mancano due variabili. Senza, i caricamenti non vengono
-classificati: chiunque si registri può mettere qualsiasi cosa su un dominio
-indicizzato, e la difesa resta solo reattiva — le segnalazioni, che
-intervengono quando il contenuto è già online.
-
-Registrazione gratuita su **sightengine.com**, poi Dashboard → *API
-credentials*. Due variabili su Vercel:
-
-```
-SIGHTENGINE_USER
-SIGHTENGINE_SECRET
-```
-
-Verifica: `/api/health` deve riportare `moderazioneImmagini: true`.
+`moderazioneImmagini: true` in produzione. I caricamenti vengono classificati
+prima di essere salvati: un contenuto respinto non esiste mai a un indirizzo
+pubblico, nemmeno per i secondi che servirebbero a controllarlo dopo.
 
 Se il servizio non risponde o va in timeout, i caricamenti passano lo stesso —
-è deliberato: un guasto di terzi non deve diventare un guasto nostro, e il
-contenuto resta comunque segnalabile.
+è deliberato (ADR-030): un guasto di terzi non deve diventare un guasto
+nostro, e il contenuto resta comunque segnalabile.
 
 ---
 

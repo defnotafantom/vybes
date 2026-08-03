@@ -15,6 +15,8 @@ function toLocalInput(date: Date | null): string {
   )}:${pad(date.getMinutes())}`;
 }
 
+export const metadata = { title: "Modifica l’ingaggio" };
+
 export default async function ModificaEventoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await auth();

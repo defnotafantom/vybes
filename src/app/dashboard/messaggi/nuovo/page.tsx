@@ -8,6 +8,8 @@ export const dynamic = "force-dynamic";
  * Punto di ingresso di "Contatta" dal profilo pubblico: crea o riusa la
  * conversazione 1-a-1 e reindirizza alla chat.
  */
+export const metadata = { title: "Nuovo messaggio" };
+
 export default async function NuovaConversazionePage({
   searchParams,
 }: {
