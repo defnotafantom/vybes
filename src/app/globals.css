@@ -267,7 +267,13 @@
      Non è una mappa disegnata scura: è una mappa chiara invertita, e da
      vicino si vede. Ma costa zero e sta dentro il tema. */
   .dark .mappa-tema .leaflet-tile-pane {
-    filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+    /* `brightness(0.95)` era troppo blando: la mappa passava da bianca a
+       verde oliva, cioè restava comunque più chiara di tutto il resto e
+       continuava a tirare l'occhio. 0.62 la porta al livello delle superfici
+       vicine; il contrasto sopra l'unità recupera le strade, che invertendo
+       tendono a impastarsi col fondo. Saturazione ridotta perché i verdi dei
+       parchi, una volta invertiti, diventano viola accesi. */
+    filter: invert(1) hue-rotate(180deg) brightness(0.62) contrast(1.15) saturate(0.7);
   }
 
   /* ── Barra dei filtri ────────────────────────────────────────────────
