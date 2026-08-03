@@ -249,6 +249,27 @@
     @apply text-fluid-xs font-bold uppercase tracking-[0.14em] text-brand-600 dark:text-brand-400;
   }
 
+  /* ── Mappa sul tema scuro ─────────────────────────────────────────────
+     Le tile di OpenStreetMap sono chiare, e non esiste una versione scura
+     ufficiale: dentro una pagina scura la mappa diventa un rettangolo bianco,
+     la cosa più vistosa dello schermo, che attira l'occhio senza meritarlo.
+
+     L'alternativa sarebbe un altro fornitore di tile scure — CARTO, Stadia —
+     che significa una dipendenza in più, un'altra attribuzione da rispettare
+     e un altro servizio che può cadere. Qui invece si inverte la luminosità e
+     si ruota la tinta di mezzo giro, che riporta i verdi a verdi e i blu a
+     blu invece di trasformarli nei complementari.
+
+     Il filtro sta **solo** sul riquadro delle tile: i marker e i popup vivono
+     in un altro strato di Leaflet e resterebbero invertiti anche loro — un
+     pin viola diventerebbe giallo, e i controlli di zoom illeggibili.
+
+     Non è una mappa disegnata scura: è una mappa chiara invertita, e da
+     vicino si vede. Ma costa zero e sta dentro il tema. */
+  .dark .mappa-tema .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+  }
+
   /* ── Barra dei filtri ────────────────────────────────────────────────
      Sotto i 640px le pillole scorrono in orizzontale invece di andare a
      capo: quattordici categorie mandate a capo occupano mezzo schermo e

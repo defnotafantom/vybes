@@ -88,6 +88,19 @@ export function MapExplorer({
 }) {
   const [radius, setRadius] = useState(50);
   const [origin, setOrigin] = useState(center);
+  /**
+   * Il filtro per distanza si attiva solo dopo la geolocalizzazione.
+   *
+   * All'apertura il centro era il baricentro geografico dell'Italia e il
+   * raggio cinquanta chilometri: in mezzo alla Toscana, dove non c'è nessun
+   * ingaggio. La pagina si presentava dicendo «0 ingaggi nel raggio
+   * selezionato» — che è vero e completamente fuorviante, perché gli ingaggi
+   * ci sono e sono sei.
+   *
+   * Un raggio ha senso solo attorno a un punto che significa qualcosa. Finché
+   * quel punto non c'è, si mostra tutto.
+   */
+  const [filtraPerRaggio, setFiltraPerRaggio] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [inCorso, setInCorso] = useState(false);
 
@@ -105,8 +118,11 @@ export function MapExplorer({
   }, []);
 
   const visible = useMemo(
-    () => points.filter((p) => haversineKm(origin, { lat: p.lat, lng: p.lng }) <= radius),
-    [points, origin, radius]
+    () =>
+      filtraPerRaggio
+        ? points.filter((p) => haversineKm(origin, { lat: p.lat, lng: p.lng }) <= radius)
+        : points,
+    [points, origin, radius, filtraPerRaggio]
   );
 
   function locate() {
@@ -120,6 +136,7 @@ export function MapExplorer({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setOrigin({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setFiltraPerRaggio(true);
         setInCorso(false);
       },
       (err) => {
@@ -151,8 +168,12 @@ export function MapExplorer({
              non `vh`: su iOS `vh` misura la finestra senza la barra degli
              indirizzi, quindi il fondo della mappa resterebbe nascosto sotto
              di essa proprio mentre la si scorre. */
-          className="h-[60dvh] max-h-[520px] min-h-72 w-full sm:h-[520px]"
+          className="mappa-tema h-[60dvh] max-h-[520px] min-h-72 w-full sm:h-[520px]"
         >
+          {/* `mappa-tema` inverte le tile quando il tema è scuro: vedi la
+              nota in globals.css. Le tile di OpenStreetMap sono chiare, e un
+              rettangolo bianco in mezzo a una pagina scura è la cosa più
+              vistosa del sito. */}
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -184,20 +205,33 @@ export function MapExplorer({
               {geoError}
             </p>
           )}
-          <label htmlFor="radius" className="mt-4 block text-sm font-medium">
-            Raggio: {radius} km
-          </label>
-          <input
-            id="radius"
-            type="range"
-            min={5}
-            max={300}
-            step={5}
-            value={radius}
-            onChange={(e) => setRadius(Number(e.target.value))}
-            className="mt-2 w-full"
-          />
-          <p className="mt-3 text-sm muted">{visible.length} ingaggi nel raggio selezionato</p>
+          {/* Il cursore del raggio compariva prima che ci fosse un centro
+              attorno a cui misurare: si poteva regolarlo senza che
+              significasse niente. Ora appare insieme al risultato che
+              governa. */}
+          {filtraPerRaggio && (
+            <>
+              <label htmlFor="radius" className="mt-4 block text-fluid-sm font-medium">
+                Raggio: {radius} km
+              </label>
+              <input
+                id="radius"
+                type="range"
+                min={5}
+                max={300}
+                step={5}
+                value={radius}
+                onChange={(e) => setRadius(Number(e.target.value))}
+                className="mt-2 w-full"
+              />
+            </>
+          )}
+
+          <p className="mt-3 text-fluid-sm text-ink-muted">
+            {filtraPerRaggio
+              ? `${visible.length} ${visible.length === 1 ? "ingaggio" : "ingaggi"} entro ${radius} km`
+              : `${visible.length} ${visible.length === 1 ? "ingaggio" : "ingaggi"} in tutta Italia`}
+          </p>
         </div>
 
         <ul className="space-y-3">
