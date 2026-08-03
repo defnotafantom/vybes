@@ -2,7 +2,6 @@ import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { VerifiedBadge } from "@/components/ui/Badge";
-import { reputazioneMassima } from "@/lib/reputazione";
 
 export type ArtistCardData = {
   slug: string;
@@ -12,12 +11,10 @@ export type ArtistCardData = {
   city: string | null;
   disciplines: string[];
   /**
-   * La reputazione, non il livello.
-   *
-   * La scheda mostrava «Lv. 7» in un elenco che è ordinato per reputazione:
-   * il numero visibile e il criterio d'ordinamento erano due cose diverse, e
-   * il primo misurava quanto quella persona usa il sito — informazione che a
-   * un organizzatore non serve per decidere se aprirne il profilo.
+   * Serve ancora al tipo perché le pagine che usano questa scheda ordinano
+   * per reputazione e la selezionano comunque: toglierla dalla query per
+   * risparmiare una colonna significherebbe non poter più ordinare.
+   * Semplicemente, non si disegna.
    */
   reputation: number;
   isVerified: boolean;
@@ -63,10 +60,18 @@ export function ArtistCard({
                 {artist.city}
               </span>
             )}
-            <span className="ml-auto shrink-0 tabular-nums text-ink-faint">
-              {artist.reputation}
-              <span className="opacity-60">/{reputazioneMassima()}</span>
-            </span>
+            {/* Il punteggio non compare più qui.
+                In una scheda d'elenco «53/110» è un numero senza etichetta e
+                senza scala di riferimento: chi arriva da una ricerca non sa
+                cosa misuri, e occupava l'angolo che l'occhio guarda per
+                ultimo — cioè quello che resta impresso.
+
+                Serve ancora, e sta dove si può spiegare: sulla pagina del
+                profilo, accanto a «Reputazione» e con l'elenco di ciò che
+                risulta verificato. L'elenco continua a essere ordinato per
+                reputazione, quindi l'informazione c'è comunque — nella
+                posizione, che è il modo in cui una directory la comunica da
+                sempre senza doverla scrivere. */}
           </div>
         </div>
       </Link>

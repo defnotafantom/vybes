@@ -424,13 +424,23 @@
    Celle di dimensioni diverse su una griglia regolare: rompe la
    monotonia delle tre colonne uguali senza inventare un layout
    nuovo per ogni sezione. */
+/* ── Griglia bento ──────────────────────────────────────────────────────
+   `grid-auto-rows: minmax(140px, auto)` con una cella `row-span-2` fa
+   un'altezza minima di 300px per quella cella. Ha senso quando dentro c'è
+   un'immagine di copertina; senza, il contenuto viene stirato agli estremi
+   e in mezzo restano centocinquanta pixel di niente — che è esattamente
+   com'era la scheda dell'artista in evidenza.
+
+   La riga minima scende a 120: la cella grande resta grande perché occupa
+   due colonne, senza pretendere anche un'altezza che non ha con cosa
+   riempire. */
 .bento {
   @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4;
-  grid-auto-rows: minmax(140px, auto);
+  grid-auto-rows: minmax(120px, auto);
 }
 .bento__wide { @apply sm:col-span-2; }
 .bento__tall { @apply row-span-2; }
-.bento__hero { @apply sm:col-span-2 lg:col-span-2 row-span-2; }
+.bento__hero { @apply sm:col-span-2 lg:col-span-2; }
 
 /* Bordo che si accende all'hover, disegnato con un gradiente su una
    maschera: un bordo sfumato non si può fare con border-color. */

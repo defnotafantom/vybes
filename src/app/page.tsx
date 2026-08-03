@@ -15,6 +15,15 @@ import { fromCsv } from "@/lib/slug";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 
 // Rigenerata ogni 10 minuti: HTML statico servito dalla CDN, dati freschi.
+/**
+ * Sotto quanti artisti il numero è un argomento contro di noi.
+ *
+ * Venti è la stessa soglia di RECLUTAMENTO.md: è il punto in cui chi cerca a
+ * Milano trova abbastanza da tornare. Prima di allora il conteggio si tace, e
+ * si dice invece la copertura geografica.
+ */
+const SOGLIA_VANTO = 20;
+
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
@@ -109,15 +118,34 @@ export default async function HomePage() {
         <div className="mesh-hero" aria-hidden="true" />
         <div className="grid-lines absolute inset-0 -z-10" aria-hidden="true" />
 
-        <div className="container-page flex flex-col items-center py-24 text-center sm:py-32 lg:py-40">
+        {/* Il riempimento verticale era py-24 e cresceva fino a py-40 sui
+            monitor grandi. Sommato al marchio, spingeva titolo e pulsanti sotto
+            la piega: su un portatile la prima schermata mostrava il logo e
+            metà di una frase. Un sito che deve convincere in tre secondi non
+            può usarli tutti per presentarsi.
+
+            Adesso il riempimento *si riduce* al crescere della finestra invece
+            di crescere: su uno schermo alto lo spazio ce l'hai già. */}
+        <div className="container-page flex flex-col items-center py-14 text-center sm:py-16 lg:py-20">
           <BrandHero />
 
-          <p className="eyebrow mt-10 animate-fade-up [animation-delay:400ms]">
+          {/* Il contatore compare solo quando è un argomento.
+              «7 artisti» scritto nel punto più visibile della pagina non
+              informa: comunica che il sito è vuoto, e lo fa prima che il
+              visitatore abbia letto cosa fa. Sotto la soglia si mostrano le
+              città coperte, che sono venti da subito e dicono la stessa cosa
+              — dove siamo — senza dichiarare la propria debolezza.
+
+              Non è nascondere un dato: il numero esatto è in cima a /artisti,
+              che è la pagina di chi quel dato lo sta cercando davvero. */}
+          <p className="eyebrow mt-8 animate-fade-up [animation-delay:400ms]">
             <Sparkles className="mr-1.5 inline h-3.5 w-3.5" aria-hidden="true" />
-            {artistCount} artisti · {cityCount} città
+            {artistCount >= SOGLIA_VANTO
+              ? `${artistCount} artisti · ${cityCount} città`
+              : `${cityCount} città in tutta Italia`}
           </p>
 
-          <h1 className="mt-6 max-w-4xl animate-fade-up text-fluid-hero [animation-delay:480ms]">
+          <h1 className="mt-5 max-w-4xl animate-fade-up text-fluid-hero [animation-delay:480ms]">
             Trova artisti.
             <br />
             Trova ingaggi.
@@ -127,12 +155,12 @@ export default async function HomePage() {
             <span className="text-gradient sm:whitespace-nowrap">Senza intermediari.</span>
           </h1>
 
-          <p className="mt-8 max-w-xl animate-fade-up text-fluid-lg text-ink-muted [animation-delay:560ms]">
+          <p className="mt-6 max-w-xl animate-fade-up text-fluid-lg text-ink-muted [animation-delay:560ms]">
             Vybes collega musicisti, DJ, band, ballerini e performer con i locali, i festival e
             le agenzie che li cercano.
           </p>
 
-          <div className="mt-10 flex animate-fade-up flex-wrap justify-center gap-3 [animation-delay:640ms]">
+          <div className="mt-8 flex animate-fade-up flex-wrap justify-center gap-3 [animation-delay:640ms]">
             <Link
               href="/registrati?ruolo=artista"
               className="btn-primary px-7 py-3.5 text-fluid-base"
@@ -186,14 +214,14 @@ export default async function HomePage() {
           {hero && (
             <Link
               href={`/artisti/${hero.slug}`}
-              className="border-glow card-interactive bento__hero group flex flex-col justify-between overflow-hidden"
+              className="border-glow card-interactive bento__hero group flex flex-col overflow-hidden"
             >
               <div className="flex items-start justify-between gap-4">
                 <Avatar name={hero.name} src={hero.image} size="lg" priority />
                 <span className="chip-accent">Più seguito</span>
               </div>
 
-              <div className="mt-8">
+              <div className="mt-5">
                 <h3 className="text-fluid-xl transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
                   {hero.name}
                 </h3>
@@ -231,12 +259,15 @@ export default async function HomePage() {
             <ArtistCard key={a.slug} artist={{ ...a, disciplines: fromCsv(a.disciplines) }} />
           ))}
 
-          {/* Invito, largo due colonne */}
+          {/* Largo una colonna, non due: dentro c'è una riga di testo, e su
+              due colonne diventava un rettangolo quasi vuoto più grande delle
+              schede degli artisti — cioè l'invito pesava più di ciò a cui
+              invita. */}
           <Link
             href="/artisti"
-            className="border-glow card-interactive bento__wide group flex items-center justify-between"
+            className="border-glow card-interactive group flex items-center justify-between gap-3"
           >
-            <span className="text-fluid-lg font-semibold">Vedi tutti gli artisti</span>
+            <span className="text-fluid-base font-semibold">Vedi tutti gli artisti</span>
             <ArrowRight
               className="h-5 w-5 transition-transform group-hover:translate-x-1"
               aria-hidden="true"
