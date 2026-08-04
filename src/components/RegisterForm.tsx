@@ -8,9 +8,31 @@ import { MailCheck } from "lucide-react";
 import { registerSchema } from "@/lib/validations";
 import { ResendVerification } from "@/components/ResendVerification";
 
-export function RegisterForm({ defaultRole }: { defaultRole: "ARTIST" | "RECRUITER" }) {
+/**
+ * Il ruolo può essere governato da fuori.
+ *
+ * Serve perché le ragioni per iscriversi cambiano col ruolo e stanno **accanto**
+ * al modulo, non dentro: due fratelli che devono leggere lo stesso stato lo
+ * prendono dal genitore comune, che è `Iscrizione`. Senza `role` fra le
+ * proprietà il componente resta autonomo come prima — è la stessa cosa,
+ * governata da un posto diverso.
+ */
+export function RegisterForm({
+  defaultRole,
+  role: roleEsterno,
+  onRoleChange,
+}: {
+  defaultRole: "ARTIST" | "RECRUITER";
+  role?: "ARTIST" | "RECRUITER";
+  onRoleChange?: (r: "ARTIST" | "RECRUITER") => void;
+}) {
   const router = useRouter();
-  const [role, setRole] = useState(defaultRole);
+  const [roleInterno, setRoleInterno] = useState(defaultRole);
+  const role = roleEsterno ?? roleInterno;
+  const setRole = (r: "ARTIST" | "RECRUITER") => {
+    setRoleInterno(r);
+    onRoleChange?.(r);
+  };
   const [errors, setErrors] = useState<Record<string, string>>({});
   /** Indirizzo a cui è partita la verifica: se valorizzato, il modulo lascia
    *  il posto alla schermata di conferma. */
@@ -170,6 +192,7 @@ export function RegisterForm({ defaultRole }: { defaultRole: "ARTIST" | "RECRUIT
         </Link>
         .
       </p>
+
     </form>
   );
 }
