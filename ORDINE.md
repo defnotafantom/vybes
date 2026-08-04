@@ -107,6 +107,34 @@ arriva chi viene da Google (ADR-039, 040):
 - L'avatar era allineato al fondo dei pulsanti, quindi la faccia finiva
   centosessanta pixel sotto il proprio nome — e peggiorava coi profili pieni.
 
+**Quinto giro: il front-end, sezione per sezione** — home, ricerca, città,
+profilo artista, dettaglio di un lavoro, area personale. Undici sezioni aperte
+in un browser vero. Quello che ne è uscito:
+
+- Le schede degli artisti stampavano lo **slug** al posto del mestiere:
+  «cantanti» invece di «Cantante». I filtri, nella stessa pagina, lo facevano
+  giusto.
+- Le schede lasciavano mezza scheda vuota in fondo quando il contenuto era
+  poco: ora la riga di discipline e città sta in basso, allineata con quella
+  delle schede accanto.
+- La pagina di un singolo lavoro mostrava un rettangolo rotto per i brani, i
+  video e i file rimossi.
+- Tenere premuto il marchio da telefono apriva il menu di sistema **sopra**
+  l'animazione che quel gesto avvia.
+
+**La gamification è cresciuta** (ADR-042, 043, 044), nella direzione dei premi
+in visibilità e non delle monete:
+
+- Le **quest si riscuotono**: l'XP vola dal pulsante alla barra del livello, la
+  scheda si chiude e sparisce lasciando il posto alla successiva.
+- **Distintivi** sul profilo pubblico, legati a fatti verificabili.
+- **Vetrina in home** che ruota fra tutti quelli che superano la soglia: una
+  fila, non un podio. In dashboard si vede fra quanti giorni tocca.
+
+Manca il terzo pezzo — le **serie** sui comportamenti che fanno funzionare il
+mercato, tipo «hai risposto a tutte le candidature». Va fatto quando ci sono
+persone vere: con dati finti premierebbe un comportamento che non esiste.
+
 ### Cosa manca per aprire davvero al pubblico
 
 **1. L'indirizzo email del titolare** — `src/lib/titolare.ts`, l'unico campo

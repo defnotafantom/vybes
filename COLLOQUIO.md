@@ -194,6 +194,41 @@ per questo che il punteggio si può mostrare per intero in dashboard — dirlo
 non lo rende sfruttabile, e un numero che decide la tua visibilità senza dire
 come si ottiene è indistinguibile dall'arbitrio.
 
+Se chiedono **come è cresciuta da lì**, è la risposta migliore, perché è una
+scelta di prodotto e non tecnica:
+
+> Il committente mi ha chiesto di ampliarla: roulette giornaliera, monete,
+> un negozio di vestiti per un avatar. Ho tenuto tutta la **meccanica** —
+> ricompense da riscuotere con un'animazione, rotazione, un motivo per tornare
+> ogni giorno, cosmetici da collezionare — e ho cambiato la **valuta**: si
+> premia con visibilità, non con monete.
+>
+> Quattro ragioni. La prima è che è una piattaforma a due lati, e il lato
+> difficile è l'organizzatore: se apre il sito e trova una ruota della fortuna
+> e un negozio di cappelli conclude «gioco», non «qui trovo un professionista
+> per sabato» — e perdi il lato che meno ti puoi permettere di perdere. La
+> seconda è che contraddiceva due decisioni già prese, entrambe per togliere
+> dalle pagine pubbliche le misure di quanto una persona usa il sito. La terza
+> è che monete acquistabili e una loot box sono una superficie giuridica più
+> grande di tutto il resto del prodotto. La quarta è che non risolve il
+> problema: un artista non torna perché c'è un minigioco, torna quando
+> qualcuno lo contatta.
+>
+> Al loro posto: distintivi sul profilo **pubblico** legati a fatti verificabili,
+> e una vetrina in home che ruota fra tutti quelli che superano una soglia — una
+> fila, non un podio. La regola con cui decido cosa accettare è una sola: *ogni
+> premio deve rendere l'artista più facile da ingaggiare.* Un cappello non lo
+> fa; comparire in home sì.
+
+Se chiedono **perché una rotazione e non una classifica**:
+
+> La home mostrava i sei con la reputazione più alta. Sembra meritocratico ed è
+> un incentivo morto: i primi sei sono sempre gli stessi, il settimo non ci
+> arriverà mai, e il primo non ha motivo di fare altro. «Completa il profilo e
+> prima o poi sei in home» è una cosa che una persona può decidere di fare;
+> «diventa il primo di trecento» no. E la scarsità si regola da sé: più artisti
+> superano la soglia, più raro è il turno.
+
 ### "Il sito è responsive?"
 
 Domanda che sembra di cortesia e non lo è: quasi tutti rispondono «sì,
@@ -232,7 +267,7 @@ E la parte che vale di più, se la domanda si apre:
 
 ---
 
-## Il capitolo più forte: quattordici difetti, e perché nessuno li aveva visti
+## Il capitolo più forte: i difetti, e le quattro forme che prendono
 
 Questo è il materiale migliore che hai, ed è meglio di qualunque scelta
 architetturale. Le decisioni su una pagina bianca le sa raccontare chiunque
@@ -242,10 +277,12 @@ quello lo sa fare chi ha lavorato davvero.
 
 ### Come introdurlo
 
-> A un certo punto ho smesso di aggiungere funzionalità e ho percorso il sito
-> come se fossi un utente che ci arriva da Google. In due giorni ho trovato
-> quattordici difetti. Nessuno era nel codice complicato: erano tutti nei punti
-> di giunzione.
+> A un certo punto ho smesso di aggiungere funzionalità e ho cominciato a
+> usare il sito come ci arriva un utente da Google. In quattro giorni sono
+> usciti una cinquantina di difetti. Nessuno stava nel codice complicato:
+> stavano tutti nei punti di giunzione. E soprattutto si sono rivelati **quattro
+> forme che si ripetono** — che è la parte che mi porto dietro, molto più
+> dell'elenco.
 
 ### I quattro che raccontano meglio
 
@@ -327,6 +364,113 @@ Se ti chiedono «perché non li avevi visti», questa è la risposta:
 > accettano solo percorsi interni. E copre anche `//sito.example`, che i
 > browser leggono come URL assoluto — è il modo più comune di aggirare un
 > controllo che guarda solo la prima barra.
+
+---
+
+### Le quattro forme, che valgono più dell'elenco
+
+Contare i difetti non dice niente. Riconoscerne la forma sì, perché la forma
+dice **dove cercare la prossima volta** e come impedire che si ripresenti.
+
+---
+
+**1. Il sistema dice di sì e non fa niente.**
+
+La categoria peggiore, perché non produce nessun errore: nessun rosso, nessun
+log, nessuna segnalazione. Solo qualcuno che aspetta una cosa che non
+succederà.
+
+- Si poteva pubblicare un ingaggio **con data già passata**. Il modulo
+  accettava, l'API rispondeva 201, la pagina si apriva — e l'annuncio non
+  compariva in nessun elenco, perché tutte le directory filtrano per
+  `startsAt >= adesso`. Chi lo pubblica non ha modo di accorgersene: ha visto
+  la conferma, ha visto la sua pagina, e aspetta candidature che non
+  arriveranno.
+- Cambiato lo slug di un profilo, i `revalidatePath` continuavano a rigenerare
+  **l'indirizzo vecchio**: si carica un lavoro nel portfolio, non compare sul
+  proprio profilo, e non c'è modo di capire perché.
+- La vetrina in home prometteva a metà delle persone un turno che, per come
+  era scritta, non sarebbe mai arrivato.
+
+*La regola che ne esce:* ogni volta che una vista **filtra**, il modulo che
+scrive deve conoscere quel filtro. E ogni volta che si promette un tempo — «fra
+sei giorni» — quel tempo dev'essere verificabile da chi lo legge.
+
+---
+
+**2. La regola esiste, è scritta da qualche parte, e niente la applica.**
+
+- Il plurale: «1 ARTISTI», poi «1 messaggi», poi «1 LAVORI PUBBLICATI» — e
+  quest'ultimo **l'ho scritto io mezz'ora dopo aver documentato la regola che
+  lo vietava**, perché scrivere una stringa dentro un array non incontra
+  nessuna funzione.
+- `uniqueSlug` esisteva ed è stato riscritto a mano due volte in script
+  diversi.
+- Due moduli raccoglievano gli errori di validazione e ne mostravano un terzo:
+  gli altri erano un rifiuto silenzioso in attesa di succedere.
+
+*La regola che ne esce, ed è la più utile di tutte:* **una regola che si può
+non applicare, prima o poi non viene applicata.** Non serve ricordarsela
+meglio, serve toglierla dalle mani di chi scrive. Il plurale è finito in un
+**tipo** — l'etichetta di un numero è `string | [singolare, plurale]`, quindi
+scegliere è obbligatorio e dimenticarsene non è più possibile. È la correzione
+di cui vado più fiero di tutta la settimana, e nasce da un mio errore.
+
+---
+
+**3. Una difesa sposta i dati, e gli strumenti non la seguono.**
+
+- I test scrivevano in produzione → branch separato. Ma `pulisci:e2e`
+  continuava a cancellare dal database di prima, e diceva «nessun account da
+  rimuovere» mentre erano **trentotto**, nove dei quali pubblici da giorni.
+- I dati dimostrativi vanno su un database dedicato → ma `npm run dev` ne
+  guardava un altro: si popolava un posto e se ne guardava un altro.
+- Corretto un dato sbagliato in `prisma/seed.ts`, in produzione è rimasto
+  sbagliato: **cambiare il file del seed non cambia ciò che è già scritto nel
+  database.**
+
+*La regola che ne esce:* quando si separa un database, vanno spostati con lui
+tutti gli strumenti che lo toccano — chi scrive, chi legge, chi pulisce. E
+correggere un dato non è correggere un difetto: la difesa va messa nel
+componente, così vale anche per i record sbagliati di ieri.
+
+---
+
+**4. Il test accusa il prodotto al posto proprio.**
+
+Quattro volte, e ogni volta la stessa causa: **verificare una rappresentazione
+invece del fatto.**
+
+- Un'attesa su «un indirizzo che finisce con `/eventi/qualcosa`» — soddisfatta
+  già dalla pagina del modulo, che sta su `/dashboard/eventi/nuovo`.
+- Cercavo «accettata» mentre il prodotto scrive «Confermata»: il flusso
+  funzionava, il test diceva di no.
+- `expect(await locator.count())` risolve la promessa **prima** di `expect`,
+  quindi disattiva l'attesa automatica: diceva «0 link» su una pagina che ne
+  aveva ventitré.
+- Il limitatore di richieste bloccava le registrazioni della suite, e il test
+  concludeva «la registrazione non finisce da nessuna parte» — una diagnosi
+  falsa, che mi ha mandato a cercare un difetto inesistente.
+
+*La regola che ne esce:* un test deve verificare **dove si finisce**, non come
+si scrive l'indirizzo. E un'attesa che enumera gli esiti deve enumerarli
+tutti, compresi quelli che non le piacciono.
+
+---
+
+### Come chiudere il discorso
+
+> La cosa che ho imparato non è che il codice aveva dei difetti — quello lo dà
+> per scontato chiunque. È che si ripetono in poche forme, e che quasi nessuna
+> si vede leggendo il codice: si vedono usando il prodotto. Diversi li ho
+> introdotti io, e in un caso ho violato una regola mezz'ora dopo averla
+> scritta. Da lì ho smesso di correggere il singolo caso e ho cominciato a
+> spostare la regola dove non si può aggirare — in un tipo, in una costante
+> sola, in un componente invece che in un promemoria.
+
+**Se hai poco tempo, racconta solo la seconda forma.** È quella che distingue
+chi ha scritto codice da chi ha mantenuto qualcosa: la differenza fra
+«correggo il difetto» e «rendo il difetto impossibile».
 
 ---
 
