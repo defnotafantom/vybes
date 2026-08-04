@@ -261,6 +261,51 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 </ul>
               </section>
             )}
+
+            {/* ── L'azione, di nuovo, in fondo ──
+
+                Il pulsante stava solo in cima, allineato a destra
+                dell'intestazione. Chi legge la descrizione, guarda il luogo
+                sulla mappa e arriva in fondo — cioè chi si è **convinto** —
+                trovava soltanto «Segnala questo ingaggio» e il piè di pagina,
+                e per candidarsi doveva risalire.
+
+                È il difetto di conversione più diretto che ci sia: chiedere a
+                una persona di tornare indietro nel momento esatto in cui ha
+                deciso. Su una pagina che esiste per far candidare qualcuno,
+                l'azione va dove finisce la lettura.
+
+                Non è un doppione da nascondere: `ParticipateButton` conosce
+                già i propri stati — candidature chiuse, già candidato, non
+                autenticato — quindi qui dice esattamente la stessa cosa che
+                dice sopra, senza una riga di logica in più. */}
+            {!isOwner && (
+              <section className="card border-brand-400/30">
+                <h2 className="text-fluid-lg font-bold">
+                  {isPast ? "Questo ingaggio è passato" : "Ti interessa?"}
+                </h2>
+                <p className="mt-2 max-w-xl text-fluid-sm text-ink-muted">
+                  {isPast
+                    ? "La data è già trascorsa. Negli ingaggi aperti ne trovi altri nella stessa zona."
+                    : "La candidatura arriva direttamente a chi organizza, con il tuo profilo e i tuoi lavori allegati. Nessuna agenzia in mezzo."}
+                </p>
+                <div className="mt-5 max-w-xs">
+                  {isPast ? (
+                    <Link href="/eventi" className="btn-ghost">
+                      Vedi gli ingaggi aperti
+                    </Link>
+                  ) : (
+                    <ParticipateButton
+                      eventId={event.id}
+                      eventSlug={event.slug}
+                      disabled={event.status !== "PUBLISHED"}
+                      initialStatus={myParticipation?.status ?? null}
+                      isAuthenticated={Boolean(session?.user?.id)}
+                    />
+                  )}
+                </div>
+              </section>
+            )}
           </article>
 
           {/* ─────────────────────────── COLONNA ─────────────────────────── */}

@@ -93,7 +93,17 @@ for (const q of QUESTS) {
   console.log("Seed: eventi…");
   for (const e of DEMO_EVENTS) {
     const city = SEED_CITIES.find((c) => c.slug === e.city)!;
+    // L'ora, non solo il giorno.
+    //
+    // `Date.now()` più N giorni eredita l'ora in cui è stato lanciato il seed,
+    // e in produzione è uscito «venerdì 14 agosto **alle ore 13:27**» per un
+    // live in enoteca. Nessun locale programma un concerto alle 13:27: quel
+    // numero, sull'unica manciata di annunci che un visitatore vede oggi, dice
+    // «questo è un sito di prova» meglio di qualunque altra cosa in pagina.
+    //
+    // Un workshop di giorno e tutto il resto di sera, che è quando si suona.
     const startsAt = new Date(Date.now() + e.days * 86400000);
+    startsAt.setHours(e.category === "WORKSHOP" ? 10 : 21, 30, 0, 0);
     const monthYear = new Intl.DateTimeFormat("it-IT", { month: "long", year: "numeric" }).format(startsAt);
     const slug = `${e.title} ${city.name} ${monthYear}`
       .toLowerCase()
