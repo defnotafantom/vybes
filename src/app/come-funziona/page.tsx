@@ -16,7 +16,14 @@ const STEPS_ARTIST = [
   { t: "Crea il profilo", d: "Nome, città, discipline e una headline chiara: è quello che compare nei risultati di ricerca." },
   { t: "Carica il portfolio", d: "Foto, video e tracce audio. Ogni opera diventa una pagina pubblica indicizzabile." },
   { t: "Candidati agli ingaggi", d: "Filtra per città, categoria e compenso, poi invia la candidatura con un messaggio." },
-  { t: "Costruisci reputazione", d: "Ingaggi conclusi, quest e collaborazioni aumentano livello e visibilità nella directory." },
+  // La frase precedente diceva che «quest e collaborazioni aumentano livello e
+  // visibilità nella directory». Metà è falsa da quando i due assi sono stati
+  // separati: le quest danno XP, l'XP fa il livello, e il livello **non**
+  // decide la posizione in directory — quella la decide la reputazione, che si
+  // calcola da fatti verificabili. Era una pagina pubblica e indicizzata che
+  // spiegava male il meccanismo principale del sito, e prometteva una
+  // scorciatoia che non esiste.
+  { t: "Costruisci reputazione", d: "Profilo completo, portfolio e ingaggi confermati alzano la reputazione, che decide in che ordine compari nella directory." },
 ];
 
 const STEPS_RECRUITER = [

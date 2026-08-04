@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, ExternalLink, MapPin } from "lucide-react";
+import { ExternalLink, MapPin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata, absoluteUrl } from "@/lib/seo";
 import { artistJsonLd } from "@/lib/jsonld";
@@ -17,7 +17,6 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Badge, VerifiedBadge } from "@/components/ui/Badge";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 import { Segnala } from "@/components/Segnala";
-import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
 import { concorda } from "@/lib/testo";
 import { distintiviOttenuti } from "@/lib/distintivi";
 import { SfondoLavoro } from "@/components/AnteprimaLavoro";
@@ -162,10 +161,6 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   const sameAs = [artist.website, artist.instagram, artist.spotify, artist.youtube].filter(
     (v): v is string => Boolean(v)
   );
-  // Una query in più su una pagina rigenerata ogni ora: il costo è
-  // trascurabile e in cambio la scheda non ripete a mano una regola che vive
-  // altrove.
-  const ottenute = (await dettaglioReputazioneDi(artist.id)).filter((v) => v.punti >= v.max);
 
   /*
    * I distintivi: cosa questa persona ha dimostrato.
@@ -356,7 +351,14 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
       </section>
 
       <div className="container-page py-16">
-        <div className="grid gap-14 lg:grid-cols-[1fr_300px]">
+        {/* La colonna laterale compare solo se ha contenuto.
+            Tolto «Cosa risulta a noi», su un profilo senza link esterni
+            restava una colonna larga trecento pixel con dentro soltanto
+            «Segnala questo profilo» — cioè un terzo di pagina occupato dalla
+            cosa meno importante che ci sia. Quando non c'è niente da metterci,
+            il contenuto prende tutta la larghezza e la segnalazione va in
+            fondo, dove la trova chi la cerca. */}
+        <div className={`grid gap-14 ${sameAs.length > 0 ? "lg:grid-cols-[1fr_300px]" : ""}`}>
           <article className="min-w-0 space-y-14">
             {/* ── Il caso in cui non c'è niente ──
                 Tutte e tre le sezioni sotto sono condizionate, quindi un
@@ -443,7 +445,15 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                           {item.mediaType === "image" && (
                             <Image
                               src={item.mediaUrl}
-                              alt={item.title}
+                              /* Alt vuoto, e non è una dimenticanza: il titolo
+                                 del lavoro è scritto due centimetri sotto,
+                                 dentro lo stesso collegamento. Ripeterlo
+                                 nell'immagine lo farebbe leggere due volte di
+                                 fila a chi usa uno screen reader — e su
+                                 un'immagine che non carica lo fa comparire
+                                 **scritto** sopra il segnaposto, che è come
+                                 l'abbiamo scoperto. */
+                              alt=""
                               fill
                               sizes="(max-width: 768px) 100vw, 40vw"
                               className="object-cover transition-transform duration-600 ease-out group-hover:scale-105"
@@ -481,30 +491,20 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
           {/* ─────────────────────────── COLONNA ─────────────────────────── */}
           <aside className="space-y-6">
-            {/* Al posto della barra dei livelli — che diceva a un
-                organizzatore quanto quella persona usa il sito, cioè niente di
-                utile — l'elenco di quello che nel profilo è verificato.
-                È lo stesso dettaglio con cui si calcola la reputazione, letto
-                dal lato di chi deve decidere se scrivere. */}
-            {ottenute.length > 0 && (
-              <div className="card">
-                <p className="text-fluid-xs uppercase tracking-wider text-ink-faint">
-                  Cosa risulta a noi
-                </p>
-                <ul className="mt-3 space-y-2">
-                  {ottenute.map((v) => (
-                    <li key={v.label} className="flex items-start gap-2 text-fluid-sm">
-                      <Check
-                        className="mt-0.5 h-4 w-4 shrink-0 text-brand-400"
-                        aria-hidden="true"
-                      />
-                      {v.label}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {/* ── Perché «Cosa risulta a noi» non c'è più ──
 
+                Elencava le voci di reputazione già ottenute: «Indirizzo
+                confermato», «Identità verificata», «Discipline dichiarate».
+                Con i distintivi nell'intestazione la stessa informazione
+                finiva sulla pagina **tre volte** — la spunta accanto al nome,
+                il distintivo, e questo riquadro — e due di quelle tre erano
+                sotto la piega, dove un organizzatore che sta decidendo se
+                scrivere non arriva.
+
+                I distintivi dicono le stesse cose in modo più leggibile e nel
+                punto in cui servono. Questo riquadro nasceva quando quelli non
+                c'erano: teneva un posto, e ora quel posto ha un inquilino
+                migliore. */}
             {sameAs.length > 0 && (
               <div className="card">
                 <p className="text-fluid-xs uppercase tracking-wider text-ink-faint">Altrove</p>
