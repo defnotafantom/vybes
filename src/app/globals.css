@@ -313,6 +313,42 @@
     filter: invert(1) hue-rotate(180deg) brightness(0.62) contrast(1.15) saturate(0.7);
   }
 
+  /* ── I comandi della mappa, e lo sfondo sotto le tile ──────────────
+     Due difetti che si vedevano insieme e avevano cause diverse.
+
+     Il primo: i comandi dello zoom restavano bianchi. Il filtro d'inversione
+     è applicato al solo `leaflet-tile-pane`, e giustamente — invertire tutto
+     ribalterebbe anche i pin. Ma così, su una mappa scura, il quadratino
+     +/− in alto a sinistra era l'unica cosa bianca dello schermo, e la
+     striscia chiara del suo contenitore correva lungo tutto il bordo.
+
+     Il secondo: mentre le tile caricano, sotto si vede lo sfondo del
+     contenitore. Di serie è grigio chiaro, cioè un lampo bianco a ogni
+     apertura su tema scuro. Si dipinge del colore delle superfici, così il
+     caricamento non si nota. */
+  .mappa-tema .leaflet-container {
+    background: rgb(var(--surface-sunken));
+  }
+
+  .dark .mappa-tema .leaflet-control-zoom a {
+    background: rgb(var(--surface));
+    color: rgb(var(--fg));
+    border-color: rgb(var(--border));
+  }
+
+  .dark .mappa-tema .leaflet-control-zoom a:hover {
+    background: rgb(var(--surface-sunken));
+  }
+
+  .dark .mappa-tema .leaflet-control-attribution {
+    background: rgb(var(--surface) / 0.8);
+    color: rgb(var(--muted));
+  }
+
+  .dark .mappa-tema .leaflet-control-attribution a {
+    color: rgb(var(--fg));
+  }
+
   /* ── Barra dei filtri ────────────────────────────────────────────────
      Sotto i 640px le pillole scorrono in orizzontale invece di andare a
      capo: quattordici categorie mandate a capo occupano mezzo schermo e

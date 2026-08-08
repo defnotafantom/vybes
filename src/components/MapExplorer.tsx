@@ -129,10 +129,40 @@ const PonteMappa = dynamic(
       onZoom: (z: number) => void;
     }) {
       const map = useMap();
+
       useEffect(() => {
         onPronta(map);
         onZoom(map.getZoom());
+
+        /* ── Leaflet crede di essere grande quanto era al montaggio ──
+         *
+         * Calcola la propria dimensione una volta sola, all'inizializzazione.
+         * Ma qui il contenitore è una cella di griglia accanto a una colonna
+         * da 360px, e la sua larghezza definitiva arriva **dopo** — quando il
+         * foglio di stile è applicato, i caratteri sono caricati e la griglia
+         * si è assestata. Nel frattempo la mappa ha già deciso, e da lì in poi
+         * ogni `fitBounds` e ogni centratura sono calcolati su una misura
+         * sbagliata: l'inquadratura risulta spostata e i pin ai bordi finiscono
+         * fuori.
+         *
+         * È il difetto più comune di Leaflet dentro un layout moderno, e non
+         * dà nessun errore: dà una mappa storta.
+         *
+         * `invalidateSize()` gli fa rimisurare il contenitore. Il
+         * `ResizeObserver` ripete la cosa a ogni cambio di dimensione — la
+         * finestra che si ridimensiona, il telefono che ruota, la colonna dei
+         * filtri che cresce quando compare il cursore del raggio.
+         */
+        const rimisura = () => map.invalidateSize({ animate: false });
+        rimisura();
+
+        const contenitore = map.getContainer();
+        const osservatore = new ResizeObserver(rimisura);
+        osservatore.observe(contenitore);
+
+        return () => osservatore.disconnect();
       }, [map, onPronta, onZoom]);
+
       useMapEvents({ zoomend: () => onZoom(map.getZoom()) });
       return null;
     };
@@ -245,6 +275,10 @@ export function MapExplorer({
   useEffect(() => {
     if (!mappa || inquadrata) return;
 
+    // Prima di inquadrare, rimisurare: vedi la nota in `PonteMappa`. Senza
+    // questa riga il rettangolo si adatta a una larghezza che non esiste più.
+    mappa.invalidateSize({ animate: false });
+
     if (visible.length > 0) {
       const lat = visible.map((p) => p.lat);
       const lng = visible.map((p) => p.lng);
@@ -343,12 +377,17 @@ export function MapExplorer({
           maxBoundsViscosity={1}
           minZoom={ZOOM_MINIMO}
           maxZoom={17}
-          /* 520px fissi su un telefono alto 667 lasciano fuori i comandi e
-             costringono a scorrere per capire cosa si sta guardando. `dvh` e
-             non `vh`: su iOS `vh` misura la finestra senza la barra degli
-             indirizzi, quindi il fondo della mappa resterebbe nascosto sotto
-             di essa proprio mentre la si scorre. */
-          className="mappa-tema h-[62dvh] max-h-[560px] min-h-80 w-full sm:h-[560px]"
+          /* ── Perché il riquadro è alto ──
+             L'Italia è **alta e stretta**: dodici gradi di latitudine contro
+             tredici di longitudine, che in proiezione di Mercatore diventano
+             circa tre di larghezza ogni quattro di altezza. Un riquadro
+             panoramico la fa entrare solo rimpicciolendola in mezzo al mare,
+             e a 560px ne tagliava direttamente il nord.
+
+             `dvh` e non `vh`: su iOS `vh` misura la finestra senza la barra
+             degli indirizzi, quindi il fondo della mappa resterebbe nascosto
+             sotto di essa proprio mentre la si scorre. */
+          className="mappa-tema h-[68dvh] max-h-[820px] min-h-80 w-full lg:h-[760px]"
         >
           {/* `mappa-tema` inverte le tile quando il tema è scuro: vedi la
               nota in globals.css. Le tile di OpenStreetMap sono chiare, e un

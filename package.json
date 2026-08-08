@@ -35,7 +35,8 @@
     "user:elimina": "tsx scripts/elimina-account.ts",
     "user:password": "tsx scripts/reimposta-password.ts",
     "user:slug": "tsx scripts/cambia-slug.ts",
-    "verify": "npm run typecheck && npm run lint && npm run verify:seo && npm test",
+    "verify": "npm run typecheck && npm run lint && npm run verify:seo && npm run verify:css && npm test",
+    "verify:css": "node scripts/verifica-css.mjs",
     "verify:seo": "node scripts/verifica-canonical.mjs"
   },
   "prisma": {
