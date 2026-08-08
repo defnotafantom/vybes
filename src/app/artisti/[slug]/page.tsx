@@ -129,7 +129,9 @@ export async function generateMetadata({
     description:
       artist.headline ||
       artist.bio ||
-      `${artist.name}: profilo, portfolio e disponibilità per ingaggi${place}. Contatta direttamente l'artista su Vybes.`,
+      artist.role === "RECRUITER"
+        ? `${artist.name}${place}: gli ingaggi aperti e come candidarsi. Su Vybes.`
+        : `${artist.name}: profilo, portfolio e disponibilità per ingaggi${place}. Contatta direttamente l'artista su Vybes.`,
     path: `/artisti/${artist.slug}`,
     type: "profile",
     modifiedTime: artist.updatedAt,
@@ -357,25 +359,53 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
               migliore di quello che quell'ADR sostiene — finché concordare è
               una cosa da ricordarsi, prima o poi non la si ricorda.
               «Follower» resta invariato: in italiano non ha plurale. */}
-          {[
-            {
-              label: concorda(
-                artist.portfolioItems.length,
-                "Lavoro pubblicato",
-                "Lavori pubblicati"
-              ),
-              value: artist.portfolioItems.length,
-            },
-            {
-              label: concorda(
-                artist._count.participations,
-                "Ingaggio confermato",
-                "Ingaggi confermati"
-              ),
-              value: artist._count.participations,
-            },
-            { label: "Follower", value: artist._count.followers },
-          ].map((s) => (
+          {/* ── I tre numeri dipendono da chi è questa pagina ──
+
+              Erano gli stessi per tutti: «Lavori pubblicati», «Ingaggi
+              confermati», «Follower». Su un locale i primi due sono
+              strutturalmente **zero per sempre** — non ha un portfolio e non
+              viene scelto da nessuno — e li mostrava grandi, in cima, proprio
+              dove un artista sta decidendo se candidarsi.
+
+              Due zeri accanto al nome di chi ti dovrebbe ingaggiare non sono
+              un'informazione mancante: sono un'informazione **sbagliata**, e
+              chi li legge conclude che quel posto non ha mai fatto niente. */}
+          {(cerca(artist.role)
+            ? [
+                {
+                  label: concorda(
+                    artist._count.eventsCreated,
+                    "Ingaggio organizzato",
+                    "Ingaggi organizzati"
+                  ),
+                  value: artist._count.eventsCreated,
+                },
+                {
+                  label: concorda(org.artistiScelti, "Artista ingaggiato", "Artisti ingaggiati"),
+                  value: org.artistiScelti,
+                },
+                { label: "Follower", value: artist._count.followers },
+              ]
+            : [
+                {
+                  label: concorda(
+                    artist.portfolioItems.length,
+                    "Lavoro pubblicato",
+                    "Lavori pubblicati"
+                  ),
+                  value: artist.portfolioItems.length,
+                },
+                {
+                  label: concorda(
+                    artist._count.participations,
+                    "Ingaggio confermato",
+                    "Ingaggi confermati"
+                  ),
+                  value: artist._count.participations,
+                },
+                { label: "Follower", value: artist._count.followers },
+              ]
+          ).map((s) => (
             <div key={s.label} className="py-6">
               {/* Il suffisso «/110» serviva solo alla reputazione, che qui non
                   compare più: tre numeri interi non hanno bisogno di scala. */}
