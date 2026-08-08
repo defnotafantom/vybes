@@ -4,6 +4,8 @@ import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
 import { Vetrinetta } from "@/components/negozio/Vetrinetta";
 import { COSMETICI } from "@/lib/cosmetici";
 import { possessiDi } from "@/lib/negozio";
+import { Ruota } from "@/components/negozio/Ruota";
+import { statoRuota } from "@/lib/ruota-server";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +15,10 @@ export default async function NegozioPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const [me, possessi] = await Promise.all([
+  const [me, possessi, ruota] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { monete: true } }),
     possessiDi(userId),
+    statoRuota(userId),
   ]);
 
   const miei = new Map(possessi.map((p) => [p.cosmeticoId, p]));
@@ -50,6 +53,17 @@ export default async function NegozioPage() {
           { label: ["Oggetto tuo", "Oggetti tuoi"], valore: possessi.length },
         ]}
       />
+
+      {/* La ruota prima del catalogo, e non è una scelta di gusto: è
+          l'unico modo di *guadagnare* monete in questa pagina, e metterla
+          dopo un elenco di cose da comprare la farebbe trovare solo a chi
+          scorre fino in fondo — cioè a chi le monete ce le ha già. */}
+      <div className="mb-8">
+        <Ruota
+          stato={ruota.stato}
+          premioDiOggi={ruota.stato === "gia-girata" ? ruota.premio.etichetta : null}
+        />
+      </div>
 
       <Vetrinetta voci={voci} saldo={me?.monete ?? 0} />
     </div>

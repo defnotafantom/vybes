@@ -9,6 +9,7 @@ import { ExternalLink } from "lucide-react";
 import { SchedaReputazione } from "@/components/dashboard/SchedaReputazione";
 import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
 import { vociMisurabili } from "@/lib/reputazione";
+import { cerca, ruoloDi } from "@/lib/ruolo";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export default async function ProfiloPage() {
     prisma.user.findUnique({
       where: { id: session!.user.id },
       select: {
+        role: true,
         name: true, slug: true, headline: true, bio: true, disciplines: true, citySlug: true, image: true,
         website: true, instagram: true, spotify: true, youtube: true, isPublic: true,
         // Serve solo a sapere *come* chiedere la riconferma per la
@@ -47,23 +49,33 @@ export default async function ProfiloPage() {
 
   // L'hash resta sul server: al client arriva solo il fatto che una password
   // esista, che è tutto ciò che serve per scegliere come chiedere conferma.
-  const { password, ...profilo } = me;
+  const { password, role, ...profilo } = me;
+  const cercaArtisti = cerca(role);
 
   return (
     <div className="mx-auto max-w-2xl">
       <SezioneHeader
         titolo="Profilo"
         sottotitolo={
-          <>
-            Questi dati alimentano la tua pagina pubblica{" "}
-            <code className="text-ink">/artisti/{me.slug}</code>: sono il titolo
-            e la descrizione che compaiono su Google, non solo quello che si
-            vede sul sito.
-          </>
+          cercaArtisti ? (
+            <>
+              È la pagina che un artista apre prima di decidere se candidarsi a
+              un tuo annuncio: <code className="text-ink">/artisti/{me.slug}</code>.
+              Un profilo vuoto riceve molte meno candidature di uno che dice
+              dove si suona e che serate fate.
+            </>
+          ) : (
+            <>
+              Questi dati alimentano la tua pagina pubblica{" "}
+              <code className="text-ink">/artisti/{me.slug}</code>: sono il titolo
+              e la descrizione che compaiono su Google, non solo quello che si
+              vede sul sito.
+            </>
+          )
         }
         azione={
           <Link href={`/artisti/${me.slug}`} className="btn-ghost" target="_blank">
-            Vedi la pagina pubblica
+            {cercaArtisti ? "Come ti vedono" : "Vedi la pagina pubblica"}
             <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
         }
@@ -79,6 +91,7 @@ export default async function ProfiloPage() {
         <ProfileForm
           initial={{ ...profilo, disciplines: fromCsv(profilo.disciplines) }}
           cities={cities}
+          ruolo={ruoloDi(role)}
         />
       </div>
 

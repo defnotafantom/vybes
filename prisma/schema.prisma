@@ -91,6 +91,7 @@ model User {
   possessi       Possesso[]
   movimenti      MovimentoMonete[]
   partite        PartitaOrecchio[]
+  giri           GiroRuota[]
 
   // Copre la query principale della directory locale:
   // "artisti pubblici di <citta>, ordinati per reputazione".
@@ -557,4 +558,28 @@ model PartitaOrecchio {
   @@unique([userId, giorno])
   // Copre la classifica: "le partite di questa settimana, dalla migliore".
   @@index([giorno, punteggio])
+}
+
+// Un giro di ruota.
+//
+// Come per «L'orecchio», il vincolo di unicita' su (utente, giorno) e' la
+// regola del gioco e non un dettaglio: e' l'unica cosa che puo' arbitrare due
+// richieste partite nello stesso istante, e nessun controllo scritto prima
+// della scrittura ci riuscirebbe.
+//
+// Il premio si conserva anche se e' un oggetto: serve a mostrare «oggi hai
+// vinto X» a chi ricarica la pagina, e a spiegare una riga del registro
+// monete a distanza di mesi.
+model GiroRuota {
+  id       String   @id @default(cuid())
+  userId   String
+  giorno   Int
+  // La chiave dello spicchio in src/lib/ruota.ts.
+  premio   String
+  monete   Int      @default(0)
+  giratoIl DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, giorno])
 }

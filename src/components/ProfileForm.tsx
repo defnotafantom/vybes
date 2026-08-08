@@ -5,7 +5,8 @@ import { useState, useTransition } from "react";
 import { DISCIPLINES } from "@/lib/constants";
 import { profileSchema } from "@/lib/validations";
 import { FileUpload } from "@/components/FileUpload";
-import { SCAGLIONI_BIO } from "@/lib/reputazione";
+import { SCAGLIONI_BIO, puntiBio } from "@/lib/reputazione";
+import type { Ruolo } from "@/lib/ruolo";
 import { Errore, ErroriOrfani } from "@/components/ui/Errore";
 
 /** I campi che hanno un posto in pagina dove mostrare il proprio errore. */
@@ -28,13 +29,29 @@ type Initial = {
   isPublic: boolean;
 };
 
+/**
+ * ── Perché il modulo del profilo conosce il ruolo ──
+ *
+ * Perché lo stesso campo vuol dire due cose diverse, e finora ne diceva una
+ * sola. A un organizzatore chiedeva «Discipline (max 5)» — un locale non ne
+ * ha, ed era il campo che teneva il suo obiettivo di completamento aperto per
+ * sempre — e sotto la biografia gli scriveva «chi la legge sta decidendo se
+ * **ingaggiarti**», che è esattamente il contrario di quello che succede sulla
+ * sua pagina. Anche i punti erano quelli dell'artista: quindici, mentre nella
+ * sua formula la biografia ne vale dieci.
+ *
+ * Tre affermazioni false in un modulo di sei campi, tutte sul lato che paga.
+ */
 export function ProfileForm({
   initial,
   cities,
+  ruolo = "ARTIST",
 }: {
   initial: Initial;
   cities: { slug: string; name: string }[];
+  ruolo?: Ruolo;
 }) {
+  const cerca = ruolo === "RECRUITER";
   const router = useRouter();
   const [image, setImage] = useState(initial.image ?? "");
   const [form, setForm] = useState({
@@ -69,8 +86,15 @@ export function ProfileForm({
    * che invece ci compare. Quella frase la dice la dashboard, che ha il dato.
    */
   const bioLen = form.bio.trim().length;
-  const bioMax = SCAGLIONI_BIO[0];
-  const bioProssimo = [...SCAGLIONI_BIO].reverse().find((s) => bioLen < s.da);
+  // Il tetto della biografia è diverso nelle due formule — quindici per
+  // l'artista, dieci per l'organizzatore — quindi i punti promessi qui si
+  // chiedono alla stessa funzione che li assegna. Scritti a mano avrebbero
+  // promesso a metà degli iscritti cinque punti che non arrivano mai.
+  const tettoBio = cerca ? 10 : 15;
+  const puntiA = (caratteri: number) => puntiBio(caratteri, tettoBio);
+  const bioMax = { da: SCAGLIONI_BIO[0].da, punti: puntiA(SCAGLIONI_BIO[0].da) };
+  const prossimo = [...SCAGLIONI_BIO].reverse().find((s) => bioLen < s.da);
+  const bioProssimo = prossimo ? { da: prossimo.da, punti: puntiA(prossimo.da) } : undefined;
 
 
   function submit(e: React.FormEvent) {
@@ -105,14 +129,17 @@ export function ProfileForm({
   return (
     <form onSubmit={submit} className="space-y-6" noValidate>
       <div>
-        <label htmlFor="name" className="mb-1 block text-sm font-medium">Nome pubblico</label>
+        <label htmlFor="name" className="mb-1 block text-sm font-medium">
+          {cerca ? "Nome del locale o del progetto" : "Nome pubblico"}
+        </label>
         <input id="name" className="input" value={form.name} onChange={(e) => set("name", e.target.value)} />
         <Errore msg={errors.name} />
       </div>
 
       <div>
         <label htmlFor="headline" className="mb-1 block text-sm font-medium">
-          Headline <span className="muted">(max 120 caratteri)</span>
+          {cerca ? "In una riga" : "Headline"}{" "}
+          <span className="muted">(max 120 caratteri)</span>
         </label>
         <input
           id="headline"
@@ -129,7 +156,9 @@ export function ProfileForm({
       </div>
 
       <div>
-        <label htmlFor="bio" className="mb-1 block text-sm font-medium">Bio</label>
+        <label htmlFor="bio" className="mb-1 block text-sm font-medium">
+          {cerca ? "Chi siete" : "Bio"}
+        </label>
         <textarea
           id="bio"
           className="input min-h-32"
@@ -144,7 +173,9 @@ export function ProfileForm({
             non deve interrompere la dettatura a ogni carattere. */}
         <p id="bio-help" aria-live="polite" className="mt-1 text-xs muted">
           {bioLen === 0
-            ? `Chi la legge sta decidendo se ingaggiarti. A ${bioMax.da} caratteri vale ${bioMax.punti} punti di reputazione.`
+            ? cerca
+              ? `Chi la legge sta decidendo se candidarsi da te: dove si suona, che pubblico, che serate. A ${bioMax.da} caratteri vale ${bioMax.punti} punti di reputazione.`
+              : `Chi la legge sta decidendo se ingaggiarti. A ${bioMax.da} caratteri vale ${bioMax.punti} punti di reputazione.`
             : bioProssimo
               ? `${bioLen} caratteri. Ancora ${bioProssimo.da - bioLen} e la biografia vale ${bioProssimo.punti} punti su ${bioMax.punti}.`
               : `${bioLen} caratteri: la biografia vale già il massimo, ${bioMax.punti} punti.`}
@@ -152,7 +183,11 @@ export function ProfileForm({
         <Errore msg={errors.bio} />
       </div>
 
-      <fieldset>
+      {/* Un locale non dichiara discipline: chiederle è una domanda senza
+          risposta giusta, e prima teneva anche il suo obiettivo «profilo
+          completo» aperto per sempre. Il campo resta nei dati — se un giorno
+          cambiasse ruolo, quello che aveva scritto è ancora lì. */}
+      <fieldset className={cerca ? "hidden" : undefined} aria-hidden={cerca || undefined}>
         <legend className="mb-2 text-sm font-medium">Discipline (max 5)</legend>
         <div className="flex flex-wrap gap-2">
           {DISCIPLINES.map((d) => {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Coins, Trophy } from "lucide-react";
+import { ArrowLeft, Coins, Trophy } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
@@ -33,6 +33,18 @@ export default async function OrecchioPage() {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <div>
+        {/* La via di ritorno. Una sotto-pagina raggiunta da un indice deve
+            poterci tornare: il menu laterale porta all'indice, ma da telefono
+            il menu è un pannello chiuso, e senza questa riga l'unica uscita
+            sarebbe il tasto indietro del browser. */}
+        <Link
+          href="/dashboard/minigiochi"
+          className="mb-4 inline-flex items-center gap-1.5 text-fluid-sm text-ink-muted transition-colors hover:text-ink"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Minigiochi
+        </Link>
+
         <SezioneHeader
           titolo="L'orecchio"
           sottotitolo="Cinque lavori di artisti iscritti qui. Indovina di chi sono. Il turno è lo stesso per tutti e cambia ogni giorno — ed è per questo che la classifica significa qualcosa."

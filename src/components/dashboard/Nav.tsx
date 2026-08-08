@@ -9,7 +9,7 @@ import {
   Images,
   MessageSquare,
   Trophy,
-  Ear,
+  Gamepad2,
   Store,
   UserRound,
   Flag,
@@ -55,7 +55,7 @@ const ITEMS_ARTISTA = [
   { href: "/dashboard/portfolio", label: "Portfolio", icon: Images },
   { href: "/dashboard/messaggi", label: "Messaggi", icon: MessageSquare },
   { href: "/dashboard/quest", label: "Quest", icon: Trophy },
-  { href: "/dashboard/orecchio", label: "L’orecchio", icon: Ear },
+  { href: "/dashboard/minigiochi", label: "Minigiochi", icon: Gamepad2 },
   { href: "/dashboard/negozio", label: "Negozio", icon: Store },
   { href: "/dashboard/profilo", label: "Profilo", icon: UserRound },
 ] as const;
@@ -66,7 +66,7 @@ const ITEMS_ORGANIZZATORE = [
   { href: "/dashboard/messaggi", label: "Messaggi", icon: MessageSquare },
   { href: "/dashboard", label: "Feed", icon: Home, exact: true },
   { href: "/dashboard/quest", label: "Obiettivi", icon: Trophy },
-  { href: "/dashboard/orecchio", label: "L’orecchio", icon: Ear },
+  { href: "/dashboard/minigiochi", label: "Minigiochi", icon: Gamepad2 },
   { href: "/dashboard/negozio", label: "Negozio", icon: Store },
   { href: "/dashboard/profilo", label: "Profilo", icon: UserRound },
 ] as const;
