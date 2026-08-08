@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SezioneHeader } from "@/components/dashboard/SezioneHeader";
@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { StatoCandidatura } from "@/components/ui/StatoCandidatura";
 import { dataBreve } from "@/lib/date";
 import { conta } from "@/lib/testo";
+import { cerca } from "@/lib/ruolo";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,8 @@ export default async function DashboardEventiPage() {
   const userId = session!.user.id;
   const now = new Date();
 
-  const [organized, myApplications] = await Promise.all([
+  const [me, organized, myApplications] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
     prisma.event.findMany({
       where: { organizerId: userId },
       orderBy: { startsAt: "desc" },
@@ -69,82 +71,78 @@ export default async function DashboardEventiPage() {
   // Le candidature che aspettano una risposta sono l'unico numero che fa agire:
   // ogni giorno che passa un artista aspetta senza sapere.
   const daDecidere = organized.reduce((n, e) => n + e.participations.length, 0);
+  const cercaArtisti = cerca(me?.role);
 
-  return (
-    <div className="space-y-14">
-      <SezioneHeader
-        titolo="Ingaggi"
-        sottotitolo="Quelli che hai pubblicato e quelli a cui ti sei candidato. Un annuncio con data, luogo e compenso in chiaro riceve risposte pertinenti; senza compenso ne riceve poche."
-        // «Pubblicati» contava anche gli annunci di due anni fa: un numero che
-        // sale e non scende mai non dice niente su oggi. Quello che conta è
-        // quanti sono aperti adesso, perché è l'unico su cui si può agire.
-        numeri={[
-          { label: ["Aperto ora", "Aperti ora"], valore: organizzatiAperti.length },
-          { label: ["Candidatura da decidere", "Candidature da decidere"], valore: daDecidere },
-          { label: ["Tua candidatura attiva", "Tue candidature attive"], valore: upcoming.length },
-        ]}
-        azione={
-          <Link href="/dashboard/eventi/nuovo" className="btn-primary">
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Pubblica un ingaggio
-          </Link>
-        }
-      />
-
-      <section>
-        <h2 className="text-fluid-lg font-bold">Ingaggi che organizzi</h2>
-        {daDecidere > 0 && (
-          <p className="mt-1 text-fluid-sm text-ink-muted">
-            {daDecidere === 1
-              ? "Una persona aspetta una risposta."
-              : `${daDecidere} persone aspettano una risposta.`}{" "}
-            Ogni giorno che passa aspettano senza sapere.
-          </p>
-        )}
-
-        {organized.length === 0 ? (
-          <div className="mt-5">
-            <EmptyState
-              title="Non hai ancora pubblicato niente"
-              body="Pubblica quello che cerchi e lascia che siano gli artisti a candidarsi: è più veloce che cercarli uno per uno."
-              ctaLabel="Pubblica il primo ingaggio"
-              ctaHref="/dashboard/eventi/nuovo"
-            />
-          </div>
-        ) : organizzatiAperti.length === 0 ? (
-          // Avere solo annunci passati non è come non averne mai pubblicati:
-          // il primo l'hai già scritto, quindi non serve spiegare a cosa
-          // serve — serve dire che in questo momento non c'è niente di aperto,
-          // che è il fatto rilevante e altrimenti si dedurrebbe da un elenco
-          // di date da leggere una per una.
-          <p className="mt-5 text-fluid-sm text-ink-muted">
-            Nessun annuncio aperto in questo momento.
-          </p>
-        ) : (
-          <ul className="mt-6 space-y-3">
-            {organizzatiAperti.map((e) => (
-              <RigaOrganizzata key={e.id} e={e} />
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {organizzatiConclusi.length > 0 && (
+  /**
+   * Gli annunci che hai pubblicato.
+   *
+   * A un artista si mostra solo se ne ha davvero: il suo stato vuoto invitava
+   * a pubblicare un ingaggio, che non è quello che è venuto a fare. Chi
+   * volesse comunque organizzare la propria jam trova il pulsante nella
+   * pagina di chi organizza, e il ruolo non gli impedisce niente.
+   */
+  const organizzati =
+    !cercaArtisti && organized.length === 0 ? null : (
+      <>
         <section>
-          <h2 className="text-fluid-lg font-bold">Ingaggi conclusi che hai organizzato</h2>
-          <p className="mt-1 text-fluid-sm text-ink-muted">
-            La data è passata. Restano qui perché le candidature ricevute sono
-            la base della tua reputazione, e perché un annuncio riuscito è il
-            più facile da riscrivere.
-          </p>
-          <ul className="mt-6 space-y-3">
-            {organizzatiConclusi.map((e) => (
-              <RigaOrganizzata key={e.id} e={e} concluso />
-            ))}
-          </ul>
-        </section>
-      )}
+          <h2 className="text-fluid-lg font-bold">Ingaggi che organizzi</h2>
+          {daDecidere > 0 && (
+            <p className="mt-1 text-fluid-sm text-ink-muted">
+              {daDecidere === 1
+                ? "Una persona aspetta una risposta."
+                : `${daDecidere} persone aspettano una risposta.`}{" "}
+              Ogni giorno che passa aspettano senza sapere.
+            </p>
+          )}
 
+          {organized.length === 0 ? (
+            <div className="mt-5">
+              <EmptyState
+                title="Non hai ancora pubblicato niente"
+                body="Pubblica quello che cerchi e lascia che siano gli artisti a candidarsi: è più veloce che cercarli uno per uno."
+                ctaLabel="Pubblica il primo ingaggio"
+                ctaHref="/dashboard/eventi/nuovo"
+              />
+            </div>
+          ) : organizzatiAperti.length === 0 ? (
+            // Avere solo annunci passati non è come non averne mai pubblicati:
+            // il primo l'hai già scritto, quindi non serve spiegare a cosa
+            // serve — serve dire che in questo momento non c'è niente di
+            // aperto, che è il fatto rilevante e altrimenti si dedurrebbe da
+            // un elenco di date da leggere una per una.
+            <p className="mt-5 text-fluid-sm text-ink-muted">
+              Nessun annuncio aperto in questo momento.
+            </p>
+          ) : (
+            <ul className="mt-6 space-y-3">
+              {organizzatiAperti.map((e) => (
+                <RigaOrganizzata key={e.id} e={e} />
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {organizzatiConclusi.length > 0 && (
+          <section>
+            <h2 className="text-fluid-lg font-bold">Ingaggi conclusi che hai organizzato</h2>
+            <p className="mt-1 text-fluid-sm text-ink-muted">
+              La data è passata. Restano qui perché le candidature ricevute sono
+              la base della tua reputazione, e perché un annuncio riuscito è il
+              più facile da riscrivere.
+            </p>
+            <ul className="mt-6 space-y-3">
+              {organizzatiConclusi.map((e) => (
+                <RigaOrganizzata key={e.id} e={e} concluso />
+              ))}
+            </ul>
+          </section>
+        )}
+      </>
+    );
+
+  /** Le candidature che hai mandato tu. */
+  const mieCandidature = (
+    <>
       {/* Solo la prima mostra qualcosa quando è vuota: è l'unica in cui il
           vuoto ha un rimedio. «Nessun ingaggio concluso» non si risolve
           cliccando da nessuna parte. */}
@@ -160,11 +158,83 @@ export default async function DashboardEventiPage() {
           />
         }
       />
-      {/* «Ingaggi conclusi» sarebbe stato il titolo naturale, ma ora esiste
-          anche «Ingaggi conclusi che hai organizzato» e due sezioni quasi
-          omonime nella stessa pagina si leggono male. Sono comunque due cose
-          diverse: là hai pagato, qui sei stato pagato. */}
+      {/* «Ingaggi conclusi» sarebbe stato il titolo naturale, ma esiste anche
+          «Ingaggi conclusi che hai organizzato» e due sezioni quasi omonime
+          nella stessa pagina si leggono male. Sono comunque due cose diverse:
+          là hai pagato, qui sei stato pagato. */}
       <EventRecap title="Ingaggi che hai fatto" rows={completed} />
+    </>
+  );
+
+  return (
+    <div className="space-y-14">
+      <SezioneHeader
+        titolo="Ingaggi"
+        sottotitolo={
+          cercaArtisti
+            ? "Quelli che hai pubblicato e le candidature che sono arrivate. Un annuncio con data, luogo e compenso in chiaro riceve risposte pertinenti; senza compenso ne riceve poche."
+            : "Quelli a cui ti sei candidato, e come sono andati. Gli ingaggi aperti si trovano sulla mappa o nell'elenco pubblico."
+        }
+        // «Pubblicati» contava anche gli annunci di due anni fa: un numero che
+        // sale e non scende mai non dice niente su oggi. Quello che conta è
+        // quanti sono aperti adesso, perché è l'unico su cui si può agire.
+        /* I numeri di un artista non sono quelli di chi organizza: «Aperti
+           ora» e «Candidature da decidere» per lui valgono zero quasi sempre,
+           e tre zeri in cima a una pagina la fanno sembrare rotta. */
+        numeri={
+          cercaArtisti
+            ? [
+                { label: ["Aperto ora", "Aperti ora"], valore: organizzatiAperti.length },
+                { label: ["Candidatura da decidere", "Candidature da decidere"], valore: daDecidere },
+                { label: ["Artista in attesa", "Artisti in attesa"], valore: daDecidere },
+              ]
+            : [
+                { label: ["Candidatura attiva", "Candidature attive"], valore: upcoming.length },
+                { label: ["Ingaggio fatto", "Ingaggi fatti"], valore: completed.length },
+              ]
+        }
+        /* Il pulsante «Pubblica un ingaggio» in cima alla pagina di un artista
+           proponeva come azione principale il mestiere dell'altro ruolo. Lui
+           può ancora pubblicare — il ruolo non è un lucchetto — ma la sua
+           azione principale è candidarsi, e quella vive negli elenchi
+           pubblici. */
+        azione={
+          cercaArtisti ? (
+            <Link href="/dashboard/eventi/nuovo" className="btn-primary">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Pubblica un ingaggio
+            </Link>
+          ) : (
+            <Link href="/eventi" className="btn-primary">
+              <Search className="h-4 w-4" aria-hidden="true" />
+              Cerca un ingaggio
+            </Link>
+          )
+        }
+      />
+
+      {/* ── L'ordine delle due metà dipende da chi guarda ──
+
+          Era fisso: prima quello che organizzi, poi le tue candidature. Per un
+          artista significava aprire «Ingaggi» e trovare come prima cosa uno
+          stato vuoto che gli dice «pubblica il primo ingaggio» — cioè il
+          mestiere dell'altro ruolo, proposto come sua azione principale, sopra
+          la sola sezione per cui era venuto.
+
+          Non è solo un ordine sbagliato: è una pagina che spiega a chi cerca
+          lavoro come si assume. */}
+      {cercaArtisti ? (
+        <>
+          {organizzati}
+          {mieCandidature}
+        </>
+      ) : (
+        <>
+          {mieCandidature}
+          {organizzati}
+        </>
+      )}
+
       <EventRecap title="Archivio" rows={archived} />
     </div>
   );
