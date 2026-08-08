@@ -2,7 +2,6 @@ import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/lib/validations";
 import { emailIsConfigured } from "@/lib/email";
