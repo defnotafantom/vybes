@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import { cn } from "@/lib/cn";
 
 const SIZES = {
@@ -15,6 +18,33 @@ const SIZES = {
  * Il colore di sfondo è derivato dal nome, non casuale: lo stesso utente ha
  * sempre la stessa tinta in tutta l'applicazione, il che rende i profili
  * riconoscibili a colpo d'occhio anche senza foto.
+ *
+ * ── Perché il ripiego scatta anche se la foto c'è ──
+ *
+ * Prima bastava che `src` fosse valorizzato per andare sul ramo immagine. Ma
+ * «c'è un indirizzo» e «l'immagine si carica» sono due cose diverse, e la
+ * distanza fra le due si è vista in produzione nel modo peggiore: chi entrava
+ * con Google riceveva da Google l'indirizzo della propria foto, e `next/image`
+ * lo rifiutava perché quel dominio non era fra quelli autorizzati. Risultato:
+ * al posto della faccia, il rettangolo rotto del browser con scritto **«Foto
+ * di Daniele Bucca»** — in topbar, sul profilo pubblico, in ogni elenco, per
+ * ogni account creato con il percorso di iscrizione più breve del sito.
+ *
+ * Il dominio ora è autorizzato, e quella era la causa. Ma correggere solo la
+ * causa lascia la stessa scena pronta a ripetersi al prossimo indirizzo che
+ * non carica: un file cancellato dallo storage, un dominio nuovo dimenticato,
+ * una foto che l'utente ha reso privata altrove.
+ *
+ * Quindi la difesa sta **nel componente**: se l'immagine fallisce, si passa
+ * alle iniziali. Vale anche per i dati già scritti ieri, che è tutta la
+ * differenza fra correggere un dato e correggere un difetto — la stessa
+ * ragione per cui esiste `SfondoLavoro`.
+ *
+ * ── Il prezzo, dichiarato ──
+ *
+ * `onError` esiste solo nel browser, quindi questo componente è diventato
+ * client. È piccolo e senza dipendenze, e comparire come una faccia rotta è
+ * un prezzo più alto di qualche riga di JavaScript.
  */
 const TINTS = [
   "bg-brand-100 text-brand-700",
@@ -48,19 +78,29 @@ export function Avatar({
 }) {
   const s = SIZES[size];
   const shape = rounded === "full" ? "rounded-full" : "rounded-2xl";
+  const [rotta, setRotta] = useState(false);
+
+  const mostraFoto = Boolean(src) && !rotta;
 
   return (
     <div
-      className={cn("relative shrink-0 overflow-hidden", s.box, shape, !src && tintFor(name), className)}
+      className={cn(
+        "relative shrink-0 overflow-hidden",
+        s.box,
+        shape,
+        !mostraFoto && tintFor(name),
+        className
+      )}
     >
-      {src ? (
+      {mostraFoto ? (
         <Image
-          src={src}
+          src={src!}
           alt={`Foto di ${name}`}
           fill
           sizes={`${s.px}px`}
           priority={priority}
           className="object-cover"
+          onError={() => setRotta(true)}
         />
       ) : (
         <span

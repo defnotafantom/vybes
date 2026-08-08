@@ -13,6 +13,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { NavProgress } from "@/components/NavProgress";
 import { Logo } from "@/components/Logo";
+import { auth } from "@/lib/auth";
 import { NavPubblica } from "@/components/NavPubblica";
 import { MenuUtente } from "@/components/MenuUtente";
 import { SoloPubblico } from "@/components/SoloPubblico";
@@ -110,7 +111,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 }
 
-function SiteHeader() {
+/**
+ * ── Dove porta il logo quando c'è una sessione ──
+ *
+ * Portava sempre alla home. Ma per chi ha già fatto l'accesso la home è una
+ * pagina di presentazione — «Trova artisti. Trova ingaggi.» — cioè un
+ * argomento di vendita rivolto a qualcuno che ha già comprato. Premere il
+ * logo, che in ogni sito è il gesto per «torna al punto di partenza»,
+ * riportava fuori dal proprio lavoro.
+ *
+ * Con la sessione aperta il punto di partenza è la dashboard. La home resta
+ * raggiungibile — il piè di pagina e l'uscita ci portano — ma smette di essere
+ * la destinazione predefinita di chi è dentro.
+ */
+async function SiteHeader() {
+  const session = await auth();
+  const dentro = Boolean(session?.user?.id);
+
   return (
     <header
       className="sticky top-0 z-40 border-b backdrop-blur-md"
@@ -120,7 +137,7 @@ function SiteHeader() {
           su 320px, quattro spaziature da 16px sono 64px di vuoto che tolgono
           spazio proprio agli elementi che devono restare tutti visibili. */}
       <div className="container-page flex h-16 items-center justify-between gap-2 sm:gap-4">
-        <Logo />
+        <Logo href={dentro ? "/dashboard" : "/"} />
         <NavPubblica />
         <div className="flex items-center gap-2">
           <ThemeToggle />

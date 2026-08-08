@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
       // Vercel Blob: senza questa voce next/image rifiuta i file caricati.
       { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
+      // Le foto profilo di chi entra con Google. Senza questa voce `next/image`
+      // rifiuta l'indirizzo e **ogni account Google mostra un'immagine rotta**
+      // — con il testo alternativo «Foto di Mario Rossi» al posto della faccia,
+      // in topbar, sul profilo pubblico e in ogni elenco.
+      //
+      // Non era un caso raro: e' il percorso di iscrizione piu' breve del sito.
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
   },
   async headers() {
