@@ -53,6 +53,28 @@ git add prisma/migrations && git commit -m "migrazione iniziale"
 Lo script `build` esegue `prisma migrate deploy` prima di `next build`: ogni deploy
 applica da solo le migrazioni pendenti.
 
+> **Questa riga ha mentito per settimane.** Il documento lo prometteva, e
+> `package.json` faceva `prisma generate && next build`: nessun `migrate
+> deploy`. Finché non sono arrivate migrazioni nuove non se n'è accorto
+> nessuno — poi il primo deploy con una colonna nuova avrebbe servito un 500
+> su ogni pagina che la legge, e la causa sarebbe stata cercata nel codice
+> appena scritto invece che in una riga di `package.json` vecchia di un mese.
+> È la forma di difetto numero due di COLLOQUIO.md: *la regola esiste e niente
+> la applica.*
+
+**Serve `DIRECT_URL` fra le variabili d'ambiente di Vercel.** Senza,
+`migrate deploy` non parte e **il deploy fallisce**. È il comportamento
+voluto: meglio un rilascio che non parte di uno che parte con lo schema
+indietro rispetto al codice che lo interroga.
+
+**Il prezzo, detto per intero.** Migrare durante il build significa che anche
+un *preview deployment* applica le migrazioni, e su questo progetto le
+anteprime puntano allo stesso database della produzione: una migrazione
+sbagliata su un ramo qualsiasi arriva in produzione senza passare da main.
+Con un solo sviluppatore che rilascia da main è un rischio accettabile; con
+due persone smetterebbe di esserlo, e a quel punto le migrazioni vanno
+spostate in un passo separato della pipeline, dietro al merge.
+
 Il seed va lanciato una volta sola, a mano:
 
 ```bash
