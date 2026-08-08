@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
-import { execSync } from "node:child_process";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 
 /**
  * Ogni obiettivo che il codice fa avanzare deve esistere davvero.
@@ -18,8 +18,8 @@ import { execSync } from "node:child_process";
  * sempre mentre lei fa esattamente quello che le era stato chiesto.
  *
  * È la forma di difetto numero uno di COLLOQUIO.md: *il sistema dice di sì e
- * non fa niente.* Su questo progetto si è già presentata più volte, ed è la
- * peggiore da scoprire, perché l'unico sintomo è una barra che non si muove.
+ * non fa niente.* La prima volta che questo file è girato ha trovato
+ * `portfolio_five`, ferma a 0/5 per ogni artista dal primo giorno.
  *
  * ── Perché legge i file invece di importarli ──
  *
@@ -29,10 +29,33 @@ import { execSync } from "node:child_process";
  * all'import — e le prime non sono un elenco da nessuna parte.
  *
  * Leggere il testo dei file è brutto e funziona: è l'unico modo di confrontare
- * due cose che nel programma non si incontrano mai. Il giorno in cui dovesse
- * rompersi per un cambio di formattazione, si rompe **rumorosamente**, che è
- * l'opposto del difetto che sorveglia.
+ * due cose che nel programma non si incontrano mai.
+ *
+ * ── Perché non usa `git grep`, che era la prima versione ──
+ *
+ * Perché falliva su Windows. `execSync("git grep -hoE '(a|b)…'")` passa da
+ * `cmd.exe`, che non conosce gli apici singoli e legge la barra verticale come
+ * una pipe: il comando si spezzava a metà e il messaggio d'errore parlava di
+ * «"sincronizzaQuest)\" non è riconosciuto come comando interno o esterno».
+ *
+ * Il difetto era mio e la prova sembrava accusare il prodotto — la quarta
+ * forma di COLLOQUIO.md, in una prova nata per sorvegliare la prima. La
+ * regola che ne esce: **una prova che dipende dalla shell verifica anche la
+ * shell**, e quella cambia da una macchina all'altra. `node:fs` no.
  */
+
+const RADICE = "src";
+
+/** Tutti i sorgenti sotto `src/`, senza dipendere da nessun comando esterno. */
+function sorgenti(cartella = RADICE): string[] {
+  const fuori: string[] = [];
+  for (const voce of readdirSync(cartella, { withFileTypes: true })) {
+    const percorso = join(cartella, voce.name);
+    if (voce.isDirectory()) fuori.push(...sorgenti(percorso));
+    else if (/\.tsx?$/.test(voce.name)) fuori.push(percorso);
+  }
+  return fuori;
+}
 
 /** Le chiavi definite nel seed: `key: "qualcosa"`. */
 function chiaviDelSeed(): string[] {
@@ -50,20 +73,19 @@ function chiaviDelSeed(): string[] {
  * conteggio — un falso allarme che avrebbe portato a disattivare la prova.
  */
 function chiaviUsate(): string[] {
-  // `grep` via ripgrep non è garantito ovunque; `git grep` sì, ed è già una
-  // dipendenza del progetto.
-  const fuori = execSync(
-    `git grep -hoE '(progressQuest|sincronizzaQuest)\\([^)]*"[a-z_]+"' -- src`,
-    { encoding: "utf8" }
-  );
-  return [...fuori.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]);
+  const chiamata = /(?:progressQuest|sincronizzaQuest)\([^)]*"([a-z_]+)"/g;
+  const fuori: string[] = [];
+  for (const file of sorgenti()) {
+    for (const m of readFileSync(file, "utf8").matchAll(chiamata)) fuori.push(m[1]);
+  }
+  return fuori;
 }
 
 describe("le quest che il codice fa avanzare esistono nel seed", () => {
   it("nessuna chiave usata è sconosciuta al seed", () => {
     const definite = new Set(chiaviDelSeed());
     for (const chiave of chiaviUsate()) {
-      expect(definite.has(chiave), `progressQuest("${chiave}") non trova nessuna quest`).toBe(true);
+      expect(definite.has(chiave), `nessuna quest ha la chiave "${chiave}"`).toBe(true);
     }
   });
 
@@ -74,11 +96,12 @@ describe("le quest che il codice fa avanzare esistono nel seed", () => {
     expect(new Set(chiavi).size).toBe(chiavi.length);
   });
 
-  it("il seed contiene qualcosa: se la lettura si rompe, si accorge", () => {
+  it("la lettura trova qualcosa: se si rompe, se ne accorge", () => {
     // Senza questa riga, un cambio di formattazione che facesse restituire un
-    // elenco vuoto renderebbe le due prove qui sopra sempre verdi — cioè una
+    // elenco vuoto renderebbe le altre prove sempre verdi — cioè una
     // sorveglianza spenta che continua a dichiararsi accesa. È lo stesso
     // difetto che questo file esiste per prevenire, applicato a sé stesso.
+    expect(sorgenti().length).toBeGreaterThan(20);
     expect(chiaviDelSeed().length).toBeGreaterThan(5);
     expect(chiaviUsate().length).toBeGreaterThan(3);
   });
