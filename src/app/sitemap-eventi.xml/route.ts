@@ -1,3 +1,4 @@
+import { SITEMAP_MAX_URL } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 import { renderUrlset, xmlResponse } from "@/lib/sitemap-xml";
 
@@ -8,7 +9,7 @@ export async function GET() {
     where: { isPublic: true, status: { in: ["PUBLISHED", "COMPLETED"] } },
     select: { slug: true, updatedAt: true, startsAt: true },
     orderBy: { startsAt: "desc" },
-    take: 45000,
+    take: SITEMAP_MAX_URL,
   });
 
   const now = Date.now();

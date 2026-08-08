@@ -4,7 +4,6 @@ import { giornoDi, inVetrina } from "@/lib/vetrina";
 import {
   componiTurno,
   punteggio,
-  settimanaDi,
   primoGiornoDi,
   DOMANDE_PER_TURNO,
   MINIMO_ARTISTI,
@@ -301,9 +300,4 @@ export async function classificaDi(
     .map((r, i) => ({ ...r, posizione: i + 1 }));
 
   return { righe, daGiorno, aGiorno };
-}
-
-/** La settimana corrente, per chi non vuole importare due moduli. */
-export function settimanaCorrente(): number {
-  return settimanaDi(giornoDi());
 }

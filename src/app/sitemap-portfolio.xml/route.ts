@@ -1,3 +1,4 @@
+import { SITEMAP_MAX_URL } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 import { renderUrlset, xmlResponse } from "@/lib/sitemap-xml";
 import { PROFILO_PUBBLICO } from "@/lib/visibilita";
@@ -9,7 +10,7 @@ export async function GET() {
     where: { isPublic: true, user: PROFILO_PUBBLICO },
     select: { slug: true, updatedAt: true },
     orderBy: { updatedAt: "desc" },
-    take: 45000,
+    take: SITEMAP_MAX_URL,
   });
 
   return xmlResponse(

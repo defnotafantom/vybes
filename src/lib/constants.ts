@@ -55,8 +55,23 @@ export const PARTICIPATION_STATUS = {
   CANCELLED: "Annullata",
 } as const;
 
-/** Numero massimo di URL per file di sitemap (limite Google: 50.000). */
-export const SITEMAP_CHUNK = 5000;
+/**
+ * Quanti URL al massimo in un file di sitemap.
+ *
+ * Il limite di Google è 50.000; si sta sotto con un margine, perché una
+ * sitemap che lo supera non viene troncata: viene **scartata intera**, e con
+ * lei tutte le pagine che conteneva.
+ *
+ * ── Perché questa costante era una bugia ──
+ *
+ * Diceva 5.000, e le tre sitemap generate scrivevano `take: 45000` a mano.
+ * Nessuna delle due cifre governava l'altra: la costante non la leggeva
+ * nessuno, e i tre `45000` erano tre copie da tenere allineate a mente. Al
+ * primo che qualcuno avesse alzato a 60.000 per fretta, quella sitemap
+ * sarebbe sparita dall'indice in silenzio — e la costante avrebbe continuato
+ * a dire 5.000 a chi fosse andato a controllare.
+ */
+export const SITEMAP_MAX_URL = 45_000;
 
 /**
  * Quanti elementi deve avere una pagina di elenco per meritare di stare in

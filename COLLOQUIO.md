@@ -458,6 +458,53 @@ tutti, compresi quelli che non le piacciono.
 
 ---
 
+### La quinta ricerca: cercare la forma invece del difetto
+
+Le quattro forme non servono solo a raccontare i difetti trovati: servono a
+**cercarne di nuovi**. Alla fine ho smesso di leggere il codice e ho cercato
+una forma sola — *la regola che esiste e che niente applica* — con qualche
+riga di shell. In mezz'ora ne sono usciti sette.
+
+**Il più pericoloso.** `DEPLOY.md` diceva: «lo script build esegue
+`prisma migrate deploy` prima di `next build`». `package.json` faceva
+`prisma generate && next build`. Il documento lo prometteva da settimane e
+nessuno lo faceva — e non se n'era accorto nessuno perché **non erano ancora
+arrivate migrazioni**. Il giorno stesso in cui ne ho pushate tre, il primo
+deploy avrebbe servito un 500 su ogni pagina che leggeva una colonna nuova, e
+la causa sarebbe stata cercata nel codice appena scritto invece che in una
+riga di configurazione vecchia di un mese.
+
+**Il più imbarazzante.** `portfolio_five` — «arriva a 5 lavori pubblicati» —
+era nel seed dal primo giorno e **nessuna riga di codice la faceva avanzare**.
+Ferma a 0/5 per ogni artista, in cima all'elenco degli obiettivi, mentre chi
+la leggeva caricava il quinto lavoro e non vedeva muoversi niente. È la forma
+numero uno — *il sistema dice di sì e non fa niente* — nella sua versione più
+pura: nessun errore, solo una barra ferma.
+
+**Il più istruttivo, perché è una famiglia.** Il ricalcolo della reputazione
+era agganciato a tutti i momenti in cui qualcosa **cresce** e a nessuno di
+quelli in cui cala: lavoro cancellato, lavoro oscurato dalla moderazione,
+candidatura ritirata, ingaggio annullato. Quattro punti diversi, un difetto
+solo. E il commento in cima al file dichiarava, testualmente, «se cancelli
+metà del portfolio scende, com'è giusto». Non scendeva. Un artista con un
+lavoro poteva stare sopra a uno con quattro, e la sola prova sarebbe stata
+un numero rimasto indietro.
+
+*La regola che ne esce, ed è quella che userei al primo giorno di un lavoro
+nuovo:* quando una difesa dipende da un evento, chiediti **qual è l'evento
+opposto** — e vai a vedere se qualcuno lo ascolta. Quasi sempre no, perché
+scriverla nella direzione della crescita è naturale e nella direzione del calo
+non lo pensa nessuno.
+
+**Come li ho trovati, che è la parte riproducibile.** Non leggendo. Con quattro
+confronti meccanici: i comandi citati nei documenti contro quelli che esistono;
+gli export di `src/lib` contro i loro usi; le chiavi delle quest nel seed contro
+quelle che il codice fa avanzare; le costanti contro i numeri scritti a mano.
+L'ultimo confronto è diventato una prova che gira a ogni `npm test`, perché
+quello che si trova a mano una volta si ritrova a mano mai più.
+
+---
+
 ### Come chiudere il discorso
 
 > La cosa che ho imparato non è che il codice aveva dei difetti — quello lo dà

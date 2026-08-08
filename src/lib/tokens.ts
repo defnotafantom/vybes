@@ -1,4 +1,4 @@
-import { randomBytes, createHash, timingSafeEqual } from "node:crypto";
+import { randomBytes, createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 
 export type TokenType = "EMAIL_VERIFY" | "PASSWORD_RESET";
@@ -63,8 +63,11 @@ function hash(raw: string): string {
 }
 
 /** Confronto a tempo costante, per usi futuri su codici brevi. */
-export function safeEqual(a: string, b: string): boolean {
-  const ba = Buffer.from(a);
-  const bb = Buffer.from(b);
-  return ba.length === bb.length && timingSafeEqual(ba, bb);
-}
+// `safeEqual()`, un confronto a tempo costante, stava qui e non la usava
+// nessuno. Non era una dimenticanza: la difesa vera è un'altra, ed è già in
+// funzione. Il token non viene mai confrontato in memoria — nel database
+// finisce solo il suo hash, e la verifica è una `findUnique` su quell'hash,
+// cioè una ricerca su indice. Non c'è nessuna stringa segreta da paragonare.
+//
+// Tenerla suggeriva una protezione che non era in uso, ed è il genere di cosa
+// che in un riesame di sicurezza si spunta come «fatto» senza verificarlo.

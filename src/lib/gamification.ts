@@ -76,6 +76,76 @@ export async function progressQuest(userId: string, questKey: string, step = 1) 
   }
 }
 
+/**
+ * Porta una quest al valore che lo **stato** dice, invece di incrementarla.
+ *
+ * ── Perché serviva, e cosa nascondeva la sua assenza ──
+ *
+ * `portfolio_five` — «arriva a 5 lavori pubblicati» — stava nel seed dal primo
+ * giorno e **nessuno la faceva avanzare**: il caricamento di un lavoro chiama
+ * `progressQuest("first_portfolio")` e basta. Restava a 0/5 per ogni artista,
+ * per sempre, in cima all'elenco degli obiettivi, mentre chi la leggeva
+ * caricava il quinto lavoro e non vedeva muoversi niente.
+ *
+ * Il sistema diceva di sì e non faceva niente, e non c'era nessun errore da
+ * cercare: solo una barra ferma.
+ *
+ * ── Perché non basta chiamare `progressQuest` a ogni caricamento ──
+ *
+ * Perché quella conta **eventi**, non stato. Cancellando un lavoro il
+ * contatore non scende, e caricandone cinque, cancellandone tre e
+ * ricaricandone due la quest risulterebbe completata con quattro lavori in
+ * portfolio. È lo stesso motivo per cui la reputazione si ricalcola invece di
+ * accumularsi: un contatore diverge dalla realtà al primo caso non previsto, e
+ * nessuno se ne accorge perché il numero resta plausibile.
+ *
+ * Qui il valore arriva da chi conosce il fatto — un `count` sul database — e
+ * questa funzione lo scrive. Non toglie mai una quest già completata: una
+ * ricompensa in attesa di riscossione non deve sparire perché nel frattempo
+ * qualcuno ha ripulito il portfolio.
+ */
+export async function sincronizzaQuest(userId: string, questKey: string, valore: number) {
+  const quest = await prisma.quest.findUnique({ where: { key: questKey } });
+  if (!quest) return;
+
+  const existing = await prisma.questProgress.findUnique({
+    where: { userId_questId: { userId, questId: quest.id } },
+  });
+  if (existing?.completedAt) return;
+
+  const current = Math.max(0, Math.min(quest.target, valore));
+  const justCompleted = current >= quest.target;
+
+  await prisma.questProgress.upsert({
+    where: { userId_questId: { userId, questId: quest.id } },
+    create: { userId, questId: quest.id, current, completedAt: justCompleted ? new Date() : null },
+    update: { current, completedAt: justCompleted ? new Date() : null },
+  });
+
+  if (justCompleted) {
+    await notify({
+      recipientId: userId,
+      type: "QUEST_COMPLETED",
+      body: `Quest completata: ${quest.title} — ci sono ${quest.xpReward} XP da riscuotere`,
+      entityId: quest.id,
+      entityUrl: "/dashboard/quest",
+    });
+  }
+}
+
+/**
+ * Riallinea gli obiettivi che dipendono da quanti lavori ci sono in portfolio.
+ *
+ * Sta qui e non nella rotta perché il portfolio si modifica da più punti —
+ * creazione, cancellazione, passaggio a privato — e la regola «quanti lavori
+ * contano» deve stare in uno solo.
+ */
+export async function syncPortfolioQuests(userId: string) {
+  const lavori = await prisma.portfolioItem.count({ where: { userId, isPublic: true } });
+  await progressQuest(userId, "first_portfolio", lavori > 0 ? 1 : 0);
+  await sincronizzaQuest(userId, "portfolio_five", lavori);
+}
+
 export type EsitoRiscossione =
   | { ok: true; xp: number; monete: number; titolo: string }
   | { ok: false; motivo: "sconosciuta" | "non-completata" | "gia-riscossa" };

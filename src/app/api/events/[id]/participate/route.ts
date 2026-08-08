@@ -3,6 +3,7 @@ import { participationSchema } from "@/lib/validations";
 import { guard, parseBody, ok, fail, handle } from "@/lib/api";
 import { notify } from "@/lib/notifications";
 import { progressQuest, grantXp } from "@/lib/gamification";
+import { ricalcolaReputazione } from "@/lib/reputazione-server";
 import { revalidatePath } from "next/cache";
 
 /** Candidatura di un artista a un ingaggio. */
@@ -75,10 +76,18 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     });
     if (!participation) return fail("Candidatura non trovata", 404);
 
+    const eraConfermata = participation.status === "ACCEPTED";
+
     await prisma.participation.update({
       where: { id: participation.id },
       data: { status: "CANCELLED", respondedAt: new Date() },
     });
+
+    // Ritirarsi da un ingaggio già confermato toglie la voce che nella
+    // reputazione pesa di più. Solo in quel caso: una candidatura in attesa
+    // non aveva ancora dato punti a nessuno, e ricalcolare sarebbe una query
+    // per niente sull'azione più frequente delle due.
+    if (eraConfermata) await ricalcolaReputazione(g.user!.id);
 
     revalidatePath(`/eventi/${participation.event.slug}`);
     return ok({ status: "CANCELLED" });

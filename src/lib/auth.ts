@@ -4,13 +4,28 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { loginSchema } from "@/lib/validations";
 import { emailIsConfigured } from "@/lib/email";
 import { uniqueSlug } from "@/lib/slug";
 
-const credentialsSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-});
+/**
+ * Lo schema del login vive in `validations.ts`, insieme a tutti gli altri.
+ *
+ * ── Perché non ne aveva uno suo ──
+ *
+ * Ce l'aveva, e i numeri non tornavano: qui si pretendevano **otto**
+ * caratteri, la registrazione ne pretende **dieci**, e `loginSchema` — mai
+ * usato da nessuno — ne pretendeva **uno**. Tre regole per lo stesso campo,
+ * nessuna delle quali sapeva delle altre.
+ *
+ * Vince quella da uno, e non per pigrizia: **la lunghezza minima appartiene
+ * alla registrazione, non all'autenticazione.** Pretenderla qui non aggiunge
+ * niente — la password viene comunque confrontata con bcrypt — e può solo
+ * chiudere fuori un account la cui password è più vecchia della regola,
+ * restituendogli «credenziali non valide»: un messaggio indistinguibile da
+ * quello di chi ha davvero sbagliato, quindi impossibile da diagnosticare per
+ * chi lo riceve e per chi lo assiste.
+ */
 
 /**
  * Errore tipizzato: Auth.js propaga il campo `code` al client, così il form
@@ -84,7 +99,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       credentials: { email: {}, password: {} },
       async authorize(raw) {
-        const parsed = credentialsSchema.safeParse(raw);
+        const parsed = loginSchema.safeParse(raw);
         if (!parsed.success) return null;
 
         const user = await prisma.user.findUnique({
@@ -202,8 +217,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 });
 
 /** Ritorna la sessione o lancia: da usare nelle route API protette. */
-export async function requireUser() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Response("Non autenticato", { status: 401 });
-  return session.user;
-}
+

@@ -60,16 +60,3 @@ export function perRuolo(ruoli: string, ruolo: Ruolo): boolean {
   const elenco = fromCsv(ruoli);
   return elenco.length === 0 || elenco.includes(ruolo);
 }
-
-/**
- * Come si chiama, in italiano, quello che sta facendo qui.
- *
- * Sta qui e non sparso nei componenti perché le stesse due parole comparivano
- * riscritte a mano in ogni pagina, e divergevano: «organizzatore» in un
- * punto, «recruiter» in un altro, «chi ingaggia» in un terzo. Sono la stessa
- * persona, e chiamarla in tre modi la costringe a capirlo da sola.
- */
-export const NOME_RUOLO: Record<Ruolo, string> = {
-  ARTIST: "artista",
-  RECRUITER: "organizzatore",
-};

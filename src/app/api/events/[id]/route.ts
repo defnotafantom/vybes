@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { ricalcolaPer } from "@/lib/reputazione-server";
 import { eventSchema } from "@/lib/validations";
 import { guard, parseBody, ok, fail, handle } from "@/lib/api";
 import { notify } from "@/lib/notifications";
@@ -104,6 +105,14 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       return ok({ deleted: true, cancelled: false });
     }
 
+    // Chi era già confermato, prima di annullare: dopo la transazione non è
+    // più distinguibile da chi era solo in attesa, perché finiscono tutti
+    // nello stesso stato.
+    const confermati = await prisma.participation.findMany({
+      where: { eventId: id, status: "ACCEPTED" },
+      select: { userId: true },
+    });
+
     await prisma.$transaction([
       prisma.event.update({ where: { id }, data: { status: "CANCELLED" } }),
       prisma.participation.updateMany({
@@ -111,6 +120,18 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         data: { status: "CANCELLED", respondedAt: new Date() },
       }),
     ]);
+
+    /* Annullare un ingaggio toglie a chi era confermato la voce che nella sua
+     * reputazione pesa di più — quella che non dipende da lui, perché gliela
+     * aveva assegnata qualcun altro scegliendolo.
+     *
+     * Senza questa riga quei punti restavano lì: un artista continuava a
+     * comparire in cima alla directory per un ingaggio che non si è mai
+     * svolto, e nessuno dei due aveva modo di accorgersene. Fuori dalla
+     * transazione di proposito — un ricalcolo lento non deve poter far fallire
+     * l'annullamento, che è la parte che l'organizzatore ha chiesto.
+     */
+    await ricalcolaPer(confermati.map((p) => p.userId));
 
     await notifyParticipants(
       id,

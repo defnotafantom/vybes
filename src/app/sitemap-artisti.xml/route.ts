@@ -1,3 +1,4 @@
+import { SITEMAP_MAX_URL } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 import { renderUrlset, xmlResponse } from "@/lib/sitemap-xml";
 import { isProfileIndexable } from "@/lib/profile-quality";
@@ -19,7 +20,7 @@ export async function GET() {
       _count: { select: { portfolioItems: { where: { isPublic: true } } } },
     },
     orderBy: { updatedAt: "desc" },
-    take: 45000,
+    take: SITEMAP_MAX_URL,
   });
 
   // Il filtro è in JavaScript e non nella query perché la regola guarda la

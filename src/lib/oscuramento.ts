@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { ricalcolaReputazione } from "@/lib/reputazione-server";
+import { syncPortfolioQuests } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
 import type { TipoSegnalabile } from "@/lib/segnalazioni";
 
@@ -66,6 +68,11 @@ export async function oscura(
         data: { isPublic: false },
         select: { title: true, user: { select: { id: true, name: true, email: true } } },
       });
+      // Il conteggio della reputazione filtra `isPublic: true`: nascondendo un
+      // lavoro, il punteggio del suo autore deve scendere. Senza questa riga
+      // un profilo moderato conservava i punti di ciò che non mostra più.
+      await ricalcolaReputazione(p.user.id);
+      await syncPortfolioQuests(p.user.id);
       revalidatePath(`/portfolio/${targetId}`);
       return { autore: p.user, descrizione: `il lavoro «${p.title}»` };
     }

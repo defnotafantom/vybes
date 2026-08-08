@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { unreadCount } from "@/lib/notifications";
 import { guard, ok, handle } from "@/lib/api";
 
 export async function GET(req: Request) {
@@ -13,7 +14,12 @@ export async function GET(req: Request) {
         take: 30,
         include: { actor: { select: { slug: true, name: true, image: true } } },
       }),
-      prisma.notification.count({ where: { recipientId: g.user!.id, readAt: null } }),
+      // La stessa domanda era scritta due volte: qui e in `unreadCount()`, che
+      // nessuno chiamava. Due copie di «cos'è una notifica non letta»
+      // divergono alla prima modifica — e il numero sulla campanella smette di
+      // corrispondere all'elenco che si apre premendola, senza che niente si
+      // rompa.
+      unreadCount(g.user!.id),
     ]);
 
     return ok({ items, unread });

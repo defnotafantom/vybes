@@ -65,10 +65,8 @@ export function permissionsFor(role: string | null | undefined): readonly Permis
 }
 
 /** Guardia per le route API: restituisce una Response se il permesso manca. */
-export function requirePermission(
-  role: string | null | undefined,
-  permission: Permission
-): Response | null {
-  if (hasPermission(role, permission)) return null;
-  return Response.json({ ok: false, error: "Permesso negato" }, { status: 403 });
-}
+// `requirePermission()` stava qui e non la chiamava nessuno: tutte le rotte
+// usano `guard()` di lib/api.ts, che fa sessione e limite in una riga. Due
+// modi di negare un accesso sono uno di troppo — quello meno usato invecchia
+// senza che nessuno se ne accorga, ed è quello che qualcuno sceglierà per
+// caso il giorno in cui non è più allineato.

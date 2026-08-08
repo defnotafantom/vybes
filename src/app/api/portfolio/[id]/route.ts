@@ -4,6 +4,8 @@ import { guard, parseBody, ok, fail, handle } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import { deleteFile } from "@/lib/upload";
 import { slugDi } from "@/lib/utente";
+import { ricalcolaReputazione } from "@/lib/reputazione-server";
+import { syncPortfolioQuests } from "@/lib/gamification";
 
 async function owned(id: string, userId: string) {
   const item = await prisma.portfolioItem.findUnique({
@@ -57,6 +59,25 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     await prisma.portfolioItem.delete({ where: { id } });
     // Il record e' andato: si libera anche lo storage.
     if (check.item?.mediaUrl) await deleteFile(check.item.mediaUrl);
+
+    /* ── Quello che il portfolio alimenta va rifatto anche in discesa ──
+     *
+     * `reputazione-server.ts` dice, nero su bianco: «se cancelli metà del
+     * portfolio scende, com'è giusto». Non scendeva. Il ricalcolo era
+     * agganciato al **caricamento** di un lavoro e al salvataggio del profilo,
+     * mai alla cancellazione: chi caricava cinque lavori, prendeva i quindici
+     * punti, e poi ne toglieva quattro restava a quindici punti — e in cima
+     * alla directory — finché non avesse toccato per caso qualcos'altro.
+     *
+     * Un profilo con un lavoro solo che scavalca uno con quattro, senza che
+     * nessuno possa accorgersene: è la forma di difetto numero tre di
+     * COLLOQUIO.md — una difesa che vale in una direzione sola.
+     *
+     * Stesso discorso per gli obiettivi del portfolio, che ora si calcolano
+     * dal conteggio vero invece di contare eventi.
+     */
+    await ricalcolaReputazione(g.user!.id);
+    await syncPortfolioQuests(g.user!.id);
 
     revalidatePath(`/artisti/${await slugDi(g.user!.id)}`);
     return ok({ deleted: true });

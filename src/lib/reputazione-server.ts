@@ -174,3 +174,34 @@ export async function dettaglioReputazioneDi(
   const voci = dettaglioReputazione(letto.fatti, letto.role);
   return { voci, massimo: massimoDi(voci) };
 }
+
+/**
+ * Ricalcola la reputazione di più persone.
+ *
+ * ── Perché esiste ──
+ *
+ * Il ricalcolo era agganciato solo ai momenti in cui qualcosa **cresce**: un
+ * lavoro caricato, una candidatura accettata, un profilo salvato. Tutti i
+ * momenti in cui qualcosa **cala** non lo chiamavano nessuno:
+ *
+ * - un lavoro cancellato dal portfolio;
+ * - un lavoro o un profilo oscurato dalla moderazione (`isPublic: false`, ed
+ *   è proprio la condizione che il conteggio della reputazione filtra);
+ * - una candidatura accettata e poi ritirata dall'artista;
+ * - un ingaggio annullato dall'organizzatore, che porta con sé tutte le
+ *   candidature già confermate.
+ *
+ * `reputazione-server.ts` dichiara, in cima: «se cancelli metà del portfolio
+ * scende, com'è giusto». Non scendeva. Il punteggio restava quello del giorno
+ * migliore, la directory continuava a ordinarci sopra, e non c'era niente da
+ * cui accorgersene — nessun errore, solo un numero rimasto indietro.
+ *
+ * Il `Promise.all` non è ottimizzazione: annullando un ingaggio con dodici
+ * confermati, dodici ricalcoli in fila allungherebbero la risposta di secondi
+ * su un'azione che l'organizzatore sta guardando.
+ */
+export async function ricalcolaPer(userIds: readonly string[]): Promise<void> {
+  const unici = [...new Set(userIds)].filter(Boolean);
+  if (unici.length === 0) return;
+  await Promise.all(unici.map((id) => ricalcolaReputazione(id)));
+}

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { portfolioSchema } from "@/lib/validations";
 import { guard, parseBody, ok, handle } from "@/lib/api";
 import { uniqueSlug } from "@/lib/slug";
-import { progressQuest, grantXp, syncProfileQuest } from "@/lib/gamification";
+import { grantXp, syncProfileQuest, syncPortfolioQuests } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
 import { ricalcolaReputazione } from "@/lib/reputazione-server";
 import { slugDi } from "@/lib/utente";
@@ -54,7 +54,10 @@ export async function POST(req: Request) {
 
     await grantXp(g.user!.id, 15);
     await ricalcolaReputazione(g.user!.id);
-    await progressQuest(g.user!.id, "first_portfolio");
+    // Entrambi gli obiettivi del portfolio, dal conteggio vero: vedi
+    // `syncPortfolioQuests`. Prima qui c'era solo «first_portfolio», e
+    // «portfolio_five» non la faceva avanzare nessuno.
+    await syncPortfolioQuests(g.user!.id);
     await syncProfileQuest(g.user!.id);
 
     revalidatePath(`/artisti/${await slugDi(g.user!.id)}`);
