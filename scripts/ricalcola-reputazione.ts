@@ -24,35 +24,36 @@
  * dieci volte lo stesso risultato. Si può lanciare senza pensarci dopo ogni
  * modifica ai pesi.
  *
+ * Va rilanciato anche dopo ogni cambio di **formula**, non solo di pesi:
+ * con la separazione per ruolo, tutti i punteggi in tabella sono calcolati
+ * su un massimo diverso (110) da quello attuale (100).
+ *
  *   npm run reputazione:ricalcola
  *   npm run reputazione:ricalcola -- --prova     (mostra e non scrive)
  */
 import { prisma } from "../src/lib/prisma";
 import { calcolaReputazione } from "../src/lib/reputazione";
+import { fattiDi } from "../src/lib/reputazione-server";
 
 const prova = process.argv.includes("--prova");
 
 async function main() {
+  // Solo l'identita': i fatti li legge `fattiDi()`, che e' la stessa funzione
+  // usata dalla dashboard e dal ricalcolo automatico.
+  //
+  // Questa `select` era una terza copia della stessa domanda al database, ed
+  // e' proprio dove si rompeva: aggiungendo le voci dell'organizzatore, lo
+  // script avrebbe continuato a leggere solo i fatti dell'artista e avrebbe
+  // scritto in tabella un punteggio diverso da quello mostrato in pagina.
+  // Due numeri entrambi plausibili e nessuno che li confronta: e' la forma di
+  // difetto piu' difficile da scoprire.
+  //
+  // Il prezzo e' una query per account invece di una sola. Su una directory
+  // di qualche centinaio di profili, lanciata a mano dopo un cambio di pesi,
+  // e' un prezzo che si paga volentieri per non avere due verita'.
   const utenti = await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      reputation: true,
-      emailVerified: true,
-      isVerified: true,
-      bio: true,
-      headline: true,
-      image: true,
-      citySlug: true,
-      disciplines: true,
-      _count: {
-        select: {
-          portfolioItems: { where: { isPublic: true } },
-          participations: { where: { status: "ACCEPTED" } },
-          eventsCreated: { where: { status: "COMPLETED" } },
-        },
-      },
-    },
+    select: { id: true, name: true, role: true, reputation: true },
+    orderBy: { createdAt: "asc" },
   });
 
   let cambiati = 0;
@@ -60,19 +61,10 @@ async function main() {
   let scesi = 0;
 
   for (const u of utenti) {
-    const nuova = calcolaReputazione({
-      emailVerified: u.emailVerified,
-      isVerified: u.isVerified,
-      bio: u.bio,
-      headline: u.headline,
-      image: u.image,
-      citySlug: u.citySlug,
-      disciplines: u.disciplines,
-      portfolio: u._count.portfolioItems,
-      ingaggiConfermati: u._count.participations,
-      ingaggiOrganizzati: u._count.eventsCreated,
-    });
+    const letto = await fattiDi(u.id);
+    if (!letto) continue;
 
+    const nuova = calcolaReputazione(letto.fatti, letto.role);
     if (nuova === u.reputation) continue;
 
     cambiati += 1;
@@ -80,7 +72,8 @@ async function main() {
     else scesi += 1;
 
     console.log(
-      `${u.name.padEnd(28).slice(0, 28)} ${String(u.reputation).padStart(4)} → ${String(nuova).padStart(4)}`
+      `${u.name.padEnd(24).slice(0, 24)} ${u.role.padEnd(9)} ` +
+        `${String(u.reputation).padStart(4)} \u2192 ${String(nuova).padStart(4)}`
     );
 
     if (!prova) {
@@ -89,8 +82,8 @@ async function main() {
   }
 
   console.log(
-    `\n${utenti.length} account · ${cambiati} da aggiornare (${saliti} in salita, ${scesi} in discesa)` +
-      (prova ? "\nNiente è stato scritto: rilancia senza --prova per applicare." : "\nFatto.")
+    `\n${utenti.length} account \u00b7 ${cambiati} da aggiornare (${saliti} in salita, ${scesi} in discesa)` +
+      (prova ? "\nNiente \u00e8 stato scritto: rilancia senza --prova per applicare." : "\nFatto.")
   );
 }
 

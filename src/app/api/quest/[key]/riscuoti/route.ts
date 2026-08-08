@@ -49,6 +49,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ key: st
 
     return ok({
       xp: esito.xp,
+      monete: esito.monete,
       titolo: esito.titolo,
       livello: levelProgress(me?.experience ?? 0),
     });

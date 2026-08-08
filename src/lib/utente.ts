@@ -34,7 +34,27 @@ import { prisma } from "@/lib/prisma";
  * Una query per pagina che mostra il collegamento. È indicizzata sulla chiave
  * primaria, e quelle pagine ne fanno già altre tre in parallelo.
  */
+/**
+ * Chi è e come si raggiunge, in una lettura sola.
+ *
+ * Il layout della dashboard ha bisogno di entrambi — lo slug per il
+ * collegamento al profilo pubblico, il ruolo per comporre il menu — e
+ * chiederli con due query alla stessa riga sarebbe un giro a vuoto.
+ *
+ * Il ruolo si legge qui e non dalla sessione per il motivo scritto sopra: il
+ * token è una fotografia. Oggi il ruolo non si cambia dal profilo, quindi la
+ * fotografia sarebbe ancora giusta — ma il giorno in cui diventerà cambiabile,
+ * chi passa da artista a organizzatore vedrebbe il menu vecchio fino alla
+ * scadenza della sessione, e nessuno collegherebbe le due cose. Costa la
+ * stessa query che stiamo già facendo.
+ */
+export async function identitaDi(
+  userId: string
+): Promise<{ slug: string; role: string } | null> {
+  return prisma.user.findUnique({ where: { id: userId }, select: { slug: true, role: true } });
+}
+
 export async function slugDi(userId: string): Promise<string | null> {
-  const u = await prisma.user.findUnique({ where: { id: userId }, select: { slug: true } });
+  const u = await identitaDi(userId);
   return u?.slug ?? null;
 }

@@ -1766,6 +1766,349 @@ accorge — ed è giusto che se ne accorga.
 
 ---
 
+## ADR-045 · La reputazione è la formula di un ruolo, e ne servono due
+
+**Contesto.** `dettaglioReputazione()` restituiva otto voci uguali per tutti.
+Tre di quelle — discipline dichiarate, portfolio, ingaggi confermati — un
+organizzatore non può ottenerle: non dichiara discipline, non ha un portfolio,
+non viene scelto da nessuno. Sono quarantacinque punti su centodieci fuori
+portata **per costruzione**.
+
+Il numero, misurato: un locale modello — profilo completo, identità
+verificata, quattro ingaggi conclusi, tutti retribuiti, risposta a ogni
+candidatura ricevuta — otteneva **55/100**. La scheda che spiega il punteggio
+gli suggeriva «carica fino a cinque lavori: è quello che convince davvero».
+
+Non è un difetto estetico. È un punteggio presentato come misura di
+affidabilità che condanna metà degli iscritti a un tetto del 55%, e che
+consiglia loro rimedi inapplicabili. E lo subisce il lato che paga.
+
+**Decisione.** Due insiemi di voci, uno per ruolo, entrambi con massimo **100**.
+
+Il massimo uguale non è simmetria estetica: rende il numero confrontabile fra
+i due lati — «ottanta» significa la stessa cosa per un artista e per un locale
+— e toglie di mezzo la percentuale calcolata su denominatori diversi, che è il
+modo più economico di mentire con una barra di progresso.
+
+La domanda che sceglie le voci resta una, ribaltata:
+
+- artista: *cosa dice a un organizzatore che questa persona è una scelta sicura?*
+- organizzatore: *cosa dice a un artista che vale la pena candidarsi qui?*
+
+**Perché «rispondi a chi si candida» pesa un quarto.** È la voce più pesante
+delle due formule, e sfora deliberatamente il limite di un quinto che vale per
+l'artista. La ragione è che l'asimmetria è reale: per un artista non esiste una
+cosa sola che dica «è affidabile», per un organizzatore sì.
+
+Candidarsi e non ricevere risposta è il danno peggiore che questo prodotto
+possa fare, e lo fa **in silenzio** — non succede niente, nessuno se ne
+accorge, e la seconda volta quell'artista non si candida più. È anche l'unico
+comportamento che, diventando la norma, svuota il sito dal lato che lo riempie
+di contenuti.
+
+Un no vale quanto un sì: si misura **se** rispondi, non cosa rispondi.
+Premiare le accettazioni spingerebbe ad accettare per punteggio, e l'artista
+scelto così se ne accorge la sera del concerto.
+
+**Il misurabile e lo zero.** Con meno di tre candidature ricevute la voce non
+vale zero: **non si conta**, né al numeratore né al denominatore. Zero
+significa «non l'hai fatto»; qui il fatto non è mai avvenuto. Dare zero a un
+iscritto di ieri lo dichiarerebbe inaffidabile per qualcosa che non è
+successo, e il rimedio suggerito — «rispondi» — sarebbe inapplicabile. Un
+organizzatore nuovo col profilo completo sta quindi a 65/65, non a 65/100.
+
+**Conseguenze.**
+
+- I punteggi già in tabella sono calcolati su un massimo che non esiste più.
+  `npm run reputazione:ricalcola` va rilanciato dopo la migrazione, e il suo
+  preambolo ora lo dice.
+- La lettura dei fatti era duplicata in tre punti — due in
+  `reputazione-server.ts` e uno nello script. Aggiungendo le voci
+  dell'organizzatore sarebbero diventate tre copie *divergenti*: lo script
+  avrebbe scritto in tabella un numero diverso da quello mostrato in pagina,
+  entrambi plausibili, nessuno a confrontarli. Ora c'è una `fattiDi()` sola.
+- `PATCH /api/participations/[id]` ricalcolava la reputazione dell'artista e
+  non quella dell'organizzatore. Con la nuova formula quello è **l'unico punto
+  del sistema in cui la voce che pesa di più cambia valore**: senza il
+  ricalcolo, la regola sarebbe esistita nella formula e niente l'avrebbe
+  applicata. È la forma di difetto numero due di COLLOQUIO.md, e stava per
+  ripetersi mezz'ora dopo aver scritto la formula.
+
+---
+
+## ADR-046 · Il ruolo è un'intenzione dichiarata, non un permesso
+
+**Contesto.** `User.role` esisteva dalla prima migrazione e non faceva quasi
+niente. Chi si iscriveva per **cercare** riceveva il prodotto di chi vuole
+**essere trovato**: Portfolio al terzo posto del menu, la vetrina che gli
+diceva ogni giorno «non sei ancora in rotazione» a proposito di una rotazione
+che filtra per ruolo e quindi non lo includerà mai, e in elenco «Portfolio
+solido — arriva a 5 lavori pubblicati», ferma a 0/5 per sempre.
+
+**Decisione.** Il ruolo decide **cosa sta in primo piano e cosa il sistema ti
+promette**, non cosa puoi fare. Tutte le pagine restano raggiungibili.
+
+**Perché non un lucchetto.** Si rompe al primo caso vero: un locale con una
+band residente, un artista che organizza la propria jam. Nel prodotto oggi
+chiunque può pubblicare un ingaggio, ed è giusto — `first_event` resta infatti
+un obiettivo per tutti. Vietare avrebbe richiesto di decidere in anticipo casi
+che non conosciamo, e ogni eccezione sarebbe diventata una porta chiusa in
+faccia a qualcuno.
+
+**La regola che ne discende, e che vale per ogni aggiunta futura:** *non
+promettere a un ruolo un obiettivo che il suo ruolo non raggiunge.* Un elenco
+pieno di cose impossibili non motiva — insegna a ignorare l'elenco, comprese le
+voci che valevano.
+
+**Cosa cambia in concreto.** Menu diverso, con «Cerca artisti» promosso nel
+gruppo principale dell'organizzatore perché sfogliare la directory è metà del
+suo mestiere e non un'escursione fuori dall'area personale; le candidature in
+attesa sopra il feed; «Da dove si comincia» che sparisce al primo annuncio
+invece di ripetersi al decimo; `Quest.ruoli` come CSV, vuoto uguale «a tutti»
+— il silenzio è inclusivo, così una riga nuova non sparisce senza che nessuno
+se ne accorga.
+
+---
+
+## ADR-047 · Le monete comprano ciò che si vede, mai ciò che decide
+
+**Contesto.** ADR-042 rifiutava le monete. Uno dei suoi quattro argomenti — il
+terzo, quello giuridico su loot box, IVA e diritto di recesso — poggiava su
+una premessa sbagliata: che le monete si comprassero con denaro reale. Non è
+così: sono una valuta interna, si guadagnano solo usando il sito.
+
+Con la premessa cade l'argomento. Questo ADR non nasconde ADR-042: lo corregge
+dove sbagliava e tiene il resto, che regge ancora.
+
+**Cosa resta di ADR-042.** Il punto 2. Il livello è stato tolto dal profilo
+pubblico perché misura quanto una persona usa il sito, e quello non è un dato
+su cui un organizzatore debba decidere se scriverle. Una moneta guadagnata
+giocando è la stessa misura con un altro nome: se diventa visibile o
+influente, si è rimesso in pagina esattamente ciò che si era deciso di
+toglierne.
+
+**Decisione.** La moneta esiste. Il confine è uno solo:
+
+> Le monete comprano **ciò che si vede**. Non comprano mai **ciò che decide**.
+
+**Non comprabile, in nessuna forma e a nessun prezzo:**
+
+- la posizione in `/artisti` — è ciò che ADR-039 e la riscrittura della
+  reputazione esistono per proteggere;
+- i posti in vetrina in home (ADR-044): sono una fila, e una fila comprabile
+  non è più una fila;
+- i distintivi (ADR sui fatti verificabili) e la verifica d'identità: sono
+  affermazioni su fatti, e un fatto comprato è una bugia con una ricevuta;
+- qualunque cosa entri nella reputazione.
+
+**Comprabile:** cornici attorno alla foto vera, temi e colore d'accento del
+profilo, elementi dell'avatar, decorazioni del feed. Cose che dicono «sono qui
+da un po' e mi ci diverto», che è vero, e che nessun organizzatore scambierà
+mai per una misura di bravura.
+
+**Perché il confine sta esattamente lì.** Se le monete comprassero visibilità,
+la directory tornerebbe ordinata per *quanto hai usato il sito* — il difetto
+rimosso con la riscrittura della reputazione — ma in una versione peggiore,
+perché sarebbe **venduta come una funzione** invece che subìta come un errore.
+E il danno vero non lo prende l'artista scavalcato: lo prende l'organizzatore
+che si fida di quell'ordine per trovare un chitarrista a Bologna sabato. Nel
+momento in cui l'ordine è comprabile, la directory smette di servirgli — e lui
+è il lato che tiene in piedi tutto il resto.
+
+**Come si guadagnano.** Non con la presenza, con il mestiere.
+
+Una ruota giornaliera che gira per il solo fatto di aver aperto il sito premia
+chi ha tempo. La stessa ruota, che si sblocca **avendo fatto una cosa** — una
+candidatura a cui hai risposto, un lavoro caricato, un annuncio pubblicato —
+premia chi fa funzionare il mercato, e trasforma il ritorno quotidiano da
+tempo passato in lavoro fatto. La meccanica è identica, il comportamento che
+produce è opposto.
+
+**Come si difende.** Con una prova, non con questa pagina. L'elenco di ciò che
+è acquistabile vive in un posto solo, e un test verifica che nessuna voce
+tocchi reputazione, vetrina, ordinamento o distintivi. Una regola scritta in
+un ADR e non applicata da niente è la forma di difetto numero due di
+COLLOQUIO.md, ed è quella che su questo progetto si è ripetuta più spesso.
+
+---
+
+## ADR-048 · La mappa è la ricerca, ed è chiusa dentro l'Italia
+
+**Contesto.** `/eventi` aveva i filtri — tipo, compenso, città — e nessuna
+geografia. `/mappa` aveva la geografia e nessun filtro: solo un raggio, per
+giunta disponibile unicamente dopo aver concesso la posizione. Per rispondere
+a «casting retribuiti vicino a Bologna» bisognava fare metà del lavoro di là,
+tenere a mente il risultato, e rifare l'altra metà di qua.
+
+Sono due viste sulla stessa domanda. Tenerle separate non era una scelta: era
+il residuo dell'ordine in cui sono state scritte.
+
+**Decisione.** I filtri vivono accanto alla mappa. `/eventi` resta, e resta la
+versione indicizzabile — è quella che leggono i motori di ricerca, ed è da lì
+che arriva il traffico. La mappa è lo strumento di lavoro; l'elenco è la porta
+d'ingresso.
+
+**I confini.** La mappa non esce dall'Italia: `maxBounds` con viscosità piena,
+e uno zoom minimo che tiene la penisola dentro anche su un telefono. Il sito è
+italiano in ogni riga del suo contenuto; una mappa trascinabile fino in
+Groenlandia offre un solo esito possibile — uno schermo vuoto — e chi ci
+finisce non sa più tornare indietro se non ricaricando. Non è libertà, è un
+vicolo cieco raggiungibile con due dita.
+
+Il confine però va difeso da entrambi i lati: un annuncio geocodificato male —
+lat e lng scambiate, l'errore più comune, che manda Roma nel Corno d'Africa —
+diventerebbe un pin **fuori dai limiti dentro una mappa che non permette di
+uscirne**. Irraggiungibile, e il suo autore vedrebbe «pubblicato» senza che
+nessuno lo trovi mai. Il filtro sta quindi anche sul server, e la stessa
+funzione risponde a entrambe le domande.
+
+**Il raggruppamento, scritto a mano.** Con l'Italia intera sullo schermo, sei
+annunci a Milano sono sei pin nello stesso pixel: se ne vede uno e gli altri
+cinque non esistono per chi guarda. La mappa non era illeggibile — era
+**silenziosamente incompleta**, che è peggio, perché nessuno va a cercare
+quello che non sa di non vedere.
+
+`leaflet.markercluster` fa questo e molto altro, ma è una dipendenza di peso,
+non tipizzata nativamente, con un adattatore React che segue Leaflet con
+qualche mese di ritardo — su un progetto che ha già dovuto contenere il rischio
+di una beta (ADR sul contenimento di next-auth). Quello che serve qui sono
+quaranta righe di griglia in coordinate schermo, che si leggono, si provano e
+si spiegano. Il criterio non è «meno dipendenze è meglio»: è che il costo di
+capire la libreria superava il costo di scrivere la parte che uso.
+
+Vive in `src/lib/mappa.ts`, puro e senza Leaflet, perché è l'unica logica non
+banale della pagina ed è anche quella che sbagliata **non dà nessun errore**.
+Le prove fissano le tre proprietà che contano: non perde né duplica punti a
+nessuno zoom, non produce mai più simboli allontanandosi, e non dipende
+dall'ordine dei dati in ingresso.
+
+**Il resto della leggibilità.** Il pin prende il colore della categoria e la
+pillola del filtro lo ripete, così il colore si impara senza legenda; il colore
+non è però mai l'unico segnale — popup ed elenco dicono la categoria per
+esteso. Il simbolo di un gruppo cresce con la **radice** del numero, perché è
+l'area che l'occhio confronta, non il diametro. Al clic la mappa inquadra il
+rettangolo del gruppo invece di alzare lo zoom di un passo fisso: sei annunci
+su tutta la provincia e sei nello stesso isolato hanno bisogno di distanze
+diverse, e indovinare al primo colpo è il minimo che una mappa debba fare.
+
+---
+
+## ADR-049 · Il gioco distribuisce i portfolio, e la classifica si azzera
+
+**Contesto.** Serviva uno strato di intrattenimento **attivo** — qualcosa che
+si fa, non solo qualcosa che viene misurato — con una classifica e ricompense
+puramente estetiche. La domanda che un colloquio farà è una sola: *perché un
+sito per ingaggiare musicisti ha un minigioco?*
+
+**La risposta sbagliata** sarebbe un gioco qualunque — un quiz, un rompicapo —
+attaccato di lato. Trattiene chi è venuto per il gioco, e ADR-042 aveva già
+visto che quello non è il problema di ritorno di questo prodotto: un artista
+non riapre il sito perché c'è un quiz, lo riapre perché qualcuno lo ha
+contattato.
+
+**Decisione: il gioco è un canale di distribuzione travestito da gioco.**
+
+**«L'orecchio»** — una sfida quotidiana in cui si ascoltano brevi estratti dai
+portfolio **reali** degli artisti iscritti e si indovina qualcosa su di essi:
+genere, strumento, città. Punteggio, serie di risposte esatte, classifica.
+
+Due cose accadono nello stesso momento, e la seconda è il motivo per cui
+questa funzione esiste:
+
+1. qualcuno si diverte per tre minuti;
+2. **il lavoro di artisti veri viene ascoltato da persone vere.**
+
+È la forma di visibilità più economica che questo sito possa produrre: nessun
+budget pubblicitario, nessun posto in home da assegnare, e chi la riceve non
+ha pagato niente. Il criterio di ADR-042 — *ogni premio deve rendere l'artista
+più facile da ingaggiare* — qui è soddisfatto dal gioco stesso, non dal premio.
+
+**Chi finisce nel gioco.** La stessa regola della vetrina (ADR-044): una fila,
+non un podio. A rotazione, per anzianità d'iscrizione, con i posti scarsi.
+Comprabile mai — è visibilità, e la visibilità non si compra (ADR-047). Se un
+giorno si potesse pagare per essere ascoltati, il gioco diventerebbe un
+cartellone pubblicitario e chi gioca smetterebbe di fidarsi di quello che
+sente.
+
+**La classifica si azzera.** Settimanale, e la stagione dura tre mesi.
+
+Una classifica perpetua la vince chi si è iscritto per primo, e dopo un mese
+nessun altro prova più: il montepremi è già assegnato e si vede. Azzerandola,
+ogni lunedì tutti ripartono da zero — che è l'unica condizione in cui una
+classifica motiva qualcuno che non sia già in cima.
+
+Non ha niente a che vedere con la reputazione e non compare sul profilo
+pubblico: vive in una pagina sua, e chi cerca un chitarrista non la incontra
+mai. È la stessa ragione per cui il livello era stato tolto dal profilo.
+
+**I premi.** Monete per i cosmetici, e per il primo posto settimanale un
+oggetto **non acquistabile** — `emblema-orecchio` nel catalogo. È lì che vive
+il «voler emergere»: non nella quantità di oggetti posseduti, che con
+abbastanza tempo chiunque raggiunge, ma nei pochi che il tempo non compra.
+
+**La ruota, ripresa da ADR-047.** Stessa regola: non gira perché sei entrato,
+gira perché hai fatto qualcosa. Una partita conta, come contano una risposta a
+una candidatura o un lavoro caricato. Il ritorno quotidiano diventa così lavoro
+fatto invece che tempo passato, e la meccanica resta identica.
+
+**Cosa esiste già.** Le fondamenta: `User.monete`, `Possesso`,
+`MovimentoMonete` — un saldo senza registro non si può né correggere né
+spiegare — e il catalogo in `src/lib/cosmetici.ts`, dove ogni slot **dichiara
+cosa tocca** e il tipo `Effetto` è un'unione chiusa di cose innocue. Chi
+volesse vendere visibilità dovrebbe aggiungere un valore a quel tipo, e
+`tests/unit/cosmetici.test.ts` glielo impedirebbe con un messaggio che spiega
+perché.
+
+Il gioco e la classifica si costruiscono sopra. L'ordine è questo di
+proposito: il confine prima di ciò che deve rispettarlo.
+
+---
+
+## ADR-050 · L'ornamento circonda ciò che conta, non lo sostituisce
+
+**Contesto.** Le monete si guadagnano, il negozio esiste, e adesso qualcuno
+comprerà qualcosa. Resta da decidere **dove si vede** — che è la domanda in cui
+l'idea originale dell'avatar rischiava di far danno.
+
+**Il problema con l'avatar.** Il profilo di un artista esiste per mostrare una
+**foto vera**: è quello che un organizzatore guarda prima di scrivere. Un
+personaggio disegnato che occupa quel posto lavora contro lo scopo della
+pagina. Gli avatar funzionano dove le persone sono anonime — giochi, forum;
+qui vogliono essere riconosciute e ingaggiate.
+
+**Decisione.** Un ornamento circonda, non sostituisce.
+
+- La **cornice** sta attorno alla foto. È un anello disegnato *fuori* dal
+  contenitore, non un `border` sull'immagine: un bordo ritaglierebbe quattro
+  pixel per lato, e una foto rimpicciolita è un prezzo che chi non ha comprato
+  niente non paga.
+- Il **titolo** sta sotto il nome, mai al posto suo, e in maiuscoletto —
+  visibilmente diverso da un distintivo. I distintivi affermano un fatto
+  verificato: confonderli con un ornamento comprato svaluterebbe i primi, e chi
+  legge non saprebbe più quale delle due cose credere.
+
+**Perché è un componente e non tre classi sparse.** Perché il confine deve
+avere un posto solo. Sparso in cinque pagine, alla sesta qualcuno userebbe la
+cornice come sfondo del nome in elenco — e da lì al «tema che evidenzia la tua
+scheda fra le altre» il passo è breve. Quello sarebbe visibilità comprata,
+cioè il difetto che ADR-047 esiste per impedire.
+
+**Sul pagamento.** L'acquisto è un **confronta-e-scrivi** dentro una
+transazione interattiva: `monete: { gte: prezzo }` sta nella condizione
+dell'aggiornamento, non in un `if` prima. Leggere il saldo, decidere e poi
+scrivere lascia in mezzo una finestra in cui un secondo clic passa lo stesso
+controllo con lo stesso saldo — due oggetti al prezzo di uno. Mettendo la
+condizione dentro la scrittura è il database ad arbitrare, ed è l'unico che
+può. Il doppione lo ferma il vincolo di unicità, e siccome la creazione sta
+nella stessa transazione, il suo fallimento riporta indietro anche l'addebito.
+
+**Cosa succede a un oggetto ritirato dal catalogo.** Resta nella tabella di chi
+l'aveva comprato e semplicemente non si disegna. Cancellare quelle righe
+sarebbe togliere a qualcuno una cosa che ha pagato, e su una valuta —
+qualunque valuta — è il genere di gesto che non si recupera più.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

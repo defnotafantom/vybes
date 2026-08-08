@@ -4,15 +4,31 @@ import { SEED_CITIES, cityIntro } from "../src/lib/cities";
 
 const prisma = new PrismaClient();
 
+/**
+ * Gli obiettivi, e a chi si propongono.
+ *
+ * `ruoli` vuoto vale «a tutti». Le altre sono divise perche' erano tutte
+ * uguali per tutti, e un organizzatore si trovava in elenco «Portfolio solido
+ * \u2014 arriva a 5 lavori pubblicati» ferma a 0/5 per sempre: un traguardo
+ * che il suo ruolo non raggiunge. Un elenco pieno di cose impossibili non
+ * motiva nessuno, insegna a ignorare l'elenco.
+ *
+ * `first_event` non e' riservata all'organizzatore: chiunque puo' pubblicare
+ * un annuncio, e una band che organizza la propria jam sta facendo
+ * esattamente la cosa che l'obiettivo descrive. Il ruolo qui e' un'intenzione
+ * dichiarata, non un permesso (vedi src/lib/ruolo.ts).
+ */
 const QUESTS = [
-  { key: "welcome", title: "Benvenuto su Vybes", description: "Crea il tuo account.", xpReward: 20, target: 1, category: "ONBOARDING" },
-  { key: "profile_complete", title: "Profilo completo", description: "Compila bio, headline, foto, città e discipline.", xpReward: 80, repReward: 5, target: 1, category: "ONBOARDING" },
-  { key: "first_post", title: "Primo post", description: "Pubblica il tuo primo contenuto nel feed.", xpReward: 40, target: 1, category: "SOCIAL" },
-  { key: "first_portfolio", title: "Prima opera", description: "Carica il primo lavoro nel portfolio.", xpReward: 60, repReward: 3, target: 1, category: "PORTFOLIO" },
-  { key: "portfolio_five", title: "Portfolio solido", description: "Arriva a 5 lavori pubblicati.", xpReward: 150, repReward: 10, target: 5, category: "PORTFOLIO" },
-  { key: "first_event", title: "Primo ingaggio pubblicato", description: "Pubblica un annuncio come organizzatore.", xpReward: 70, target: 1, category: "EVENTI" },
-  { key: "join_event", title: "Prima candidatura", description: "Candidati a un ingaggio.", xpReward: 50, target: 1, category: "EVENTI" },
-  { key: "collaboration", title: "Meglio in due", description: "Pubblica un post di collaborazione.", xpReward: 90, repReward: 5, target: 1, category: "SOCIAL" },
+  { key: "welcome", title: "Benvenuto su Vybes", description: "Crea il tuo account.", xpReward: 20, target: 1, category: "ONBOARDING", ruoli: "" },
+  { key: "profile_complete", title: "Profilo completo", description: "Compila bio, headline, foto, città e discipline.", xpReward: 80, repReward: 5, target: 1, category: "ONBOARDING", ruoli: "ARTIST" },
+  { key: "profilo_locale", title: "Fatti riconoscere", description: "Compila presentazione, foto e città: è quello che un artista legge prima di candidarsi.", xpReward: 80, repReward: 5, target: 1, category: "ONBOARDING", ruoli: "RECRUITER" },
+  { key: "first_post", title: "Primo post", description: "Pubblica il tuo primo contenuto nel feed.", xpReward: 40, target: 1, category: "SOCIAL", ruoli: "" },
+  { key: "first_portfolio", title: "Prima opera", description: "Carica il primo lavoro nel portfolio.", xpReward: 60, repReward: 3, target: 1, category: "PORTFOLIO", ruoli: "ARTIST" },
+  { key: "portfolio_five", title: "Portfolio solido", description: "Arriva a 5 lavori pubblicati.", xpReward: 150, repReward: 10, target: 5, category: "PORTFOLIO", ruoli: "ARTIST" },
+  { key: "first_event", title: "Primo ingaggio pubblicato", description: "Pubblica un annuncio: con data, luogo e compenso in chiaro riceve risposte pertinenti.", xpReward: 70, target: 1, category: "EVENTI", ruoli: "" },
+  { key: "join_event", title: "Prima candidatura", description: "Candidati a un ingaggio.", xpReward: 50, target: 1, category: "EVENTI", ruoli: "ARTIST" },
+  { key: "prima_risposta", title: "Non lasciare nessuno ad aspettare", description: "Rispondi a una candidatura ricevuta. Anche un no vale: chi aspetta ha bisogno di sapere.", xpReward: 70, target: 1, category: "EVENTI", ruoli: "RECRUITER" },
+  { key: "collaboration", title: "Meglio in due", description: "Pubblica un post di collaborazione.", xpReward: 90, repReward: 5, target: 1, category: "SOCIAL", ruoli: "ARTIST" },
 ];
 
 const DEMO_ARTISTS = [

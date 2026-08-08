@@ -78,7 +78,7 @@ export function ParticipationRow({
                   Resta la reputazione, con la sua scala: da sola non basta per
                   scegliere, ma almeno è una risposta alla domanda giusta. */}
               <span className="tabular-nums">
-                Reputazione {participation.user.reputation}/{reputazioneMassima()}
+                Reputazione {participation.user.reputation}/{reputazioneMassima("ARTIST")}
               </span>
               <span aria-hidden="true">·</span>
               <span>candidatura del {dataBreve(participation.createdAt)}</span>

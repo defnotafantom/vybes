@@ -14,11 +14,15 @@ import { disciplineBySlug } from "@/lib/constants";
 import { isProfileIndexable } from "@/lib/profile-quality";
 import { FollowButton } from "@/components/FollowButton";
 import { Avatar } from "@/components/ui/Avatar";
+import { ConCornice, Titolo } from "@/components/Ornamenti";
+import { indossatiDiSlug } from "@/lib/negozio";
 import { Badge, VerifiedBadge } from "@/components/ui/Badge";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
 import { Segnala } from "@/components/Segnala";
 import { concorda } from "@/lib/testo";
 import { distintiviOttenuti } from "@/lib/distintivi";
+import { fattiOrganizzatoreDi } from "@/lib/reputazione-server";
+import { cerca } from "@/lib/ruolo";
 import { SfondoLavoro } from "@/components/AnteprimaLavoro";
 import { Distintivi } from "@/components/Distintivi";
 
@@ -153,6 +157,11 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   const artist = await getArtist(slug);
   if (!artist) notFound();
 
+  // Cosa indossa: una lettura in piu' su una pagina rigenerata ogni ora, e
+  // solo per gli ornamenti — se non ha comprato niente la mappa e' vuota e non
+  // si disegna nulla.
+  const ornamenti = await indossatiDiSlug(slug);
+
   const disciplines = fromCsv(artist.disciplines);
   /** «Cantante e musicista», per una frase — non per un elenco di etichette. */
   const disciplineLeggibili = disciplines
@@ -170,14 +179,32 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
    * fa **prima** di decidere se continuare a leggere, non un riepilogo per
    * chi è già arrivato in fondo. Vedi `lib/distintivi.ts`.
    */
-  const distintivi = distintiviOttenuti({
-    isVerified: artist.isVerified,
-    createdAt: artist.createdAt,
-    ingaggiConfermati: artist._count.participations,
-    ingaggiOrganizzati: artist._count.eventsCreated,
-    portfolio: artist.portfolioItems.length,
-    raggiungibile: Boolean(artist.citySlug) && disciplines.length > 0,
-  });
+  //
+  // I fatti dell'organizzatore si leggono solo se lo è: per un artista sono
+  // cinque conteggi che valgono sempre zero e non entrano in nessuno dei suoi
+  // distintivi, su una pagina che è la più visitata del sito.
+  const org = cerca(artist.role)
+    ? await fattiOrganizzatoreDi(artist.id)
+    : {
+        candidatureRicevute: 0,
+        candidatureRisposte: 0,
+        annunciPubblicati: 0,
+        annunciRetribuiti: 0,
+        artistiScelti: 0,
+      };
+
+  const distintivi = distintiviOttenuti(
+    {
+      isVerified: artist.isVerified,
+      createdAt: artist.createdAt,
+      ingaggiConfermati: artist._count.participations,
+      ingaggiOrganizzati: artist._count.eventsCreated,
+      portfolio: artist.portfolioItems.length,
+      raggiungibile: Boolean(artist.citySlug) && disciplines.length > 0,
+      ...org,
+    },
+    artist.role
+  );
 
   return (
     <>
@@ -220,7 +247,13 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
               riempiva, cioè esattamente al contrario di quello che serve.
               `items-start` non dipende da quanto contenuto c'è. */}
           <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
-            <Avatar name={artist.name} src={artist.image} size="xl" rounded="xl" priority />
+            {/* La cornice circonda la foto, non la sostituisce: chi guarda
+                questa pagina deve vedere una faccia prima di tutto, e un
+                ornamento comprato che prendesse quel posto lavorerebbe contro
+                lo scopo della pagina. Vedi `Ornamenti.tsx` e ADR-047. */}
+            <ConCornice cornice={ornamenti.cornice}>
+              <Avatar name={artist.name} src={artist.image} size="xl" rounded="xl" priority />
+            </ConCornice>
 
             <div className="min-w-0 flex-1">
               {disciplines.length > 0 && (
@@ -238,6 +271,11 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                   </Badge>
                 )}
               </h1>
+
+              {/* Sotto il nome e visibilmente diverso da un distintivo: quelli
+                  affermano un fatto verificato, questo è un ornamento. Renderli
+                  simili svaluterebbe i primi. */}
+              <Titolo titolo={ornamenti.titolo} />
 
               {artist.headline && (
                 <p className="mt-4 max-w-2xl text-fluid-base leading-relaxed text-ink-muted">

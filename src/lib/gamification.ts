@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notify } from "@/lib/notifications";
 import { levelFromXp } from "@/lib/levels";
+import { cerca } from "@/lib/ruolo";
 
 // Ri-esportate per compatibilità: la matematica vive in lib/levels.ts, che
 // non dipende da Prisma ed è quindi importabile anche lato client.
@@ -76,8 +77,26 @@ export async function progressQuest(userId: string, questKey: string, step = 1) 
 }
 
 export type EsitoRiscossione =
-  | { ok: true; xp: number; titolo: string }
+  | { ok: true; xp: number; monete: number; titolo: string }
   | { ok: false; motivo: "sconosciuta" | "non-completata" | "gia-riscossa" };
+
+/**
+ * Quante monete vale una quest, dal suo XP.
+ *
+ * Derivate invece che scritte in colonna: aggiungendo un campo `monete` al
+ * modello, ogni quest nuova nascerebbe a zero finche' qualcuno non se ne
+ * ricorda — e nessuno se ne accorgerebbe, perche' zero e' un numero valido.
+ * Legandole all'XP, una quest nuova ha un prezzo giusto il giorno in cui
+ * esiste.
+ *
+ * Il rapporto e' basso di proposito: le quest si chiudono una volta sola, il
+ * gioco si puo' rigiocare ogni giorno. Se le quest pagassero meglio, il
+ * negozio si svuoterebbe nella prima settimana e poi non ci sarebbe piu'
+ * niente da guadagnare.
+ */
+export function monetePerQuest(xp: number): number {
+  return Math.max(5, Math.round(xp / 4));
+}
 
 /**
  * Incassa la ricompensa di una quest completata.
@@ -128,20 +147,59 @@ export async function riscuotiQuest(userId: string, questKey: string): Promise<E
   }
 
   await grantXp(userId, quest.xpReward);
-  return { ok: true, xp: quest.xpReward, titolo: quest.title };
+
+  // Saldo e registro nella stessa transazione: se il primo passasse e il
+  // secondo no, ci sarebbero monete che nessuna riga spiega — ed e'
+  // esattamente la divergenza per cui il registro esiste.
+  const monete = monetePerQuest(quest.xpReward);
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: userId }, data: { monete: { increment: monete } } }),
+    prisma.movimentoMonete.create({
+      data: { userId, delta: monete, causale: `quest:${quest.key}` },
+    }),
+  ]);
+
+  return { ok: true, xp: quest.xpReward, monete, titolo: quest.title };
 }
 
-/** Ricalcola la quest "profilo completo" in base ai campi valorizzati. */
+/**
+ * Ricalcola l'obiettivo «profilo completo» in base ai campi valorizzati.
+ *
+ * ── Perché i campi non sono gli stessi per tutti ──
+ *
+ * Chiedeva cinque campi a chiunque, e uno dei cinque erano le **discipline**:
+ * un locale non ne ha, quindi il suo obiettivo di completamento del profilo
+ * restava aperto per sempre anche dopo aver riempito tutto il resto. Un
+ * traguardo irraggiungibile presentato come raggiungibile è peggio di un
+ * traguardo assente — chi lo vede pensa di aver sbagliato qualcosa.
+ *
+ * Sono quindi due obiettivi distinti con due condizioni distinte, e la
+ * condizione vive qui accanto a quella dell'altro ruolo: separandole in due
+ * file avrebbero preso strade diverse alla prima modifica.
+ */
 export async function syncProfileQuest(userId: string) {
   const u = await prisma.user.findUnique({
     where: { id: userId },
-    select: { bio: true, headline: true, image: true, citySlug: true, disciplines: true },
+    select: { role: true, bio: true, headline: true, image: true, citySlug: true, disciplines: true },
   });
   if (!u) return;
 
-  const filled = [u.bio, u.headline, u.image, u.citySlug, u.disciplines].filter(
-    (v) => typeof v === "string" && v.trim().length > 0
-  ).length;
+  const pieni = (campi: (string | null)[]) =>
+    campi.filter((v) => typeof v === "string" && v.trim().length > 0).length;
 
-  if (filled >= 5) await progressQuest(userId, "profile_complete");
+  if (cerca(u.role)) {
+    // Quattro campi invece di cinque, e sono quelli che un artista legge
+    // prima di decidere se candidarsi: che posto sei, in una riga e per
+    // esteso, com'e' fatto e dove si trova. Le discipline restano fuori
+    // perche' un locale non ne dichiara: erano loro a tenere l'obiettivo
+    // aperto per sempre.
+    if (pieni([u.bio, u.headline, u.image, u.citySlug]) >= 4) {
+      await progressQuest(userId, "profilo_locale");
+    }
+    return;
+  }
+
+  if (pieni([u.bio, u.headline, u.image, u.citySlug, u.disciplines]) >= 5) {
+    await progressQuest(userId, "profile_complete");
+  }
 }

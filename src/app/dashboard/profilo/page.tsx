@@ -8,7 +8,7 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { SchedaReputazione } from "@/components/dashboard/SchedaReputazione";
 import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
-import { reputazioneMassima } from "@/lib/reputazione";
+import { vociMisurabili } from "@/lib/reputazione";
 
 export const dynamic = "force-dynamic";
 
@@ -36,8 +36,12 @@ export default async function ProfiloPage() {
   // basta. Qui accompagna l'unica pagina in cui quei campi si possono davvero
   // riempire: leggerlo altrove e agire qui significava tenere a mente un
   // elenco mentre si compila un modulo.
-  const voci = await dettaglioReputazioneDi(session!.user.id);
-  const totale = voci.reduce((s, v) => s + v.punti, 0);
+  const { voci, massimo } = await dettaglioReputazioneDi(session!.user.id);
+  // Le voci non ancora misurabili — «rispondi a chi si candida» prima della
+  // terza candidatura — restano fuori dal totale come sono fuori dal massimo.
+  // Sommarle qui e non là darebbe una frazione con numeratore e denominatore
+  // calcolati su insiemi diversi.
+  const totale = vociMisurabili(voci).reduce((s, v) => s + v.punti, 0);
 
   if (!me) return null;
 
@@ -68,7 +72,7 @@ export default async function ProfiloPage() {
       {/* Prima del modulo, non dopo: dice cosa vale la pena compilare mentre
           si sta per compilarlo. */}
       <div className="mb-8">
-        <SchedaReputazione voci={voci} totale={totale} massimo={reputazioneMassima()} compatta />
+        <SchedaReputazione voci={voci} totale={totale} massimo={massimo} compatta />
       </div>
 
       <div>

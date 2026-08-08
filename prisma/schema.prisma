@@ -54,9 +54,19 @@ model User {
   isVerified Boolean @default(false)
 
   // Gamification
+  //
+  // Tre assi separati, e la separazione e' il punto:
+  // - `experience`/`level`: progresso personale, non decide niente per altri
+  // - `reputation`: calcolata da fatti verificabili, ordina la directory
+  // - `monete`: valuta interna, compra solo estetica (ADR-047)
+  //
+  // Le monete non possono in nessun caso toccare le prime due. Il confine e'
+  // scritto in src/lib/cosmetici.ts ed e' verificato da una prova, perche' una
+  // regola che vive solo in un documento prima o poi non viene applicata.
   level      Int @default(1)
   experience Int @default(0)
   reputation Int @default(0)
+  monete     Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -78,6 +88,9 @@ model User {
   tokens         VerificationToken[]
   reportsInviati Report[]        @relation("SegnalazioniInviate")
   reportsDecisi  Report[]        @relation("SegnalazioniDecise")
+  possessi       Possesso[]
+  movimenti      MovimentoMonete[]
+  partite        PartitaOrecchio[]
 
   // Copre la query principale della directory locale:
   // "artisti pubblici di <citta>, ordinati per reputazione".
@@ -314,6 +327,19 @@ model Quest {
   target      Int    @default(1)
   category    String @default("ONBOARDING")
 
+  // A chi si propone, CSV di ruoli. Vuoto significa "a tutti".
+  //
+  // Senza questo campo l'elenco era lo stesso per chiunque, e un
+  // organizzatore vedeva «Portfolio solido — arriva a 5 lavori pubblicati»
+  // ferma a 0/5 per sempre: un obiettivo che il suo ruolo non puo'
+  // raggiungere. Un elenco di obiettivi impossibili non motiva, insegna a
+  // ignorare l'elenco.
+  //
+  // CSV e non enum perche' una quest puo' valere per piu' ruoli e i ruoli
+  // sono gia' stringhe altrove (User.role): un'altra rappresentazione qui
+  // avrebbe richiesto una conversione a ogni confronto.
+  ruoli String @default("")
+
   progress QuestProgress[]
 }
 
@@ -456,4 +482,79 @@ model Report {
   @@index([status, createdAt])
   /// Per contare quante segnalazioni pesano su uno stesso contenuto.
   @@index([targetType, targetId])
+}
+
+// ------------------------------------------------------- ESTETICA E MONETE
+
+// Cosa una persona possiede, e cosa sta indossando.
+//
+// Il catalogo NON e' qui: vive in src/lib/cosmetici.ts, come le discipline e
+// le categorie di evento. E' un elenco che modifica lo sviluppatore, non un
+// dato prodotto dagli utenti, e tenerlo nel codice permette di verificarne
+// l'invariante con una prova invece che con una query. Qui resta solo cio' che
+// e' davvero dato: chi possiede cosa, da quando, e cosa indossa.
+model Possesso {
+  id          String   @id @default(cuid())
+  userId      String
+  cosmeticoId String // chiave del catalogo in src/lib/cosmetici.ts
+  ottenutoIl  DateTime @default(now())
+  // Quanto e' stato pagato, al momento dell'acquisto. Il prezzo di listino
+  // puo' cambiare; quello pagato no, e senza questo campo un rimborso
+  // andrebbe indovinato.
+  prezzo      Int      @default(0)
+  indossato   Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Comprare due volte la stessa cosa e' sempre un errore, mai un'intenzione.
+  @@unique([userId, cosmeticoId])
+  // Copre la domanda piu' frequente: "cosa indossa questa persona".
+  @@index([userId, indossato])
+}
+
+// Il registro dei movimenti.
+//
+// Una valuta senza registro non si puo' ne' correggere ne' spiegare: alla
+// prima persona che scrive "mi mancano cinquanta monete" non c'e' modo di
+// sapere se ha ragione. Il saldo su User resta, perche' leggerlo a ogni pagina
+// sommando le righe sarebbe assurdo, ma smette di essere l'unica verita': se i
+// due divergono, il registro ha ragione e il saldo si ricostruisce.
+model MovimentoMonete {
+  id       String   @id @default(cuid())
+  userId   String
+  // Positivo se guadagnate, negativo se spese.
+  delta    Int
+  // Perche': "quest:first_post", "ruota", "acquisto:cornice-oro".
+  causale  String
+  creatoIl DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, creatoIl])
+}
+
+// Una partita a «L'orecchio».
+//
+// `@@unique([userId, giorno])` non e' un dettaglio: e' la regola del gioco.
+// Il turno e' lo stesso per tutti in un dato giorno, quindi ripeterlo
+// significherebbe rigiocare domande di cui si conosce gia' la risposta — e la
+// classifica la vincerebbe chi ha piu' tempo, non chi ha piu' orecchio.
+// Il vincolo sta nel database e non solo nel codice perche' due richieste
+// simultanee passerebbero entrambe qualunque controllo scritto a mano.
+model PartitaOrecchio {
+  id        String   @id @default(cuid())
+  userId    String
+  // Il numero di giorno di src/lib/vetrina.ts: e' anche il seme del turno,
+  // quindi da qui si puo' ricostruire esattamente cosa ha visto questa
+  // persona. Una contestazione sulla classifica si verifica, non si crede.
+  giorno    Int
+  punteggio Int
+  corrette  Int
+  giocataIl DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, giorno])
+  // Copre la classifica: "le partite di questa settimana, dalla migliore".
+  @@index([giorno, punteggio])
 }

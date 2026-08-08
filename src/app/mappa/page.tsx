@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { MapExplorer, type MapPoint } from "@/components/MapExplorer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { EVENT_CATEGORIES, type EventCategory } from "@/lib/constants";
+import { CENTRO_ITALIA, dentroItalia } from "@/lib/mappa";
 import "leaflet/dist/leaflet.css";
 
 export const revalidate = 600;
@@ -29,24 +30,35 @@ export default async function MappaPage() {
     },
   });
 
-  const points: MapPoint[] = events.map((e) => ({
-    slug: e.slug,
-    title: e.title,
-    city: e.city,
-    lat: e.latitude,
-    lng: e.longitude,
-    startsAt: e.startsAt.toISOString(),
-    category: EVENT_CATEGORIES[e.category as EventCategory]?.label ?? "Evento",
-    fee: e.isPaid ? `${e.feeMin ?? 0} €` : "Non retribuito",
-  }));
+  const points: MapPoint[] = events
+    // Un annuncio geocodificato male — una coordinata invertita, un indirizzo
+    // ambiguo — diventerebbe un pin fuori dai confini dentro una mappa che
+    // non permette di uscirne: irraggiungibile, e il suo autore vedrebbe
+    // «pubblicato» senza che nessuno lo trovi mai. Meglio tenerlo fuori dalla
+    // mappa che metterlo in un posto dove non si può andare; nell'elenco
+    // testuale qui sotto e in /eventi c'e' comunque.
+    .filter((e) => dentroItalia(e.latitude, e.longitude))
+    .map((e) => ({
+      slug: e.slug,
+      title: e.title,
+      city: e.city,
+      lat: e.latitude,
+      lng: e.longitude,
+      startsAt: e.startsAt.toISOString(),
+      categoria: e.category,
+      categoryLabel: EVENT_CATEGORIES[e.category as EventCategory]?.label ?? "Evento",
+      isPaid: e.isPaid,
+      fee: e.isPaid ? `${e.feeMin ?? 0} €` : "Non retribuito",
+    }));
 
   return (
     <div className="container-page py-10">
       <Breadcrumbs items={[{ name: "Mappa", path: "/mappa" }]} />
       <h1 className="text-3xl font-bold sm:text-4xl">Mappa degli ingaggi</h1>
       <p className="mt-3 max-w-2xl muted">
-        {points.length} opportunità aperte in Italia. La mappa è interattiva; per la versione
-        indicizzabile consulta l&apos;{" "}
+        {points.length} opportunità aperte in Italia. Filtra per tipo, compenso
+        e distanza direttamente qui: la mappa e la ricerca sono la stessa cosa.
+        Se preferisci scorrere un elenco, c&apos;è l&apos;{" "}
         <Link href="/eventi" className="text-brand-600 hover:underline">elenco completo degli ingaggi</Link>.
       </p>
 
@@ -62,7 +74,7 @@ export default async function MappaPage() {
             </div>
           }
         >
-          <MapExplorer points={points} center={{ lat: 42.5, lng: 12.5 }} />
+          <MapExplorer points={points} center={CENTRO_ITALIA} />
         </ErrorBoundary>
       </div>
 

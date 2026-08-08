@@ -7,7 +7,8 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { DashboardSidebar, DashboardMobileNav } from "@/components/dashboard/Nav";
 import { puo } from "@/lib/moderazione";
 import { attenzioneDi } from "@/lib/attenzione";
-import { slugDi } from "@/lib/utente";
+import { identitaDi } from "@/lib/utente";
+import { ruoloDi } from "@/lib/ruolo";
 import { PERMISSIONS } from "@/lib/permissions";
 import { Avatar } from "@/components/ui/Avatar";
 import { Logo } from "@/components/Logo";
@@ -42,11 +43,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // navigazione invece che una per sezione.
   const contatori = await attenzioneDi(session.user.id, puoModerare);
 
-  // Lo slug si legge dal database per lo stesso motivo del ruolo: il token è
-  // una fotografia scritta all'accesso, e questo collegamento puntava a
+  // Slug e ruolo si leggono dal database, in una query sola: il token è una
+  // fotografia scritta all'accesso, e questo collegamento puntava a
   // `/artisti/kkkk` per tutta la durata della sessione dopo che lo slug era
-  // già cambiato in `daniele`. Vedi `slugDi()`.
-  const slug = await slugDi(session.user.id);
+  // già cambiato in `daniele`. Vedi `identitaDi()`.
+  //
+  // Il ruolo serve al menu: le sezioni di chi cerca artisti non sono quelle di
+  // chi vuole essere trovato.
+  const identita = await identitaDi(session.user.id);
+  const slug = identita?.slug ?? null;
+  const ruolo = ruoloDi(identita?.role);
 
   return (
     <div className="container-page py-8">
@@ -71,7 +77,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <ThemeToggle />
           {slug && (
             <Link href={`/artisti/${slug}`} className="btn-ghost hidden text-sm sm:inline-flex">
-              Profilo pubblico
+              {/* Per un organizzatore la pagina esiste ma non è una vetrina:
+                  è quello che un artista legge prima di decidere se
+                  candidarsi. «Profilo pubblico» lo diceva già, ma sotto un
+                  indirizzo che comincia per /artisti serviva chiarire chi la
+                  guarda. */}
+              {ruolo === "RECRUITER" ? "Come ti vedono gli artisti" : "Profilo pubblico"}
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
           )}
@@ -79,11 +90,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
 
       <div className="mb-6 lg:hidden">
-        <DashboardMobileNav puoModerare={puoModerare} contatori={contatori} />
+        <DashboardMobileNav ruolo={ruolo} puoModerare={puoModerare} contatori={contatori} />
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
-        <DashboardSidebar puoModerare={puoModerare} contatori={contatori} />
+        <DashboardSidebar ruolo={ruolo} puoModerare={puoModerare} contatori={contatori} />
         <div className="min-w-0">{children}</div>
       </div>
     </div>

@@ -9,6 +9,8 @@ import {
   Images,
   MessageSquare,
   Trophy,
+  Ear,
+  Store,
   UserRound,
   Flag,
   Compass,
@@ -18,13 +20,54 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Esci } from "@/components/dashboard/Esci";
+import type { Ruolo } from "@/lib/ruolo";
 
-const ITEMS = [
+/**
+ * Le sezioni, per ruolo.
+ *
+ * ── Perché due elenchi e non uno ──
+ *
+ * Era uno solo, e chi si iscrive per **cercare** artisti riceveva il menu di
+ * chi vuole **essere trovato**: Portfolio al terzo posto — una sezione che non
+ * userà mai — e nessuna via verso gli artisti, che è l'unica cosa per cui è
+ * qui. La via c'era, ma nel gruppo secondario in fondo, sotto «Esplora il
+ * sito», insieme alla mappa.
+ *
+ * ── Cosa cambia davvero ──
+ *
+ * L'ordine è quello del mestiere. Per l'artista: guarda cosa succede, vedi gli
+ * ingaggi, mostra i tuoi lavori. Per l'organizzatore: gli ingaggi che hai
+ * pubblicato per primi, poi **Cerca artisti** promosso nel gruppo principale,
+ * perché sfogliare la directory è metà del suo lavoro e non un'escursione fuori
+ * dall'area personale.
+ *
+ * ── Perché non è un lucchetto ──
+ *
+ * `/dashboard/portfolio` continua a funzionare per chiunque, anche se non
+ * compare nel menu di un organizzatore. Il ruolo qui è un'intenzione
+ * dichiarata, non un permesso (vedi `src/lib/ruolo.ts`): un locale con una
+ * band residente non deve trovarsi una porta chiusa, deve solo non trovarsela
+ * davanti tutti i giorni.
+ */
+const ITEMS_ARTISTA = [
   { href: "/dashboard", label: "Feed", icon: Home, exact: true },
   { href: "/dashboard/eventi", label: "Ingaggi", icon: CalendarDays },
   { href: "/dashboard/portfolio", label: "Portfolio", icon: Images },
   { href: "/dashboard/messaggi", label: "Messaggi", icon: MessageSquare },
   { href: "/dashboard/quest", label: "Quest", icon: Trophy },
+  { href: "/dashboard/orecchio", label: "L’orecchio", icon: Ear },
+  { href: "/dashboard/negozio", label: "Negozio", icon: Store },
+  { href: "/dashboard/profilo", label: "Profilo", icon: UserRound },
+] as const;
+
+const ITEMS_ORGANIZZATORE = [
+  { href: "/dashboard/eventi", label: "I tuoi ingaggi", icon: CalendarDays },
+  { href: "/artisti", label: "Cerca artisti", icon: Compass },
+  { href: "/dashboard/messaggi", label: "Messaggi", icon: MessageSquare },
+  { href: "/dashboard", label: "Feed", icon: Home, exact: true },
+  { href: "/dashboard/quest", label: "Obiettivi", icon: Trophy },
+  { href: "/dashboard/orecchio", label: "L’orecchio", icon: Ear },
+  { href: "/dashboard/negozio", label: "Negozio", icon: Store },
   { href: "/dashboard/profilo", label: "Profilo", icon: UserRound },
 ] as const;
 
@@ -55,6 +98,14 @@ const PUBBLICHE = [
   { href: "/eventi", label: "Ingaggi aperti", icon: CalendarDays },
   { href: "/mappa", label: "Mappa", icon: MapIcon },
 ] as const;
+
+/**
+ * Per l'organizzatore «Artisti» è già in cima, e ripeterlo dodici pixel più
+ * sotto con la stessa icona fa dubitare che portino nello stesso posto.
+ */
+function pubbliche(ruolo: Ruolo) {
+  return ruolo === "RECRUITER" ? PUBBLICHE.filter((v) => v.href !== "/artisti") : PUBBLICHE;
+}
 
 type Voce = { href: string; label: string; icon: typeof Home; exact?: boolean };
 
@@ -101,8 +152,9 @@ const COSA: Record<string, string> = {
   "/dashboard/moderazione": "segnalazioni in attesa",
 };
 
-function voci(puoModerare: boolean): Voce[] {
-  return puoModerare ? [...ITEMS, MODERAZIONE] : [...ITEMS];
+function voci(ruolo: Ruolo, puoModerare: boolean): Voce[] {
+  const base = ruolo === "RECRUITER" ? ITEMS_ORGANIZZATORE : ITEMS_ARTISTA;
+  return puoModerare ? [...base, MODERAZIONE] : [...base];
 }
 
 function useIsActive() {
@@ -135,14 +187,16 @@ function useIsActive() {
  * alto della finestra nasconde le ultime voci senza modo di raggiungerle.
  */
 export function DashboardSidebar({
+  ruolo,
   puoModerare = false,
   contatori = {},
 }: {
+  ruolo: Ruolo;
   puoModerare?: boolean;
   contatori?: Contatori;
 }) {
   const isActive = useIsActive();
-  const items = voci(puoModerare);
+  const items = voci(ruolo, puoModerare);
 
   return (
     <nav
@@ -182,7 +236,7 @@ export function DashboardSidebar({
           Esplora il sito
         </p>
         <ul className="space-y-1">
-          {PUBBLICHE.map((v) => {
+          {pubbliche(ruolo).map((v) => {
             const Icona = v.icon;
             return (
               <li key={v.href}>
@@ -215,15 +269,17 @@ export function DashboardSidebar({
  * pagina — dimenticarlo aperto è l'errore classico di questi menu.
  */
 export function DashboardMobileNav({
+  ruolo,
   puoModerare = false,
   contatori = {},
 }: {
+  ruolo: Ruolo;
   puoModerare?: boolean;
   contatori?: Contatori;
 }) {
   const pathname = usePathname();
   const isActive = useIsActive();
-  const items = voci(puoModerare);
+  const items = voci(ruolo, puoModerare);
   const [open, setOpen] = useState(false);
 
   useEffect(() => setOpen(false), [pathname]);
@@ -331,7 +387,7 @@ export function DashboardMobileNav({
                 Esplora il sito
               </p>
               <ul>
-                {PUBBLICHE.map((v) => {
+                {pubbliche(ruolo).map((v) => {
                   const Icona = v.icon;
                   return (
                     <li key={v.href}>

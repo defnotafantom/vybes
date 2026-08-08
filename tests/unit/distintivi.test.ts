@@ -6,6 +6,10 @@ import {
   SOGLIA_INGAGGIATO,
   SOGLIA_ORGANIZZATORE,
   SOGLIA_PORTFOLIO,
+  SOGLIA_RISPOSTE,
+  QUOTA_RISPOSTE,
+  SOGLIA_ANNUNCI,
+  SOGLIA_SCELTI,
 } from "@/lib/distintivi";
 
 const nudo = {
@@ -15,6 +19,11 @@ const nudo = {
   ingaggiOrganizzati: 0,
   portfolio: 0,
   raggiungibile: false,
+  candidatureRicevute: 0,
+  candidatureRisposte: 0,
+  annunciPubblicati: 0,
+  annunciRetribuiti: 0,
+  artistiScelti: 0,
 };
 
 describe("distintivi", () => {
@@ -71,6 +80,115 @@ describe("distintivi", () => {
     // da solo si può fraintendere in dieci modi.
     for (const d of distintiviDi(nudo)) {
       expect(d.significato.length, `${d.chiave} senza significato`).toBeGreaterThan(20);
+    }
+  });
+});
+
+describe("i distintivi di chi ingaggia", () => {
+  /**
+   * Perché ne servivano di propri: l'elenco era uno solo, e quattro voci su
+   * sei un organizzatore non può ottenerle. Sulla sua pagina pubblica
+   * restavano due pillole — proprio dove un artista sta decidendo se
+   * candidarsi a uno sconosciuto.
+   */
+  it("un locale non riceve i distintivi da artista", () => {
+    const chiavi = distintiviDi(nudo, "RECRUITER").map((d) => d.chiave);
+    expect(chiavi).not.toContain("portfolio");
+    expect(chiavi).not.toContain("ingaggiato");
+    expect(chiavi).not.toContain("raggiungibile");
+  });
+
+  it("un locale che fa bene il suo mestiere li prende tutti", () => {
+    const bravo = {
+      ...nudo,
+      isVerified: true,
+      ingaggiOrganizzati: 10,
+      candidatureRicevute: 20,
+      candidatureRisposte: 20,
+      annunciPubblicati: 10,
+      annunciRetribuiti: 10,
+      artistiScelti: 10,
+      // Nessun portfolio, nessuna disciplina: esattamente ciò che un locale
+      // non avrà mai.
+      portfolio: 0,
+      raggiungibile: false,
+    };
+    const ottenuti = distintiviOttenuti(bravo, "RECRUITER");
+    expect(ottenuti).toHaveLength(distintiviDi(bravo, "RECRUITER").length);
+  });
+
+  it("«risponde sempre» richiede un campione minimo", () => {
+    // Con due candidature entrambe risposte la quota è 100%, e il distintivo
+    // direbbe a un artista «fidati» sulla base di due eventi. Se poi non
+    // riceve risposta, il danno l'ha fatto il distintivo.
+    const poche = { ...nudo, candidatureRicevute: SOGLIA_RISPOSTE - 1, candidatureRisposte: SOGLIA_RISPOSTE - 1 };
+    const abbastanza = { ...nudo, candidatureRicevute: SOGLIA_RISPOSTE, candidatureRisposte: SOGLIA_RISPOSTE };
+    const trova = (f: typeof nudo) =>
+      distintiviDi(f, "RECRUITER").find((d) => d.chiave === "risponde")!.ottenuto;
+
+    expect(trova(poche)).toBe(false);
+    expect(trova(abbastanza)).toBe(true);
+  });
+
+  it("«risponde sempre» si perde smettendo di rispondere", () => {
+    // Dichiara un comportamento presente, non un merito passato: è il
+    // distintivo più difficile da tenere, e deve esserlo.
+    const sotto = {
+      ...nudo,
+      candidatureRicevute: 20,
+      candidatureRisposte: Math.floor(20 * QUOTA_RISPOSTE) - 1,
+    };
+    expect(distintiviDi(sotto, "RECRUITER").find((d) => d.chiave === "risponde")!.ottenuto).toBe(false);
+  });
+
+  it("«annunci retribuiti» tollera qualche annuncio senza compenso", () => {
+    // Una jam o un laboratorio non retribuiti non devono cancellare il
+    // distintivo di chi paga quasi sempre.
+    const quasi = { ...nudo, annunciPubblicati: 10, annunciRetribuiti: 9 };
+    const mai = { ...nudo, annunciPubblicati: 10, annunciRetribuiti: 1 };
+    const trova = (f: typeof nudo) =>
+      distintiviDi(f, "RECRUITER").find((d) => d.chiave === "paga")!.ottenuto;
+
+    expect(trova(quasi)).toBe(true);
+    expect(trova(mai)).toBe(false);
+  });
+
+  it("«annunci retribuiti» non si ottiene con un annuncio solo", () => {
+    const uno = { ...nudo, annunciPubblicati: SOGLIA_ANNUNCI - 1, annunciRetribuiti: SOGLIA_ANNUNCI - 1 };
+    expect(distintiviDi(uno, "RECRUITER").find((d) => d.chiave === "paga")!.ottenuto).toBe(false);
+  });
+
+  it("conta gli artisti distinti, non le candidature accettate", () => {
+    // Chi chiama dieci volte la stessa band ha costruito un rapporto, non una
+    // rete: il fatto letto dal database è già `groupBy` per persona, e questa
+    // prova fissa che il distintivo parli di quello.
+    const soglia = { ...nudo, artistiScelti: SOGLIA_SCELTI };
+    const sotto = { ...nudo, artistiScelti: SOGLIA_SCELTI - 1 };
+    const trova = (f: typeof nudo) =>
+      distintiviDi(f, "RECRUITER").find((d) => d.chiave === "scelti")!.ottenuto;
+
+    expect(trova(soglia)).toBe(true);
+    expect(trova(sotto)).toBe(false);
+  });
+
+  it("anche qui l'anzianità non è un obiettivo", () => {
+    expect(distintiviMancanti(nudo, "RECRUITER").map((d) => d.chiave)).not.toContain("dal");
+  });
+
+  it("un ruolo sconosciuto ricade sull'artista", () => {
+    expect(distintiviDi(nudo, "BOH").map((d) => d.chiave)).toEqual(
+      distintiviDi(nudo, "ARTIST").map((d) => d.chiave)
+    );
+  });
+
+  it("ogni distintivo si sa spiegare, in entrambi i ruoli", () => {
+    for (const ruolo of ["ARTIST", "RECRUITER"]) {
+      for (const d of distintiviDi(nudo, ruolo)) {
+        expect(d.etichetta.trim().length, d.chiave).toBeGreaterThan(0);
+        expect(d.significato.trim().length, d.chiave).toBeGreaterThan(0);
+      }
+      const chiavi = distintiviDi(nudo, ruolo).map((d) => d.chiave);
+      expect(new Set(chiavi).size, ruolo).toBe(chiavi.length);
     }
   });
 });

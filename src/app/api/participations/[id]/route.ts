@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { participationDecisionSchema } from "@/lib/validations";
 import { guard, parseBody, ok, fail, handle } from "@/lib/api";
 import { notify } from "@/lib/notifications";
-import { grantXp } from "@/lib/gamification";
+import { grantXp, progressQuest } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
 import { ricalcolaReputazione } from "@/lib/reputazione-server";
 
@@ -32,11 +32,27 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     if (data.status === "ACCEPTED") {
       await grantXp(participation.userId, 40);
-      // Un ingaggio confermato è la voce che pesa di più nella reputazione, ed
-      // è l'unica che non dipende dall'artista: gliela assegna qualcun altro
-      // scegliendolo. Il ricalcolo va fatto qui, dove il fatto accade.
+      // Un ingaggio confermato è la voce che pesa di più nella reputazione
+      // dell'artista, ed è l'unica che non dipende da lui: gliela assegna
+      // qualcun altro scegliendolo. Il ricalcolo va fatto qui, dove il fatto
+      // accade.
       await ricalcolaReputazione(participation.userId);
     }
+
+    /* ── Anche quella di chi ha risposto ──
+     *
+     * «Rispondi a chi si candida» vale un quarto della reputazione di un
+     * organizzatore, e questo è l'unico punto del sistema in cui quel fatto
+     * cambia. Senza questa riga la regola esisteva nella formula e niente la
+     * applicava: il punteggio si sarebbe aggiornato solo al successivo
+     * salvataggio del profilo — cioè, per la maggior parte delle persone,
+     * mai — e chi risponde a tutti sarebbe rimasto fermo a chiedersi perché.
+     *
+     * È la forma di difetto che questo progetto ha già incontrato più volte, e
+     * l'ho quasi rifatta trenta minuti dopo aver scritto la formula.
+     */
+    await ricalcolaReputazione(participation.event.organizerId);
+    await progressQuest(participation.event.organizerId, "prima_risposta");
 
     await notify({
       recipientId: participation.userId,

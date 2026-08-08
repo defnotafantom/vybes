@@ -1,4 +1,14 @@
-import { BadgeCheck, CalendarClock, Compass, Images, Star, Trophy } from "lucide-react";
+import {
+  BadgeCheck,
+  CalendarClock,
+  Compass,
+  Images,
+  MessageSquareReply,
+  Star,
+  Trophy,
+  Users,
+  Wallet,
+} from "lucide-react";
 import type { Distintivo } from "@/lib/distintivi";
 
 /**
@@ -30,6 +40,13 @@ const ICONE: Record<string, typeof Star> = {
   portfolio: Images,
   raggiungibile: Compass,
   dal: CalendarClock,
+  // ── Quelli di chi ingaggia ──
+  // Icone diverse da quelle dell'artista anche dove il concetto è vicino: le
+  // due famiglie non compaiono mai sulla stessa pagina, ma chi passa da un
+  // profilo all'altro deve accorgersi di stare guardando un'altra cosa.
+  risponde: MessageSquareReply,
+  paga: Wallet,
+  scelti: Users,
 };
 
 export function Distintivi({ distintivi }: { distintivi: Distintivo[] }) {

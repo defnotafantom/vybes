@@ -47,6 +47,19 @@ export type FattiDistintivi = {
   portfolio: number;
   /** Il profilo ha città e almeno una disciplina dichiarata. */
   raggiungibile: boolean;
+
+  // ── I fatti di chi ingaggia ──
+  // Zero per un artista, e non entrano in nessuno dei suoi distintivi.
+  /** Candidature ricevute sui propri annunci, escluse le ritirate. */
+  candidatureRicevute: number;
+  /** Di quelle, quante hanno avuto una risposta — sì o no, purché una. */
+  candidatureRisposte: number;
+  /** Annunci pubblicati, bozze escluse. */
+  annunciPubblicati: number;
+  /** Di quelli, quanti dichiarano un compenso. */
+  annunciRetribuiti: number;
+  /** Artisti **distinti** a cui ha detto sì. */
+  artistiScelti: number;
 };
 
 export type Distintivo = {
@@ -66,9 +79,22 @@ export const SOGLIA_ORGANIZZATORE = 2;
 /** Quanti lavori servono perché il portfolio conti come completo. */
 export const SOGLIA_PORTFOLIO = 5;
 
-export function distintiviDi(f: FattiDistintivi): Distintivo[] {
-  const anno = f.createdAt.getFullYear();
+/**
+ * Le soglie di chi ingaggia.
+ *
+ * Più alte di quelle dell'artista, e di proposito. Un distintivo su un profilo
+ * di artista dice «guardami»; su un profilo di organizzatore dice a qualcun
+ * altro «fidati, candidati qui» — e se poi quella persona non riceve risposta,
+ * il danno l'ha fatto il distintivo. Concederli tardi costa poco; concederli
+ * presto costa la fiducia di chi ci ha creduto.
+ */
+export const SOGLIA_RISPOSTE = 5; // candidature ricevute prima di poterlo dire
+export const QUOTA_RISPOSTE = 0.9; // quante devono aver avuto risposta
+export const SOGLIA_ANNUNCI = 3; // annunci pubblicati prima di poterlo dire
+export const QUOTA_RETRIBUITI = 0.8; // quanti devono dichiarare un compenso
+export const SOGLIA_SCELTI = 5; // artisti distinti ingaggiati
 
+function distintiviArtista(f: FattiDistintivi, anno: number): Distintivo[] {
   return [
     {
       chiave: "verificato",
@@ -116,22 +142,118 @@ export function distintiviDi(f: FattiDistintivi): Distintivo[] {
       come: "Indica la tua città e almeno una disciplina nel profilo.",
       ottenuto: f.raggiungibile,
     },
-    {
-      chiave: "dal",
-      etichetta: `Su Vybes dal ${anno}`,
-      // Non è un merito, ed è di proposito l'unico così: dice da quanto una
-      // persona è in giro, che è un dato che chi legge sa interpretare da sé.
-      // Si "ottiene" iscrivendosi, quindi non compare mai fra quelli mancanti.
-      significato: `Ha aperto il profilo nel ${anno}.`,
-      come: "",
-      ottenuto: true,
-    },
+    anzianita(anno),
   ];
 }
 
+/**
+ * Non è un merito, ed è di proposito l'unico così: dice da quanto una persona
+ * è in giro, che è un dato che chi legge sa interpretare da sé. Si "ottiene"
+ * iscrivendosi, quindi non compare mai fra quelli mancanti.
+ */
+function anzianita(anno: number): Distintivo {
+  return {
+    chiave: "dal",
+    etichetta: `Su Vybes dal ${anno}`,
+    significato: `Ha aperto il profilo nel ${anno}.`,
+    come: "",
+    ottenuto: true,
+  };
+}
+
+function quota(parte: number, tutto: number): number {
+  return tutto > 0 ? parte / tutto : 0;
+}
+
+/**
+ * I distintivi di chi ingaggia.
+ *
+ * ── Perché ne servivano di propri ──
+ *
+ * L'elenco era uno solo, e quattro voci su sei un organizzatore non può
+ * ottenerle: non ha un portfolio, non dichiara discipline, non viene scelto da
+ * nessuno. Sulla sua pagina pubblica restavano due pillole — «identità
+ * verificata» e l'anno d'iscrizione — cioè quasi niente, proprio nel punto in
+ * cui un artista sta decidendo se candidarsi a uno sconosciuto.
+ *
+ * ── Il criterio, ribaltato ──
+ *
+ * Per l'artista la domanda era *cosa dice a un organizzatore che è una scelta
+ * sicura?*. Qui è: **cosa dice a un artista che vale la pena candidarsi qui?**
+ * Ogni voce risponde a una paura precisa di chi sta per scrivere a un locale
+ * che non conosce — e sono le tre paure vere: non mi risponderà, non mi
+ * pagherà, la serata salterà.
+ */
+function distintiviOrganizzatore(f: FattiDistintivi, anno: number): Distintivo[] {
+  const abbastanzaCandidature = f.candidatureRicevute >= SOGLIA_RISPOSTE;
+  const abbastanzaAnnunci = f.annunciPubblicati >= SOGLIA_ANNUNCI;
+
+  return [
+    {
+      chiave: "verificato",
+      etichetta: "Identità verificata",
+      significato: "Abbiamo avuto un riscontro diretto su chi è questa persona.",
+      come: "La assegniamo noi ai profili di cui abbiamo un riscontro.",
+      ottenuto: f.isVerified,
+    },
+    {
+      chiave: "risponde",
+      etichetta: "Risponde sempre",
+      // La paura numero uno: «scrivo e sparisce». È il distintivo più
+      // difficile da tenere — basta smettere di rispondere e se ne va — ed è
+      // giusto così: dichiara un comportamento presente, non un merito
+      // passato.
+      significato: `Ha risposto a quasi tutte le candidature ricevute (almeno ${SOGLIA_RISPOSTE}).`,
+      come: "Rispondi a chi si candida: anche un no vale, purché arrivi.",
+      ottenuto: abbastanzaCandidature && quota(f.candidatureRisposte, f.candidatureRicevute) >= QUOTA_RISPOSTE,
+    },
+    {
+      chiave: "paga",
+      etichetta: "Annunci retribuiti",
+      // La paura numero due. Non punisce chi pubblica anche qualcosa di non
+      // retribuito — una jam, un laboratorio — ma distingue chi paga quasi
+      // sempre da chi non paga mai.
+      significato: `Quasi tutti i suoi annunci dichiarano un compenso (su almeno ${SOGLIA_ANNUNCI} pubblicati).`,
+      come: "Indica il compenso negli annunci: quelli senza ricevono molte meno candidature.",
+      ottenuto: abbastanzaAnnunci && quota(f.annunciRetribuiti, f.annunciPubblicati) >= QUOTA_RETRIBUITI,
+    },
+    {
+      chiave: "organizzatore",
+      etichetta: "Porta a termine",
+      // La paura numero tre: «mi conferma e poi la serata salta».
+      significato: `Ha pubblicato e concluso almeno ${SOGLIA_ORGANIZZATORE} ingaggi.`,
+      come: "Segna come conclusi gli ingaggi che si sono svolti.",
+      ottenuto: f.ingaggiOrganizzati >= SOGLIA_ORGANIZZATORE,
+    },
+    {
+      chiave: "scelti",
+      etichetta: `Ha ingaggiato ${SOGLIA_SCELTI} artisti`,
+      // Artisti **distinti**: chi chiama dieci volte la stessa band ha
+      // costruito un rapporto, non una rete. Contando le candidature
+      // accettate, questo distintivo direbbe una cosa diversa da quella che
+      // sembra dire.
+      significato: `Ha scelto almeno ${SOGLIA_SCELTI} artisti diversi fra chi si è candidato.`,
+      come: "Si ottiene ingaggiando: conta quante persone diverse hai scelto.",
+      ottenuto: f.artistiScelti >= SOGLIA_SCELTI,
+    },
+    anzianita(anno),
+  ];
+}
+
+/**
+ * I distintivi di questa persona, secondo il suo ruolo.
+ *
+ * Un ruolo sconosciuto ricade sull'artista, come ovunque: una stringa
+ * inattesa in colonna non deve svuotare la pagina di qualcuno.
+ */
+export function distintiviDi(f: FattiDistintivi, role: string = "ARTIST"): Distintivo[] {
+  const anno = f.createdAt.getFullYear();
+  return role === "RECRUITER" ? distintiviOrganizzatore(f, anno) : distintiviArtista(f, anno);
+}
+
 /** Quelli conquistati, nell'ordine in cui vale la pena leggerli. */
-export function distintiviOttenuti(f: FattiDistintivi): Distintivo[] {
-  return distintiviDi(f).filter((d) => d.ottenuto);
+export function distintiviOttenuti(f: FattiDistintivi, role?: string): Distintivo[] {
+  return distintiviDi(f, role).filter((d) => d.ottenuto);
 }
 
 /**
@@ -140,6 +262,6 @@ export function distintiviOttenuti(f: FattiDistintivi): Distintivo[] {
  * «Su Vybes dal…» non compare mai qui: non è un obiettivo, e mostrarlo fra le
  * cose da fare suggerirebbe che ci sia un modo di ottenerlo prima.
  */
-export function distintiviMancanti(f: FattiDistintivi): Distintivo[] {
-  return distintiviDi(f).filter((d) => !d.ottenuto && d.come !== "");
+export function distintiviMancanti(f: FattiDistintivi, role?: string): Distintivo[] {
+  return distintiviDi(f, role).filter((d) => !d.ottenuto && d.come !== "");
 }

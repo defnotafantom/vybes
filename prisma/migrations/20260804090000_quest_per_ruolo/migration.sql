@@ -1,0 +1,11 @@
+-- Le quest si propongono per ruolo.
+--
+-- Fino a qui l'elenco era identico per tutti: un organizzatore si trovava
+-- «Prima opera — carica il primo lavoro nel portfolio» e «Portfolio solido —
+-- arriva a 5 lavori pubblicati», obiettivi che il suo ruolo non raggiunge.
+--
+-- Il default vuoto vale «per tutti», quindi le righe esistenti restano
+-- valide senza toccarle: nessuna quest sparisce a nessuno per effetto della
+-- migrazione. La ripartizione vera la scrive il seed subito dopo, ed e' li'
+-- che va letta.
+ALTER TABLE "Quest" ADD COLUMN "ruoli" TEXT NOT NULL DEFAULT '';

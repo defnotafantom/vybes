@@ -1,12 +1,21 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { MapPin } from "lucide-react";
+import { MapPin, Search, X } from "lucide-react";
 import { haversineKm } from "@/lib/cities";
 import { dataBreve } from "@/lib/date";
 import { conta } from "@/lib/testo";
+import {
+  LIMITI,
+  ZOOM_MINIMO,
+  ZOOM_INIZIALE,
+  raggruppa,
+  riquadroDi,
+  type Gruppo,
+} from "@/lib/mappa";
+import { EVENT_CATEGORIES, type EventCategory } from "@/lib/constants";
 
 // Leaflet tocca window: caricato solo lato client, fuori dal bundle iniziale.
 const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
@@ -15,7 +24,28 @@ const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ss
 const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
 
 /**
- * Il marker.
+ * Il colore per categoria.
+ *
+ * Cinque pin tutti uguali costringono ad aprirne uno per sapere se è un
+ * concerto o un casting: su una mappa con cinquanta punti significa cinquanta
+ * clic per farsi un'idea di cosa c'è in giro, che è esattamente la domanda a
+ * cui una mappa dovrebbe rispondere a colpo d'occhio.
+ *
+ * Il colore non è però l'unico segnale: il popup dice sempre la categoria per
+ * esteso, e l'elenco a lato la ripete. Chi non distingue il viola dall'ambra —
+ * e il 5% degli uomini non distingue il rosso dal verde — non perde niente.
+ */
+const TINTA: Record<string, string> = {
+  LIVE: "#8b5cf6",
+  CASTING: "#f59e0b",
+  WORKSHOP: "#06b6d4",
+  CONTEST: "#ec4899",
+  JAM: "#22c55e",
+};
+const TINTA_ALTRO = "#8b5cf6";
+
+/**
+ * Il pin di un singolo annuncio.
  *
  * Leaflet usa per impostazione predefinita tre file PNG che cerca accanto al
  * proprio foglio di stile. Con un bundler quei percorsi non esistono più, e il
@@ -25,44 +55,85 @@ const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr:
  *
  * La soluzione più comune è rimappare le tre URL sulle immagini importate.
  * Qui si fa un'altra cosa: il pin è un `divIcon`, cioè HTML. Niente file da
- * risolvere, niente richieste di rete, e il colore è quello del progetto
- * invece dell'azzurro di serie. Un marker che deve solo dire «qui» non ha
- * bisogno di essere un'immagine.
+ * risolvere, niente richieste di rete, e il colore è quello della categoria
+ * invece dell'azzurro di serie.
+ *
+ * `1.5px` di bordo chiaro attorno al colore: su una mappa scura un pin scuro
+ * sparisce, su una chiara sparisce uno chiaro. Il contorno lo stacca da
+ * entrambe senza dover sapere quale delle due c'è sotto.
  */
-function creaIcona(L: typeof import("leaflet")) {
+function iconaPunto(L: typeof import("leaflet"), categoria: string) {
+  const tinta = TINTA[categoria] ?? TINTA_ALTRO;
   return L.divIcon({
     className: "",
     html: `
       <span style="
-        display:block;width:20px;height:20px;border-radius:50% 50% 50% 0;
+        display:block;width:18px;height:18px;border-radius:50% 50% 50% 0;
         transform:rotate(-45deg);
-        background:#8b5cf6;border:2px solid #05030c;
-        box-shadow:0 3px 8px rgb(0 0 0 / .45);
+        background:${tinta};
+        border:1.5px solid rgba(255,255,255,.9);
+        box-shadow:0 2px 6px rgb(0 0 0 / .5);
       "></span>`,
     // L'ancora è la punta in basso, non il centro: un pin ancorato al centro
     // indica un luogo spostato di dieci metri verso nord.
-    iconSize: [20, 20],
-    iconAnchor: [10, 20],
-    popupAnchor: [0, -18],
+    iconSize: [18, 18],
+    iconAnchor: [9, 18],
+    popupAnchor: [0, -16],
   });
 }
 
 /**
- * Sposta la mappa quando cambia il centro.
+ * Il simbolo di un gruppo: un cerchio con dentro quanti ne contiene.
  *
- * `MapContainer` legge `center` solo al montaggio: premendo «usa la mia
- * posizione» l'elenco si filtrava correttamente ma la mappa restava dov'era, e
- * sembrava che il pulsante non funzionasse. Serve un componente figlio, perché
- * `useMap` esiste solo dentro il contesto della mappa.
+ * Cresce con la quantità, ma per **radice quadrata** e non in proporzione:
+ * un gruppo di cento non deve essere venti volte più largo di uno di cinque,
+ * o coprirebbe mezza regione. Con la radice l'area cresce linearmente col
+ * numero, che è il modo in cui l'occhio confronta i cerchi.
  */
-const SeguiCentro = dynamic(
+function iconaGruppo(L: typeof import("leaflet"), quanti: number) {
+  const lato = Math.round(Math.min(52, 26 + Math.sqrt(quanti) * 5));
+  return L.divIcon({
+    className: "",
+    html: `
+      <span style="
+        display:flex;align-items:center;justify-content:center;
+        width:${lato}px;height:${lato}px;border-radius:50%;
+        background:rgba(139,92,246,.88);
+        border:2px solid rgba(255,255,255,.92);
+        box-shadow:0 3px 10px rgb(0 0 0 / .45);
+        color:#fff;font-weight:700;font-size:${lato > 38 ? 14 : 12}px;
+        font-variant-numeric:tabular-nums;
+      ">${quanti}</span>`,
+    iconSize: [lato, lato],
+    iconAnchor: [lato / 2, lato / 2],
+  });
+}
+
+/**
+ * Il ponte fra Leaflet e lo stato di React.
+ *
+ * `useMap` e `useMapEvents` esistono solo dentro il contesto del
+ * `MapContainer`, quindi la mappa non è raggiungibile dal componente che la
+ * monta. Questo figlio la passa in su una volta e poi tiene aggiornato lo
+ * zoom: il raggruppamento dipende dallo zoom, e senza questo restava quello
+ * calcolato al montaggio — i gruppi non si sarebbero mai aperti.
+ */
+const PonteMappa = dynamic(
   async () => {
-    const { useMap } = await import("react-leaflet");
-    return function SeguiCentro({ lat, lng }: { lat: number; lng: number }) {
+    const { useMap, useMapEvents } = await import("react-leaflet");
+    return function PonteMappa({
+      onPronta,
+      onZoom,
+    }: {
+      onPronta: (m: import("leaflet").Map) => void;
+      onZoom: (z: number) => void;
+    }) {
       const map = useMap();
       useEffect(() => {
-        map.flyTo([lat, lng], Math.max(map.getZoom(), 10), { duration: 0.8 });
-      }, [map, lat, lng]);
+        onPronta(map);
+        onZoom(map.getZoom());
+      }, [map, onPronta, onZoom]);
+      useMapEvents({ zoomend: () => onZoom(map.getZoom()) });
       return null;
     };
   },
@@ -76,9 +147,14 @@ export type MapPoint = {
   lat: number;
   lng: number;
   startsAt: string;
-  category: string;
+  /** La chiave, non l'etichetta: serve al colore e al filtro. */
+  categoria: string;
+  categoryLabel: string;
+  isPaid: boolean;
   fee: string;
 };
+
+const CATEGORIE = Object.entries(EVENT_CATEGORIES) as [EventCategory, { label: string }][];
 
 export function MapExplorer({
   points,
@@ -105,26 +181,69 @@ export function MapExplorer({
   const [geoError, setGeoError] = useState<string | null>(null);
   const [inCorso, setInCorso] = useState(false);
 
-  // L'icona si costruisce dopo il montaggio: `leaflet` tocca `window` e non
-  // può essere importato durante il rendering sul server.
-  const [icona, setIcona] = useState<import("leaflet").DivIcon | null>(null);
+  // ── I filtri, che prima vivevano in un'altra pagina ──
+  const [categoria, setCategoria] = useState<string | null>(null);
+  const [soloPagati, setSoloPagati] = useState(false);
+  const [testo, setTesto] = useState("");
+
+  const [mappa, setMappa] = useState<import("leaflet").Map | null>(null);
+  const [zoom, setZoom] = useState(ZOOM_INIZIALE);
+  const [L, setL] = useState<typeof import("leaflet") | null>(null);
+
+  // Leaflet tocca `window` e non può essere importato durante il rendering sul
+  // server: si carica dopo il montaggio, e finché non c'è i marker usano
+  // l'icona di serie invece di sparire.
   useEffect(() => {
     let vivo = true;
-    import("leaflet").then((L) => {
-      if (vivo) setIcona(creaIcona(L));
+    import("leaflet").then((mod) => {
+      if (vivo) setL(mod);
     });
     return () => {
       vivo = false;
     };
   }, []);
 
-  const visible = useMemo(
-    () =>
-      filtraPerRaggio
-        ? points.filter((p) => haversineKm(origin, { lat: p.lat, lng: p.lng }) <= radius)
-        : points,
-    [points, origin, radius, filtraPerRaggio]
+  const visible = useMemo(() => {
+    const q = testo.trim().toLowerCase();
+    return points.filter((p) => {
+      if (categoria && p.categoria !== categoria) return false;
+      if (soloPagati && !p.isPaid) return false;
+      if (q && !`${p.title} ${p.city}`.toLowerCase().includes(q)) return false;
+      if (filtraPerRaggio && haversineKm(origin, { lat: p.lat, lng: p.lng }) > radius) return false;
+      return true;
+    });
+  }, [points, categoria, soloPagati, testo, filtraPerRaggio, origin, radius]);
+
+  const gruppi = useMemo(() => raggruppa(visible, zoom), [visible, zoom]);
+
+  const apriGruppo = useCallback(
+    (g: Gruppo<MapPoint>) => {
+      if (!mappa) return;
+      const riquadro = riquadroDi(g);
+      const [[sudLat, ovestLng], [nordLat, estLng]] = riquadro;
+      // Punti che coincidono davvero — due annunci nello stesso locale — danno
+      // un rettangolo di area zero, e `fitBounds` su quello salterebbe allo
+      // zoom massimo mostrando quattro isolati vuoti. In quel caso ci si
+      // avvicina di un gradino e basta: il gruppo si aprirà, o resterà chiuso
+      // perché quei punti sono davvero nello stesso posto e il popup li
+      // elencherà tutti.
+      if (nordLat - sudLat < 1e-6 && estLng - ovestLng < 1e-6) {
+        mappa.setView([g.lat, g.lng], Math.min(mappa.getMaxZoom(), mappa.getZoom() + 2));
+        return;
+      }
+      mappa.fitBounds(riquadro, { padding: [56, 56], maxZoom: 15 });
+    },
+    [mappa]
   );
+
+  const filtriAttivi = Boolean(categoria) || soloPagati || testo.trim().length > 0 || filtraPerRaggio;
+
+  function azzera() {
+    setCategoria(null);
+    setSoloPagati(false);
+    setTesto("");
+    setFiltraPerRaggio(false);
+  }
 
   function locate() {
     if (!navigator.geolocation) {
@@ -139,14 +258,15 @@ export function MapExplorer({
         setOrigin({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setFiltraPerRaggio(true);
         setInCorso(false);
+        mappa?.flyTo([pos.coords.latitude, pos.coords.longitude], 10, { duration: 0.8 });
       },
       (err) => {
         // Messaggi distinti: «permesso negato» e «non ti trovo» richiedono
         // due cose diverse a chi legge, e dirle uguali costringe a indovinare.
         setGeoError(
           err.code === err.PERMISSION_DENIED
-            ? "Permesso negato. Puoi consentire la posizione dalle impostazioni del browser, oppure sfogliare per città."
-            : "Non siamo riusciti a rilevare la posizione. Riprova, o sfoglia per città."
+            ? "Permesso negato. Puoi consentire la posizione dalle impostazioni del browser, oppure cercare per città qui sopra."
+            : "Non siamo riusciti a rilevare la posizione. Riprova, o cerca per città qui sopra."
         );
         setInCorso(false);
       },
@@ -162,14 +282,25 @@ export function MapExplorer({
       <div className="card overflow-hidden p-0">
         <MapContainer
           center={[origin.lat, origin.lng]}
-          zoom={9}
+          zoom={ZOOM_INIZIALE}
           scrollWheelZoom={false}
+          /* ── La mappa non esce dall'Italia ──
+             `maxBounds` da solo lascia trascinare fuori e poi rimbalza con
+             un'elastica; `maxBoundsViscosity: 1` la rende un muro, che è la
+             stessa cosa che si sente sul bordo di una lista che non scorre
+             più. `minZoom` chiude l'altra via d'uscita, che è allontanarsi
+             finché l'Italia diventa un puntino in mezzo all'Atlantico.
+             Vedi `src/lib/mappa.ts`. */
+          maxBounds={LIMITI}
+          maxBoundsViscosity={1}
+          minZoom={ZOOM_MINIMO}
+          maxZoom={17}
           /* 520px fissi su un telefono alto 667 lasciano fuori i comandi e
              costringono a scorrere per capire cosa si sta guardando. `dvh` e
              non `vh`: su iOS `vh` misura la finestra senza la barra degli
              indirizzi, quindi il fondo della mappa resterebbe nascosto sotto
              di essa proprio mentre la si scorre. */
-          className="mappa-tema h-[60dvh] max-h-[520px] min-h-72 w-full sm:h-[520px]"
+          className="mappa-tema h-[62dvh] max-h-[560px] min-h-80 w-full sm:h-[560px]"
         >
           {/* `mappa-tema` inverte le tile quando il tema è scuro: vedi la
               nota in globals.css. Le tile di OpenStreetMap sono chiare, e un
@@ -178,41 +309,141 @@ export function MapExplorer({
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            /* Le tile fuori dai confini non si chiedono nemmeno: sono
+                richieste di rete per pixel che nessuno vedrà. */
+            bounds={LIMITI}
+            minZoom={ZOOM_MINIMO}
+            maxZoom={17}
           />
-          <SeguiCentro lat={origin.lat} lng={origin.lng} />
+          <PonteMappa onPronta={setMappa} onZoom={setZoom} />
 
-          {visible.map((p) => (
-            <Marker key={p.slug} position={[p.lat, p.lng]} icon={icona ?? undefined}>
-              <Popup>
-                <strong>{p.title}</strong>
-                <br />
-                {p.city} · {p.fee}
-                <br />
-                <Link href={`/eventi/${p.slug}`}>Vedi ingaggio</Link>
-              </Popup>
-            </Marker>
-          ))}
+          {gruppi.map((g) => {
+            const solo = g.elementi.length === 1 ? g.elementi[0] : null;
+
+            if (!solo) {
+              return (
+                <Marker
+                  key={`g-${g.lat.toFixed(5)}-${g.lng.toFixed(5)}`}
+                  position={[g.lat, g.lng]}
+                  icon={L ? iconaGruppo(L, g.elementi.length) : undefined}
+                  eventHandlers={{ click: () => apriGruppo(g) }}
+                  /* Un gruppo è un comando, non un'etichetta: senza queste due
+                     righe chi naviga da tastiera trova cinquanta punti che non
+                     rispondono a Invio, e chi usa uno screen reader sente
+                     «marker» cinquanta volte senza sapere cosa contengono. */
+                  keyboard
+                  alt={`${g.elementi.length} ingaggi in questa zona — apri`}
+                />
+              );
+            }
+
+            return (
+              <Marker
+                key={solo.slug}
+                position={[solo.lat, solo.lng]}
+                icon={L ? iconaPunto(L, solo.categoria) : undefined}
+                alt={`${solo.title}, ${solo.city}`}
+              >
+                <Popup>
+                  <strong>{solo.title}</strong>
+                  <br />
+                  {solo.categoryLabel} · {solo.city}
+                  <br />
+                  {dataBreve(solo.startsAt)} · {solo.fee}
+                  <br />
+                  <Link href={`/eventi/${solo.slug}`}>Vedi ingaggio</Link>
+                </Popup>
+              </Marker>
+            );
+          })}
         </MapContainer>
       </div>
 
       <div className="space-y-4">
-        <div className="card">
-          <button type="button" className="btn-ghost w-full" disabled={inCorso} onClick={locate}>
+        {/* ── I filtri stanno qui, non in un'altra pagina ──
+            Cercare per categoria stava in /eventi e guardare dov'è stava in
+            /mappa: per rispondere a «casting retribuiti vicino a Bologna»
+            bisognava fare metà lavoro di là, tenere a mente il risultato e
+            rifarlo di qua. Sono due viste sulla stessa domanda, e ora la
+            domanda si fa una volta sola. */}
+        <div className="card space-y-4">
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint"
+              aria-hidden="true"
+            />
+            <label htmlFor="cerca-mappa" className="sr-only">
+              Cerca per titolo o città
+            </label>
+            <input
+              id="cerca-mappa"
+              type="search"
+              value={testo}
+              onChange={(e) => setTesto(e.target.value)}
+              placeholder="Titolo o città…"
+              className="input min-h-11 w-full pl-9"
+            />
+          </div>
+
+          <div>
+            <p className="text-fluid-xs uppercase tracking-wider text-ink-faint">Tipo</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {CATEGORIE.map(([chiave, c]) => {
+                const attiva = categoria === chiave;
+                return (
+                  <button
+                    key={chiave}
+                    type="button"
+                    onClick={() => setCategoria(attiva ? null : chiave)}
+                    aria-pressed={attiva}
+                    className={`flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-fluid-xs font-medium transition-colors ${
+                      attiva
+                        ? "border-brand-500 bg-brand-500/15 text-ink"
+                        : "border-line text-ink-muted hover:text-ink"
+                    }`}
+                  >
+                    {/* Lo stesso colore del pin: è ciò che lega la pillola a
+                        quello che si vede sulla mappa, e senza il legame il
+                        colore dei pin resterebbe un enigma. */}
+                    <span
+                      aria-hidden="true"
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ background: TINTA[chiave] ?? TINTA_ALTRO }}
+                    />
+                    {c.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <label className="flex min-h-11 items-center gap-2.5 text-fluid-sm">
+            <input
+              type="checkbox"
+              checked={soloPagati}
+              onChange={(e) => setSoloPagati(e.target.checked)}
+              className="h-4 w-4 accent-brand-500"
+            />
+            Solo con compenso
+          </label>
+
+          <button type="button" className="btn-ghost min-h-11 w-full" disabled={inCorso} onClick={locate}>
             <MapPin className="h-4 w-4" aria-hidden="true" />
             {inCorso ? "Ti sto cercando…" : "Usa la mia posizione"}
           </button>
           {geoError && (
-            <p role="status" className="mt-3 text-fluid-xs text-ink-muted">
+            <p role="status" className="text-fluid-xs text-ink-muted">
               {geoError}
             </p>
           )}
+
           {/* Il cursore del raggio compariva prima che ci fosse un centro
               attorno a cui misurare: si poteva regolarlo senza che
               significasse niente. Ora appare insieme al risultato che
               governa. */}
           {filtraPerRaggio && (
-            <>
-              <label htmlFor="radius" className="mt-4 block text-fluid-sm font-medium">
+            <div>
+              <label htmlFor="radius" className="block text-fluid-sm font-medium">
                 Raggio: {radius} km
               </label>
               <input
@@ -223,17 +454,38 @@ export function MapExplorer({
                 step={5}
                 value={radius}
                 onChange={(e) => setRadius(Number(e.target.value))}
-                className="mt-2 w-full"
+                className="mt-2 w-full accent-brand-500"
               />
-            </>
+            </div>
           )}
 
-          <p className="mt-3 text-fluid-sm text-ink-muted">
-            {filtraPerRaggio
-              ? `${conta(visible.length, "ingaggio", "ingaggi")} entro ${radius} km`
-              : `${conta(visible.length, "ingaggio", "ingaggi")} in tutta Italia`}
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+            <p role="status" className="text-fluid-sm text-ink-muted">
+              {visible.length === 0
+                ? "Nessun ingaggio con questi filtri"
+                : filtraPerRaggio
+                  ? `${conta(visible.length, "ingaggio", "ingaggi")} entro ${radius} km`
+                  : `${conta(visible.length, "ingaggio", "ingaggi")} in tutta Italia`}
+            </p>
+            {filtriAttivi && (
+              <button type="button" onClick={azzera} className="btn-ghost min-h-9 text-fluid-xs">
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
+                Azzera
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Filtrare fino a zero è un vicolo cieco se la pagina non dice come
+            uscirne: il rimedio va accanto al vuoto, non nella barra sopra. */}
+        {visible.length === 0 && filtriAttivi && (
+          <div className="card text-fluid-sm text-ink-muted">
+            <p>Prova ad allargare: togli il tipo, o alza il raggio.</p>
+            <button type="button" onClick={azzera} className="btn-primary mt-4">
+              Mostra tutti gli ingaggi
+            </button>
+          </div>
+        )}
 
         <ul className="space-y-3">
           {visible.slice(0, 20).map((p) => (
@@ -247,6 +499,12 @@ export function MapExplorer({
             </li>
           ))}
         </ul>
+
+        {visible.length > 20 && (
+          <p className="text-fluid-xs text-ink-faint">
+            In elenco i primi 20 di {visible.length}. Sulla mappa ci sono tutti.
+          </p>
+        )}
       </div>
     </div>
   );

@@ -40,7 +40,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/prisma";
 import { uniqueSlug, toCsv } from "../src/lib/slug";
 import { isProfileIndexable, missingForIndex } from "../src/lib/profile-quality";
-import { calcolaReputazione } from "../src/lib/reputazione";
+import { calcolaReputazione, reputazioneMassima } from "../src/lib/reputazione";
 
 type Lavoro = {
   titolo: string;
@@ -222,21 +222,35 @@ async function main() {
 
     // La reputazione si calcola dallo stato: senza questo il profilo nasce a
     // zero e finisce in fondo alla directory pur essendo completo.
-    const reputation = calcolaReputazione({
-      emailVerified: dati.emailVerified,
-      isVerified: false,
-      bio: dati.bio,
-      headline: dati.headline,
-      image: dati.image,
-      citySlug: dati.citySlug,
-      disciplines: dati.disciplines,
-      portfolio: portfolio.length,
-      ingaggiConfermati: 0,
-      ingaggiOrganizzati: 0,
-    });
+    const reputation = calcolaReputazione(
+      {
+        emailVerified: dati.emailVerified,
+        isVerified: false,
+        bio: dati.bio,
+        headline: dati.headline,
+        image: dati.image,
+        citySlug: dati.citySlug,
+        disciplines: dati.disciplines,
+        portfolio: portfolio.length,
+        ingaggiConfermati: 0,
+        ingaggiOrganizzati: 0,
+        // Questo script importa artisti: i fatti dell'organizzatore non lo
+        // riguardano e non entrano in nessuna delle voci del suo ruolo.
+        candidatureRicevute: 0,
+        candidatureRisposte: 0,
+        annunciPubblicati: 0,
+        annunciRetribuiti: 0,
+      },
+      "ARTIST"
+    );
     await prisma.user.update({ where: { id: utente.id }, data: { reputation } });
 
-    console.log(`  ${esistente ? "aggiornato" : "creato"}  /artisti/${utente.slug}  ·  ${reputation}/110`);
+    // Il massimo si chiede alla formula: scritto a mano era «110», ed era gia'
+    // sbagliato il giorno in cui i due ruoli sono diventati due formule da 100.
+    console.log(
+      `  ${esistente ? "aggiornato" : "creato"}  /artisti/${utente.slug}  ·  ` +
+        `${reputation}/${reputazioneMassima("ARTIST")}`
+    );
     esistente ? aggiornati++ : creati++;
   }
 
