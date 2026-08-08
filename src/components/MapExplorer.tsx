@@ -216,6 +216,54 @@ export function MapExplorer({
 
   const gruppi = useMemo(() => raggruppa(visible, zoom), [visible, zoom]);
 
+  /**
+   * All'apertura si inquadra il contenuto, non un punto fisso.
+   *
+   * ── Il difetto ──
+   *
+   * `center={[42, 12.5]} zoom={6}` è la coppia giusta solo per un riquadro di
+   * una certa forma. Il riquadro vero è alto e stretto — la colonna dei filtri
+   * si prende trecentosessanta pixel — e a zoom 6 ci sta dentro la penisola da
+   * Firenze in giù: **Milano, Torino e Bologna restano fuori dallo schermo**.
+   *
+   * Il risultato, visto in un video: si apre la mappa, scrive «5 ingaggi in
+   * tutta Italia», e di pin non se ne vede nemmeno uno. Tre dei cinque erano
+   * al nord, fuori dal riquadro. La mappa funzionava e non mostrava niente,
+   * che è il modo peggiore di funzionare.
+   *
+   * ── La correzione ──
+   *
+   * `fitBounds` sui punti veri: l'inquadratura si adatta alla forma del
+   * riquadro invece di sperare che combacino, e su qualunque schermo si vede
+   * quello che c'è. Se non c'è niente da mostrare — filtri troppo stretti — si
+   * inquadra l'Italia, che è il ripiego onesto.
+   *
+   * Solo all'apertura: rifarlo a ogni cambio di filtro strapperebbe la vista
+   * sotto le mani di chi si è appena spostato a mano su una città.
+   */
+  const [inquadrata, setInquadrata] = useState(false);
+  useEffect(() => {
+    if (!mappa || inquadrata) return;
+
+    if (visible.length > 0) {
+      const lat = visible.map((p) => p.lat);
+      const lng = visible.map((p) => p.lng);
+      mappa.fitBounds(
+        [
+          [Math.min(...lat), Math.min(...lng)],
+          [Math.max(...lat), Math.max(...lng)],
+        ],
+        // Un margine generoso: senza, i pin ai bordi finiscono sotto i comandi
+        // dello zoom e sotto l'attribuzione. `maxZoom` evita che due annunci
+        // nello stesso quartiere aprano la mappa sul catasto.
+        { padding: [48, 48], maxZoom: 11 }
+      );
+    } else {
+      mappa.fitBounds(LIMITI, { padding: [16, 16] });
+    }
+    setInquadrata(true);
+  }, [mappa, visible, inquadrata]);
+
   const apriGruppo = useCallback(
     (g: Gruppo<MapPoint>) => {
       if (!mappa) return;
@@ -282,7 +330,7 @@ export function MapExplorer({
       <div className="card overflow-hidden p-0">
         <MapContainer
           center={[origin.lat, origin.lng]}
-          zoom={ZOOM_INIZIALE}
+          zoom={ZOOM_MINIMO}
           scrollWheelZoom={false}
           /* ── La mappa non esce dall'Italia ──
              `maxBounds` da solo lascia trascinare fuori e poi rimbalza con
@@ -396,10 +444,15 @@ export function MapExplorer({
                     type="button"
                     onClick={() => setCategoria(attiva ? null : chiave)}
                     aria-pressed={attiva}
+                    /* `bg-surface-sunken` sullo stato spento: con il solo
+                       bordo, su fondo chiaro le pillole sembravano una legenda
+                       — un elenco di colori da leggere — invece di cinque cose
+                       da premere. Un comando deve avere un corpo, non solo un
+                       contorno. */
                     className={`flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-fluid-xs font-medium transition-colors ${
                       attiva
                         ? "border-brand-500 bg-brand-500/15 text-ink"
-                        : "border-line text-ink-muted hover:text-ink"
+                        : "border-line bg-surface-sunken text-ink-muted hover:border-brand-400/50 hover:text-ink"
                     }`}
                   >
                     {/* Lo stesso colore del pin: è ciò che lega la pillola a
