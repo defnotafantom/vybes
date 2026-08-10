@@ -49,6 +49,14 @@ jobs:
       - name: Coerenza dei canonical
         run: npm run verify:seo
 
+      # Una `var(--qualcosa)` che non esiste non è un errore: il browser
+      # scarta la riga in silenzio e la proprietà resta com'era. È già
+      # successo — `var(--ink)` invece di `var(--fg)`, perché i nomi Tailwind
+      # e quelli CSS si somigliano e non coincidono — e sarebbe arrivato in
+      # produzione come «i comandi della mappa sono spariti».
+      - name: Variabili CSS risolvibili
+        run: npm run verify:css
+
       - name: Test unitari
         run: npm test
 
