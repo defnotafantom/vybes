@@ -2109,6 +2109,108 @@ qualunque valuta — è il genere di gesto che non si recupera più.
 
 ---
 
+## ADR-051 · Non riscrivere il prodotto in WebGL
+
+**Questo ADR documenta una cosa che non è stata fatta.** È il primo, ed è
+volutamente qui: le decisioni che si vedono sono quelle prese, ma quelle che
+tengono in piedi un progetto sono spesso quelle rifiutate.
+
+**Contesto.** I siti che vincono i premi di settore — Awwwards e simili — sono
+quasi tutti costruiti attorno a WebGL. La tentazione di rifare Vybes così è
+concreta: colpirebbe, e su un progetto che serve anche a farsi assumere la
+tentazione pesa il doppio.
+
+**Decisione.** No, e la ragione non è tecnica.
+
+**Sono due generi con criteri di successo opposti.** Quei siti sono
+**brochure**: il portfolio di uno studio, il lancio di un prodotto, una
+campagna. Una pagina, nessun ritorno, nessun dato da inserire. Si vincono sulla
+**prima impressione**.
+
+Vybes è uno **strumento d'uso ripetuto**: un gestore di locale che il martedì
+mattina apre le candidature ricevute. Lì il successo è l'opposto — alla
+cinquantesima apertura, due secondi di animazione non sono più un'impressione,
+sono un ostacolo fra una persona e il suo lavoro.
+
+**Contraddirebbe la tesi di tutto il progetto.** Cinquanta ADR discendono da una
+frase sola: *ogni scelta serve a rendere un artista più facile da ingaggiare*.
+È il criterio con cui è stato rifiutato l'avatar al posto della foto (ADR-050),
+con cui le monete non comprano visibilità (ADR-047), con cui la classifica sta
+in una pagina che chi cerca un chitarrista non incontra mai (ADR-049).
+
+Una riscrittura in WebGL sarebbe la violazione più grande di quel principio in
+tutto il progetto — e il danno peggiore non sarebbe l'effetto: sarebbe che ogni
+altro ADR perderebbe credibilità, perché dimostrerebbe che il principio si
+piega quando qualcosa è bello da vedere.
+
+**I costi concreti, in ordine di gravità.** La SEO: l'intera strategia di
+traffico sono pagine indicizzabili renderizzate sul server, e il contenuto
+dentro una `canvas` per un motore di ricerca non esiste. L'accessibilità: una
+canvas non ha DOM, quindi niente per gli screen reader e niente navigazione da
+tastiera — una delle forze reali del progetto diventerebbe una debolezza. Le
+prestazioni su telefono, dove sta il pubblico. E la fiducia: chi valuta se
+spendere trecento euro vuole uno strumento, non una demo.
+
+**Cosa si fa invece.** Un momento solo, sulla landing: ADR-052.
+
+---
+
+## ADR-052 · Un effetto solo, dove il mestiere della pagina è colpire
+
+**Contesto.** Rifiutata la riscrittura (ADR-051), resta vero che la prima
+impressione conta. La domanda diventa: **esiste un punto dove un effetto non
+costa niente a nessuno?**
+
+**Decisione.** Sì, uno: la landing. È l'unica pagina il cui mestiere *è*
+colpire — la si guarda una volta, per pochi secondi, e dopo l'iscrizione non la
+si rivede più, perché da lì in poi il logo porta alla dashboard.
+
+Il resto del sito non ne riceve niente, e non è una limitazione da rispettare
+in futuro: è **la decisione**.
+
+**Perché *queste* onde e non un effetto qualunque.** È lo stesso fenomeno del
+marchio: fronti emessi da una **sorgente che ruota**. Una sorgente ferma emette
+cerchi concentrici; una che ruota li emette sfasati, e i fronti si avvolgono in
+spirali — la ragione per cui un faro rotante disegna un vortice.
+
+Il marchio è quel fenomeno in piccolo e fermo. La landing è lo stesso, grande e
+in movimento, con tre sorgenti a velocità incommensurabili che interferiscono.
+Non è una decorazione presa da una galleria: è **la stessa idea a scala
+diversa**, ed è la sola giustificazione che rende difendibile un effetto su un
+prodotto che per il resto li rifiuta.
+
+**Perché senza Three.js.** Non c'è una scena: niente luci, niente geometrie,
+niente camera. C'è una funzione da valutare per pixel. WebGL2 diretto sono un
+triangolo a schermo intero e un frammento; Three.js peserebbe quanto il resto
+del bundle per non fare nulla di ciò che serve. Le dipendenze di produzione
+restano sedici.
+
+**Le cinque condizioni che lo rendono innocuo**, e che sono la parte
+interessante:
+
+1. **Non blocca niente.** Sta dietro contenuto renderizzato sul server e già
+   visibile: l'LCP non lo incontra.
+2. **Senza WebGL non succede niente.** Nessun errore, nessun rettangolo vuoto:
+   resta il gradiente di prima. Un ornamento che rompe ciò che ornava è il
+   difetto peggiore che possa produrre.
+3. **`prefers-reduced-motion` disegna un fotogramma e si ferma.** Chi le ha
+   disattivate ha spesso una ragione medica, e un campo che pulsa è
+   esattamente ciò che scatena un disturbo vestibolare. Resta l'immagine,
+   sparisce il moto.
+4. **Si sospende quando non si vede** — scheda in secondo piano, hero fuori
+   schermo. Una GPU che macina per una pagina che nessuno guarda è batteria
+   rubata a qualcuno.
+5. **Costa poco per pixel:** densità limitata a 1,5 e risoluzione dimezzata
+   sotto i 640px.
+
+**Una nota sul silenzio.** Se lo shader non compila si rinuncia — ma **solo in
+produzione**. In sviluppo si stampa il registro di compilazione, perché
+rinunciare in silenzio anche lì sarebbe la forma di difetto numero uno di
+COLLOQUIO.md scritta di propria mano: un refuso nel GLSL darebbe una pagina
+identica a prima, e la causa verrebbe cercata ovunque tranne che nello shader.
+
+---
+
 ## Cosa rifarei diversamente
 
 Tre cose, dette senza giri di parole:

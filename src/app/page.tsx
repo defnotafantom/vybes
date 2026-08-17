@@ -10,6 +10,7 @@ import { ArtistCard } from "@/components/ArtistCard";
 import { EventCard } from "@/components/EventCard";
 import { Spotlight } from "@/components/Spotlight";
 import { BrandHero } from "@/components/BrandHero";
+import { OndeWebGL } from "@/components/OndeWebGL";
 import { Avatar } from "@/components/ui/Avatar";
 import { fromCsv } from "@/lib/slug";
 import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
@@ -161,6 +162,13 @@ export default async function HomePage() {
       <Spotlight className="relative isolate overflow-hidden">
         <div className="mesh-hero" aria-hidden="true" />
         <div className="grid-lines absolute inset-0 -z-10" aria-hidden="true" />
+
+        {/* ── Il campo d'onda ──
+            Sta **sopra** il gradiente e **sotto** il contenuto: se WebGL non
+            c'è, o se il contesto non si crea, resta esattamente la pagina di
+            prima. Un effetto decorativo che può rompere quello che decora non
+            vale il rischio. Vedi `OndeWebGL.tsx`. */}
+        <OndeWebGL className="pointer-events-none absolute inset-0 -z-10 h-full w-full" />
 
         {/* Il riempimento verticale era py-24 e cresceva fino a py-40 sui
             monitor grandi. Sommato al marchio, spingeva titolo e pulsanti sotto
