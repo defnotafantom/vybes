@@ -37,6 +37,7 @@ export default async function DashboardPortfolioPage() {
             slug: i.slug,
             title: i.title,
             description: i.description,
+            credenza: i.credenza,
             mediaUrl: i.mediaUrl,
             mediaType: i.mediaType,
             year: i.year,

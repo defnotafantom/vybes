@@ -320,6 +320,25 @@ model PortfolioItem {
   position    Int     @default(0)
   isPublic    Boolean @default(true)
 
+  /// Cosa la gente crede di quest'arte, secondo chi la fa.
+  ///
+  /// Non e' una descrizione in piu': e' il perno dell'asse dell'incontro
+  /// (POSIZIONE.md). Il problema di chi non conosce un'arte non e' la
+  /// mancanza di informazioni — e' un'idea sbagliata gia' formata, o
+  /// nessuna idea affatto. Per contraddirla bisogna sapere quale e'.
+  ///
+  /// Lo scrive l'artista e non la redazione, per una ragione che vale piu'
+  /// della comodita': se le opere che contraddicono lo stereotipo le
+  /// scegliesse chi gestisce il sito, si otterrebbe il gusto di una persona
+  /// sola travestito da divulgazione. Cosi' invece la contraddizione arriva
+  /// da chi la subisce ogni giorno.
+  ///
+  /// Nullable per scelta: e' una domanda difficile, e obbligarla al primo
+  /// caricamento significherebbe ricevere quattro parole buttate li'. Chi non
+  /// risponde resta nel portfolio e fuori dall'incontro quotidiano — l'unica
+  /// cosa che chiede questo campo per funzionare e' che sia vero.
+  credenza    String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

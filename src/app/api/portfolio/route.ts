@@ -44,6 +44,7 @@ export async function POST(req: Request) {
         slug,
         title: data.title,
         description: data.description || null,
+        credenza: data.credenza || null,
         mediaUrl: data.mediaUrl,
         mediaType: data.mediaType,
         externalUrl: data.externalUrl || null,

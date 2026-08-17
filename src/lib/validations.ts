@@ -128,6 +128,16 @@ export const eventNuovoSchema = eventSchema.refine((d) => d.startsAt > new Date(
 export const portfolioSchema = z.object({
   title: z.string().min(2).max(120),
   description: z.string().max(2000).optional().or(z.literal("")),
+  /**
+   * «Cosa la gente crede di quest'arte».
+   *
+   * Duecentottanta caratteri, e non duemila come la descrizione: qui non si
+   * racconta, si nomina un pregiudizio. Un limite stretto è il modo più
+   * economico di chiedere una frase invece di uno sfogo — e una frase è
+   * quello che serve a chi legge, che sta incontrando questa cosa per la
+   * prima volta e non ha ancora deciso di darle attenzione.
+   */
+  credenza: z.string().max(280).optional().or(z.literal("")),
   mediaUrl: z.string().min(1, "Carica un file"),
   mediaType: z.enum(["image", "video", "audio"]).default("image"),
   externalUrl: z.string().url().optional().or(z.literal("")),

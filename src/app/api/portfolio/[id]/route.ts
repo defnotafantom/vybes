@@ -34,6 +34,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       data: {
         ...(data.title !== undefined ? { title: data.title } : {}),
         ...(data.description !== undefined ? { description: data.description || null } : {}),
+        ...(data.credenza !== undefined ? { credenza: data.credenza || null } : {}),
         ...(data.mediaUrl !== undefined ? { mediaUrl: data.mediaUrl } : {}),
         ...(data.mediaType !== undefined ? { mediaType: data.mediaType } : {}),
         ...(data.externalUrl !== undefined ? { externalUrl: data.externalUrl || null } : {}),

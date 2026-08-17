@@ -122,6 +122,30 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
           )}
         </div>
 
+        {/* ── Il pregiudizio, dichiarato da chi lo subisce ──
+
+            Sta **sopra** la descrizione, non sotto, e questo non è
+            impaginazione: è l'ordine in cui la cosa funziona. Chi arriva qui
+            senza conoscere quest'arte non ha un vuoto da riempire, ha già
+            un'idea. Se la descrizione parla prima, la legge attraverso quella
+            idea. Se invece la prima cosa che incontra è la sua stessa
+            convinzione, detta ad alta voce da chi quell'arte la fa, per un
+            attimo la sospende — ed è in quell'attimo che l'opera qui sopra
+            viene guardata davvero.
+
+            Graficamente è una citazione, non un riquadro informativo: sono
+            parole di una persona, non una scheda. */}
+        {item.credenza && (
+          <figure className="mt-8 border-l-2 border-brand-500/60 pl-5">
+            <blockquote className="text-fluid-lg italic text-ink">
+              «{item.credenza}»
+            </blockquote>
+            <figcaption className="mt-2 text-fluid-xs uppercase tracking-[0.14em] text-ink-faint">
+              Quello che si crede di quest&apos;arte
+            </figcaption>
+          </figure>
+        )}
+
         {item.description && (
           <div className="prose-vybes mt-8 whitespace-pre-line muted">{item.description}</div>
         )}

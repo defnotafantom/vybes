@@ -13,6 +13,7 @@ type Item = {
   slug: string;
   title: string;
   description: string | null;
+  credenza: string | null;
   mediaUrl: string;
   mediaType: string;
   year: number | null;
@@ -51,6 +52,7 @@ export function PortfolioManager({ initialItems }: { initialItems: Item[] }) {
   const [items, setItems] = useState(initialItems);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [credenza, setCredenza] = useState("");
   const [year, setYear] = useState("");
   const [upload, setUpload] = useState<UploadedFile | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +75,7 @@ export function PortfolioManager({ initialItems }: { initialItems: Item[] }) {
         body: JSON.stringify({
           title,
           description,
+          credenza,
           mediaUrl: upload.url,
           mediaType: upload.kind,
           year: year ? Number(year) : null,
@@ -86,6 +89,7 @@ export function PortfolioManager({ initialItems }: { initialItems: Item[] }) {
       setItems((prev) => [...prev, json.data]);
       setTitle("");
       setDescription("");
+      setCredenza("");
       setYear("");
       setUpload(null);
       setAperto(false);
@@ -251,6 +255,41 @@ export function PortfolioManager({ initialItems }: { initialItems: Item[] }) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
+          </div>
+
+          {/* ── La domanda che rende quest'opera divulgativa ──
+
+              Non è un secondo campo descrizione: è il perno dell'asse
+              dell'incontro (POSIZIONE.md). Chi non conosce un'arte non ha un
+              vuoto da riempire, ha un'idea già formata e spesso sbagliata —
+              e per contraddirla bisogna sapere qual è.
+
+              La scrive l'artista e non la redazione: se le opere che
+              contraddicono lo stereotipo le scegliesse chi gestisce il sito,
+              si otterrebbe il gusto di una persona sola travestito da
+              divulgazione.
+
+              Resta facoltativa. È una domanda difficile, e obbligarla al
+              primo caricamento produce quattro parole buttate lì invece di
+              una risposta — che è l'unica cosa che a questo campo serve. */}
+          <div>
+            <label htmlFor="p-credenza" className="mb-1 block text-fluid-sm font-medium">
+              Cosa la gente crede di quest&apos;arte{" "}
+              <span className="text-ink-faint">(facoltativo)</span>
+            </label>
+            <textarea
+              id="p-credenza"
+              className="input min-h-20"
+              maxLength={280}
+              placeholder="«Che la danza sia una cosa da ragazzine.» «Che il cucito sia roba da nonne.»"
+              value={credenza}
+              onChange={(e) => setCredenza(e.target.value)}
+              aria-describedby="p-credenza-aiuto"
+            />
+            <p id="p-credenza-aiuto" className="mt-1.5 text-fluid-xs text-ink-faint">
+              Il pregiudizio che quest&apos;opera smentisce. Serve a farla
+              incontrare a chi non l&apos;avrebbe mai cercata.
+            </p>
           </div>
 
           <div>
