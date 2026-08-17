@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, X, Search, Users, CalendarDays, MapPin, Map as MapIcon, Sparkles } from "lucide-react";
+import { Menu, X, Search, Users, CalendarDays, MapPin, Map as MapIcon, Sparkles, Palette } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -29,6 +29,7 @@ const VOCI = [
   // deve trovare per prima la cosa che non richiede di saperlo. Un elenco di
   // nomi presuppone che tu sappia già chi stai cercando.
   { href: "/incontra", label: "Incontra", icon: Sparkles },
+  { href: "/arti", label: "Arti", icon: Palette },
   { href: "/artisti", label: "Artisti", icon: Users },
   { href: "/eventi", label: "Ingaggi", icon: CalendarDays },
   { href: "/citta", label: "Città", icon: MapPin },

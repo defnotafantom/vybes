@@ -10,6 +10,7 @@ export async function GET() {
     // Cambia ogni giorno per costruzione, ed è la pagina che porta chi
     // non stava cercando niente: `daily` non è ottimismo, è la verità.
     ["/incontra", 0.8, "daily"],
+    ["/arti", 0.8, "weekly"],
     ["/eventi", 0.9, "hourly"],
     ["/citta", 0.8, "weekly"],
     ["/mappa", 0.7, "daily"],
