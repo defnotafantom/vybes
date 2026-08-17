@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, AudioWaveform } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
 import { SITE, DISCIPLINES } from "@/lib/constants";
@@ -191,16 +191,33 @@ export default async function HomePage() {
               Non è nascondere un dato: il numero esatto è in cima a /artisti,
               che è la pagina di chi quel dato lo sta cercando davvero. */}
           <p className="eyebrow mt-8 animate-fade-up [animation-delay:400ms]">
-            <Sparkles className="mr-1.5 inline h-3.5 w-3.5" aria-hidden="true" />
+            {/* Una scintilla è l'icona che ogni sito mette accanto a ogni cosa
+                e non significa niente. Un'onda dice di che sito si tratta. */}
+            <AudioWaveform className="mr-1.5 inline h-3.5 w-3.5" aria-hidden="true" />
             {artistCount >= SOGLIA_VANTO
               ? `${artistCount} artisti · ${cityCount} città`
               : `${cityCount} città in tutta Italia`}
           </p>
 
+          {/* ── Il titolo, e perché queste tre righe ──
+
+              Prima diceva «Trova artisti. Trova ingaggi. Senza intermediari.»:
+              chiaro, e identico a quello di ogni altro mercato a due lati.
+              Due imperativi che non dicono niente di **questo** posto.
+
+              Adesso dice la stessa cosa attraverso il fenomeno che dà il nome
+              al sito. Un'onda ha due estremità: qualcuno la emette, qualcuno
+              la riceve — che è esattamente cosa sono i due lati di questo
+              mercato, e cosa disegna il marchio qui sopra.
+
+              La terza riga resta identica perché è l'unica che dichiara un
+              vantaggio invece di descrivere: nessuno prende una percentuale.
+              È la ragione per cui qualcuno preferisce questo a un'agenzia, e
+              non si sostituisce con una metafora. */}
           <h1 className="mt-5 max-w-4xl animate-fade-up text-fluid-hero [animation-delay:480ms]">
-            Trova artisti.
+            Qualcuno suona.
             <br />
-            Trova ingaggi.
+            Qualcuno lo cerca.
             <br />
             {/* nowrap solo da tablet in su: sotto i 640px la riga
                 sfonderebbe la larghezza dello schermo */}
@@ -208,8 +225,12 @@ export default async function HomePage() {
           </h1>
 
           <p className="mt-6 max-w-xl animate-fade-up text-fluid-lg text-ink-muted [animation-delay:560ms]">
-            Vybes collega musicisti, DJ, band, ballerini e performer con i locali, i festival e
-            le agenzie che li cercano.
+            {/* I nomi delle discipline restano tutti: sono le parole con cui la
+                gente cerca su Google, e una metafora che se le mangia costa
+                traffico vero. La figura si aggiunge davanti, non al posto. */}
+            Una vibrazione parte da chi la fa e arriva a chi la cerca. Da una parte musicisti,
+            DJ, band, ballerini e performer; dall&apos;altra i locali, i festival e le agenzie
+            che li ingaggiano.
           </p>
 
           <div className="mt-8 flex animate-fade-up flex-wrap justify-center gap-3 [animation-delay:640ms]">
@@ -257,8 +278,11 @@ export default async function HomePage() {
       {/* ═══════════════════════ GRIGLIA BENTO ═══════════════════════ */}
       <section className="container-page py-24">
         <div className="reveal">
-          <p className="eyebrow">Chi c&apos;è</p>
-          <h2 className="mt-2 text-fluid-2xl">Artisti in evidenza</h2>
+          {/* «In onda» non è un modo di dire preso a prestito: la vetrina è
+              davvero una rotazione, una fila che avanza di un posto al giorno
+              (ADR-044). Il titolo descrive il meccanismo invece di decorarlo. */}
+          <p className="eyebrow">In onda</p>
+          <h2 className="mt-2 text-fluid-2xl">Chi si sente questa settimana</h2>
         </div>
 
         <div className="bento reveal-scale mt-10">
@@ -295,8 +319,8 @@ export default async function HomePage() {
 
           {/* Tessere numeriche */}
           {[
-            { value: artistCount, label: "Artisti iscritti" },
-            { value: eventCount, label: "Ingaggi aperti" },
+            { value: artistCount, label: "Chi suona" },
+            { value: eventCount, label: "Chi cerca" },
           ].map((s) => (
             <div key={s.label} className="card flex flex-col justify-end">
               <p className="text-gradient text-fluid-3xl font-bold tabular-nums">{s.value}</p>
@@ -334,8 +358,8 @@ export default async function HomePage() {
           <div className="container-page">
             <div className="reveal mb-10 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="eyebrow">Opportunità</p>
-                <h2 className="mt-2 text-fluid-2xl">Prossimi ingaggi</h2>
+                <p className="eyebrow">Chi chiama</p>
+                <h2 className="mt-2 text-fluid-2xl">Ingaggi aperti adesso</h2>
               </div>
               <Link href="/eventi" className="link-underline text-fluid-sm">
                 Tutti gli ingaggi
@@ -355,7 +379,7 @@ export default async function HomePage() {
       <section className="container-page py-24">
         <div className="reveal">
           <p className="eyebrow">Per disciplina</p>
-          <h2 className="mt-2 text-fluid-2xl">Cosa stai cercando</h2>
+          <h2 className="mt-2 text-fluid-2xl">Che suono stai cercando</h2>
         </div>
 
         <ul className="reveal mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -405,11 +429,15 @@ export default async function HomePage() {
       <section className="container-page pb-24">
         <Spotlight className="reveal-scale relative isolate overflow-hidden rounded-3xl border px-8 py-20 text-center sm:px-16">
           <div className="mesh-hero opacity-70" aria-hidden="true" />
+          {/* La chiusura chiude il cerchio aperto dal titolo: là qualcuno
+              suona e qualcuno cerca, qui l'onda arriva. Ed è anche vero —
+              è quello che il sito fa. */}
           <h2 className="text-fluid-3xl">
-            Il tuo prossimo <span className="text-gradient">palco</span> ti sta cercando
+            Fatti <span className="text-gradient">sentire</span> da chi ti sta cercando
           </h2>
           <p className="mx-auto mt-5 max-w-lg text-fluid-base text-ink-muted">
-            Bastano due minuti per creare il profilo. Il portfolio lo costruisci con calma.
+            Due minuti per il profilo. Il portfolio lo costruisci con calma, e da lì in poi
+            sei tu a essere trovato.
           </p>
           <Link
             href="/registrati?ruolo=artista"
