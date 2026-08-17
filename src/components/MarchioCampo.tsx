@@ -173,7 +173,7 @@ export function MarchioCampo({
    * una lettura giusta. Adesso occupa il vuoto a destra del titolo, e a quella
    * misura è la seconda cosa che si guarda dopo le parole.
    */
-  classeDisco = "h-36 w-36 sm:h-48 sm:w-48 lg:h-64 lg:w-64",
+  classeDisco = "h-32 w-32 sm:h-40 sm:w-40 lg:h-72 lg:w-72",
 }: {
   className?: string;
   classeDisco?: string;

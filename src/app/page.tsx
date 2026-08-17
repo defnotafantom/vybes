@@ -207,30 +207,29 @@ export default async function HomePage() {
               prima schermata deve contenere titolo **e** pulsanti: un sito che
               deve convincere in tre secondi non può usarli per presentarsi. */}
           <div className="container-page py-20 sm:py-24 lg:py-28">
-            {/* ── Il titolo a sinistra, il marchio nel vuoto a destra ──
+            {/* ── Il marchio in alto a destra, fuori dal flusso ──
 
-                Il marchio stava in cima alla colonna, sopra l'etichetta, alla
-                misura di un segno: né logo in barra né oggetto della
-                schermata. Non aveva un ruolo, e infatti sembrava messo lì per
-                riempire.
+                Di fianco al titolo era una collisione garantita: due colonne,
+                una delle quali contiene tre righe che **non vanno a capo per
+                costruzione**. Basta stringere la finestra e il titolo sborda
+                sotto il marchio — che è esattamente quello che si vedeva.
 
-                Adesso occupa il vuoto grande a destra del titolo. Non è una
-                decorazione che tappa un buco: quel vuoto era la cosa che
-                rendeva leggibile la composizione, e un oggetto **solo**, alla
-                misura giusta, lo trasforma in una tensione fra due poli invece
-                di lasciarlo vuoto e basta. Parole a sinistra, cosa a destra.
+                Una griglia non salva da questo: può solo scegliere chi viene
+                schiacciato. Il problema è che due oggetti larghi sulla stessa
+                riga orizzontale non stanno su uno schermo stretto, e nessuna
+                regola di layout inventa lo spazio che non c'è.
 
-                È anche il motivo per cui non si scontrano più: prima stavano
-                sullo stesso asse verticale e si contendevano l'inizio della
-                lettura; adesso ognuno ha il proprio lato.
+                Quindi il marchio esce dal flusso e va nell'angolo in alto a
+                destra, che nella schermata era vuoto: sopra la linea del
+                titolo, quindi non può incrociarlo per nessuna larghezza. E la
+                composizione ci guadagna — parole in basso a sinistra, oggetto
+                in alto a destra, una diagonale invece di due cose in fila.
 
-                La colonna del testo è `auto` e quella del marchio `1fr`: la
-                larghezza la decidono le righe del titolo, che non vanno a capo
-                per costruzione, e il resto è spazio del marchio. Al contrario
-                — testo elastico — una finestra stretta comprimerebbe la
-                colonna e il titolo sborderebbe. */}
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,auto)_1fr] lg:items-center lg:gap-12">
-              <div>
+                Sotto i 1024px torna nel flusso, in cima alla colonna: lì lo
+                spazio orizzontale non c'è e l'unica disposizione possibile è
+                l'una sopra l'altra. */}
+            <MarchioCampo className="mb-10 animate-fade-up lg:absolute lg:right-[7%] lg:top-[14%] lg:mb-0" />
+
 
             {/* Il contatore compare solo quando è un argomento. «7 artisti»
                 scritto nel punto più visibile della pagina non informa:
@@ -286,15 +285,6 @@ export default async function HomePage() {
               className="-m-4 mt-6 inline-block animate-fade-up p-4 [animation-delay:160ms]"
               classeTitolo="text-[clamp(1.75rem,7.4vw,6rem)] font-extrabold leading-[0.96] tracking-[-0.04em]"
             />
-            </div>
-
-              {/* `justify-self-center` da schermo largo: il marchio si mette in
-                  mezzo allo spazio che avanza invece di incollarsi al bordo
-                  destro, che su un monitor molto largo lo spedirebbe a
-                  settecento pixel dal titolo — due cose sullo stesso schermo
-                  che non si guardano piu'. */}
-              <MarchioCampo className="animate-fade-up justify-self-start [animation-delay:240ms] lg:justify-self-center" />
-            </div>
 
             {/* Paragrafo e pulsanti su una riga sola, separati da una regola
                 orizzontale: la riga li lega e allo stesso tempo chiude l'hero,
