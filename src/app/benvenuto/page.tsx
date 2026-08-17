@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
-import { ScegliRuolo } from "@/components/ScegliRuolo";
+import { CompletaProfilo } from "@/components/CompletaProfilo";
 import { ruoloDi } from "@/lib/ruolo";
 import { Logo } from "@/components/Logo";
 
@@ -16,13 +16,18 @@ export const metadata: Metadata = buildMetadata({
 });
 
 /**
- * La domanda che Google non sa fare.
+ * Le tre domande che Google non sa fare.
  *
  * ── Perché questa pagina esiste ──
  *
- * Entrando con Google si arriva dentro con nome, email e foto — e senza la
- * sola informazione che decide tutto il resto: **se sei un artista o se cerchi
- * artisti**. Google non lo sa e non c'è modo di chiederglielo.
+ * Entrando con Google si arriva dentro con nome, email e foto — e senza le
+ * informazioni che decidono tutto il resto: **come vuoi chiamarti**, **a quale
+ * indirizzo**, e **se sei un artista o se cerchi artisti**.
+ *
+ * Google verifica un'identità: chi sei davvero. Non sa da che parte stai, e il
+ * nickname se lo inventava il sistema partendo dal nome — con un numero in
+ * coda quando era già preso. Da qui questa schermata, che è la sola porta
+ * verso la dashboard.
  *
  * Prima il valore restava il default, `ARTIST`. Chi si iscriveva per cercare
  * artisti riceveva quindi il prodotto dell'altro lato — menu, obiettivi e
@@ -52,7 +57,7 @@ export default async function BenvenutoPage() {
 
   const me = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, role: true, ruoloSceltoIl: true },
+    select: { name: true, slug: true, role: true, ruoloSceltoIl: true },
   });
   if (!me) redirect("/accedi");
   if (me.ruoloSceltoIl) redirect("/dashboard");
@@ -64,20 +69,15 @@ export default async function BenvenutoPage() {
       </div>
 
       <h1 className="text-fluid-2xl font-bold">
-        Ciao {me.name.split(" ")[0]}, una domanda sola.
+        Ciao {me.name.split(" ")[0]}, tre cose e sei dentro.
       </h1>
       <p className="mt-3 max-w-xl text-fluid-base text-ink-muted">
-        Serve a capire cosa mostrarti: le sezioni, gli obiettivi e il modo in
-        cui viene calcolata la tua reputazione cambiano. Si può cambiare quando
-        vuoi dal profilo.
+        Sono le uniche che il sistema non può indovinare da solo — e da cui
+        dipende tutto il resto.
       </p>
 
       <div className="mt-10">
-        <ScegliRuolo
-          attuale={ruoloDi(me.role)}
-          onFatto="/dashboard"
-          etichettaConferma="Comincia"
-        />
+        <CompletaProfilo nomeIniziale={me.name} ruoloIniziale={ruoloDi(me.role)} />
       </div>
     </div>
   );

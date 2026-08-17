@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RUOLI } from "@/lib/ruolo";
 
 export const passwordSchema = z
   .string()
@@ -142,6 +143,55 @@ export const portfolioSchema = z.object({
   mediaType: z.enum(["image", "video", "audio"]).default("image"),
   externalUrl: z.string().url().optional().or(z.literal("")),
   year: z.coerce.number().int().min(1950).max(2100).optional().nullable(),
+});
+
+/**
+ * Il completamento del profilo, obbligatorio prima di entrare.
+ *
+ * ── Perché esiste ──
+ *
+ * Entrando con Google si arriva dentro con nome, email e foto — e senza le
+ * due cose che decidono tutto il resto: **come ti chiami tu** e **da che
+ * parte stai**. Google il ruolo non lo sa, e il nickname se lo inventava il
+ * sistema partendo dal nome, con un numero in coda quando era già preso.
+ *
+ * Il risultato era un utente a metà: indirizzo pubblico che non aveva scelto,
+ * e ruolo `ARTIST` per difetto — cioè il prodotto dell'altro lato, senza aver
+ * mai avuto occasione di dire il contrario.
+ *
+ * ── Il nickname è un indirizzo, non un'etichetta ──
+ *
+ * Finisce in `/artisti/[slug]`, quindi cambiarlo dopo rompe i collegamenti già
+ * condivisi e quello che Google ha indicizzato. È il motivo per cui si chiede
+ * **adesso**, una volta, invece di lasciarlo generare e farlo cambiare poi.
+ */
+export const completaProfiloSchema = z.object({
+  name: z.string().trim().min(2, "Serve un nome").max(80),
+  /**
+   * Le regole sono quelle di un indirizzo, e ognuna toglie un problema reale.
+   *
+   * Minuscole, cifre e trattini: tutto il resto — spazi, accenti, maiuscole —
+   * verrebbe codificato nell'URL e produrrebbe indirizzi illeggibili da
+   * condividere.
+   *
+   * Niente trattino iniziale o finale, e niente trattini doppi: sono le forme
+   * che `toSlug` non genera mai, quindi ammetterle qui creerebbe indirizzi che
+   * il resto del sistema non sa ricostruire.
+   *
+   * Almeno tre caratteri, perché sotto quella misura un indirizzo pubblico non
+   * distingue nessuno e prosciuga lo spazio dei nomi corti per tutti gli altri.
+   */
+  slug: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(3, "Almeno tre caratteri")
+    .max(30, "Al massimo trenta caratteri")
+    .regex(
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      "Solo lettere minuscole, numeri e trattini singoli"
+    ),
+  ruolo: z.enum(RUOLI as unknown as [string, ...string[]]),
 });
 
 export const participationSchema = z.object({
