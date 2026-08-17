@@ -57,6 +57,15 @@ jobs:
       - name: Variabili CSS risolvibili
         run: npm run verify:css
 
+      # Stessa famiglia, un livello più in basso: dentro una stringa GLSL non
+      # guarda nessuno. Spostando la formula del campo in un file condiviso,
+      # due `uniform` sono rimaste indietro — i tre shader hanno smesso di
+      # compilare, in produzione il registro è muto per scelta, e la landing
+      # ha semplicemente smesso di disegnare. Tipi, lint, build e test tutti
+      # verdi, tre tele ferme a 300×150.
+      - name: Uniform allineate fra JavaScript e GLSL
+        run: npm run verify:shader
+
       - name: Test unitari
         run: npm test
 

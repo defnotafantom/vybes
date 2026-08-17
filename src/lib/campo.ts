@@ -45,6 +45,27 @@
  * proprie uniform e il proprio `main`.
  */
 export const CAMPO_GLSL = `
+// La tela, in pixel del dispositivo, e quale tema e' attivo.
+//
+// Stavano nel frammento di OndeWebGL e sono rimaste indietro quando la formula
+// e' stata estratta qui: i tre shader continuavano a usarle, nessuno le
+// dichiarava piu', e **non compilavano piu' nessuno dei tre**. In produzione il
+// registro di compilazione e' muto per scelta, quindi la pagina non si e'
+// rotta — ha semplicemente smesso di disegnare, e ho passato due giri a
+// ritarare numeri di una cosa che non veniva eseguita.
+//
+// La lezione: spostare del codice condiviso vuol dire portarsi dietro anche
+// cio' che gli sta intorno, e le dichiarazioni sono codice. Il controllo che
+// ora lo impedisce sta in scripts/verifica-shader.mjs.
+//
+// (E niente apici inversi qui dentro: questo GLSL vive dentro un template
+// literal di JavaScript, e un apice inverso lo chiude a meta'. E' gia'
+// successo una volta, l'ho scritto in un commento, e l'ho rifatto nel commento
+// stesso in cui lo raccontavo — un errore di sintassi a trenta righe dalla
+// causa. Il compilatore l'ha preso: e' lui il controllo, e basta ascoltarlo.)
+uniform vec2  risoluzione;
+uniform float chiaro;        // 1.0 su tema chiaro, 0.0 su scuro
+
 // Il riquadro in cui il campo e' definito — l'hero — e la posizione di questa
 // tela dentro di esso, in pixel del dispositivo (y dal basso, come WebGL).
 // Per la tela che copre tutto l'hero valgono la propria misura e (0,0).
