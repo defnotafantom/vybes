@@ -151,6 +151,57 @@ type Demo = {
  * Milano ne ha la metà, perché è la città su cui punta il reclutamento vero
  * ed è lì che serve sapere se una directory di venti nomi regge.
  */
+
+/**
+ * ── Cosa la gente crede, per disciplina ──
+ *
+ * Sono i dati che alimentano l'asse dell'incontro (POSIZIONE.md): il
+ * pregiudizio che ogni opera smentisce, scritto come lo scriverebbe chi lo
+ * subisce.
+ *
+ * Nel prodotto vero questo campo lo compila l'artista, ed è il motivo per cui
+ * il campo esiste — se le frasi le scrivesse la redazione si otterrebbe il
+ * gusto di una persona sola travestito da divulgazione. Qui servono solo a
+ * vedere come si legge la schermata quando il campo è pieno: sono materiale
+ * di prova, e vivono nello stesso script che rifiuta di scrivere in
+ * produzione.
+ *
+ * Non sono state prese da opere vere trovate in rete, e non è pigrizia: opere
+ * altrui finirebbero coperte da copyright dentro il repository e dentro il
+ * database. Le immagini le genera `generaFoto`, i testi sono osservazioni.
+ */
+const CREDENZE: Record<string, string> = {
+  ballerini:
+    "Che sia una cosa da femmine, e che a vent'anni si debba smettere perché non è un mestiere.",
+  musicisti:
+    "Che se non ci campi allora è un hobby, e che «suoni ancora?» sia una domanda gentile.",
+  band: "Che una band che fa cover non stia facendo musica sua.",
+  cantanti: "Che basti avere una bella voce, e che il resto venga da sé.",
+  dj: "Che schiacci play e alzi le mani.",
+  fotografi: "Che sia la macchina a fare la foto, e che con quella ci riuscirebbe chiunque.",
+  videomaker: "Che oggi lo faccia chiunque con un telefono.",
+  attori: "Che recitare voglia dire fingere.",
+};
+
+/**
+ * Titoli plausibili, sempre per disciplina.
+ *
+ * «Lavoro 1 di Elisa» non è un titolo: è un segnaposto, e su un segnaposto non
+ * si può giudicare come si legge una griglia. Con un titolo vero si vede
+ * subito se la scheda regge o se il testo la sovrasta — che è l'unica ragione
+ * per cui questi dati esistono.
+ */
+const TITOLI: Record<string, string[]> = {
+  ballerini: ["Prove aperte, terza settimana", "Assolo per pavimento crepato", "Corpo di scena"],
+  musicisti: ["Sala prove, martedì", "Registrato in cucina", "Terzo movimento"],
+  band: ["Set completo al Circolo", "Nastro del sabato", "Prima con la formazione nuova"],
+  cantanti: ["Voce sola, niente riverbero", "Il pezzo che non canto mai", "Serata storta"],
+  dj: ["Chiusura alle cinque", "Selezione per pochi", "Solo dischi presi in prestito"],
+  fotografi: ["Chi resta a fine concerto", "Ritratti di quartiere", "Controluce"],
+  videomaker: ["Dietro il palco", "Un minuto, un piano sequenza", "Provini"],
+  attori: ["Monologo del secondo atto", "Studio su un silenzio", "Lettura pubblica"],
+};
+
 const ARTISTI: Demo[] = [
   // ── Milano: la città densa ──
   { nome: "Elisa Torrisi", citta: "milano", discipline: ["ballerini"], foto: true,
@@ -432,11 +483,22 @@ async function popola() {
         // segnaposto per tipo (ADR-040).
         mediaUrl = `https://example.invalid/demo/${slug}-${i}`;
       }
+      // La prima disciplina decide il vocabolario: un artista che fa due cose
+      // ha comunque un mestiere principale, ed è quello che il pubblico gli
+      // attribuisce — cioè quello su cui si è formato il pregiudizio.
+      const arte = a.discipline[0] ?? "musicisti";
+      const titoli = TITOLI[arte] ?? TITOLI.musicisti;
+
       await prisma.portfolioItem.create({
         data: {
           userId: utente.id,
           slug: `${slug}-lavoro-${i + 1}`,
-          title: `Lavoro ${i + 1} di ${a.nome.split(" ")[0]}`,
+          title: titoli[i % titoli.length],
+          // Non su tutte: nel prodotto vero il campo è facoltativo, e una
+          // demo in cui è sempre pieno nasconderebbe proprio il caso da cui
+          // dipende il disegno della schermata — l'opera che nell'incontro
+          // quotidiano non può comparire.
+          credenza: i % 3 === 2 ? null : (CREDENZE[arte] ?? null),
           mediaUrl,
           mediaType: tipo,
           year: 2023 + (i % 3),
