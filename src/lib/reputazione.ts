@@ -314,8 +314,33 @@ function vociOrganizzatore(f: FattiReputazione): Voce[] {
  * come si ottiene è indistinguibile dall'arbitrio.
  */
 export function dettaglioReputazione(f: FattiReputazione, role: string): Voce[] {
+  return lato(role) === "RECRUITER" ? vociOrganizzatore(f) : vociArtista(f);
+}
+
+/**
+ * Su quale formula si calcola il **numero salvato** in colonna.
+ *
+ * ── La domanda che questo risolve ──
+ *
+ * Chi fa entrambe le cose ha due formule, ognuna con massimo cento. Non si
+ * sommano — duecento non significherebbe niente — e non si mediano: una media
+ * fra due scale diverse è un numero che non risponde a nessuna domanda.
+ *
+ * ── La risposta ──
+ *
+ * Vince quella dell'**artista**, e la ragione è una sola: `reputation` esiste
+ * per ordinare `/artisti`. Il valore che ordina un elenco deve significare la
+ * stessa cosa per tutti quelli che ci stanno dentro — altrimenti l'ordine non
+ * vuol dire più niente, e una persona con due ruoli scavalcherebbe le altre
+ * per una qualità che nell'elenco non c'entra.
+ *
+ * L'altra metà non si perde: la dashboard mostra **entrambe le schede**, e i
+ * distintivi dell'organizzatore compaiono comunque sul profilo pubblico. Quello
+ * che non si mescola è il solo numero che decide una posizione.
+ */
+export function lato(role: string): "ARTIST" | "RECRUITER" {
   const ruolo: Ruolo = ruoloDi(role);
-  return ruolo === "RECRUITER" ? vociOrganizzatore(f) : vociArtista(f);
+  return ruolo === "RECRUITER" ? "RECRUITER" : "ARTIST";
 }
 
 /** Solo ciò che di questa persona si può davvero misurare oggi. */

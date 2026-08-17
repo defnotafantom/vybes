@@ -23,7 +23,21 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   password      String?
-  role          String    @default("ARTIST") // ARTIST | RECRUITER
+  // ARTIST | RECRUITER | ENTRAMBI — vedi src/lib/ruolo.ts.
+  //
+  // Un valore e non un CSV: la directory filtra su questa colonna dentro un
+  // indice composto, ed e' la query piu' calda del sito. Con una lista quel
+  // filtro diventerebbe una ricerca per sottostringa e l'indice smetterebbe
+  // di servire.
+  role          String    @default("ARTIST")
+
+  // Quando la persona ha scelto davvero il proprio ruolo.
+  //
+  // Serve a distinguere «e' ARTIST perche' l'ha detto» da «e' ARTIST perche'
+  // e' il valore di default». Chi entra con Google non sceglie niente: Google
+  // non sa se sei un chitarrista o un locale, e senza questo campo la domanda
+  // o non comparirebbe mai o ricomparirebbe a ogni accesso.
+  ruoloSceltoIl DateTime?
   // Asse separato dal ruolo di prodotto: vedi src/lib/permissions.ts
   adminRole     String    @default("NONE") // NONE | MODERATOR | ADMIN | SUPERADMIN
 

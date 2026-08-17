@@ -1,3 +1,4 @@
+import { latiDi } from "@/lib/ruolo";
 /**
  * I distintivi di un profilo: cosa questa persona ha dimostrato.
  *
@@ -248,7 +249,34 @@ function distintiviOrganizzatore(f: FattiDistintivi, anno: number): Distintivo[]
  */
 export function distintiviDi(f: FattiDistintivi, role: string = "ARTIST"): Distintivo[] {
   const anno = f.createdAt.getFullYear();
-  return role === "RECRUITER" ? distintiviOrganizzatore(f, anno) : distintiviArtista(f, anno);
+  const lati = latiDi(role);
+
+  // Un lato solo: l'elenco è quello del suo lato.
+  if (lati.length === 1) {
+    return lati[0] === "RECRUITER"
+      ? distintiviOrganizzatore(f, anno)
+      : distintiviArtista(f, anno);
+  }
+
+  /*
+   * Entrambi: l'unione, senza doppioni.
+   *
+   * Due voci hanno la stessa chiave nelle due famiglie — «verificato» e
+   * «dal» — e mostrarle due volte accanto al nome farebbe pensare a un
+   * difetto prima ancora che a una ripetizione. La prima vince, e siccome
+   * l'ordine è artista-poi-organizzatore, quella che resta è la formulazione
+   * del lato che la pagina pubblica descrive per primo.
+   *
+   * Nessun taglio in fondo: chi fa entrambe le cose ha davvero più da
+   * mostrare, e comprimerlo per estetica gli toglierebbe qualcosa che si è
+   * guadagnato.
+   */
+  const viste = new Set<string>();
+  return [...distintiviArtista(f, anno), ...distintiviOrganizzatore(f, anno)].filter((d) => {
+    if (viste.has(d.chiave)) return false;
+    viste.add(d.chiave);
+    return true;
+  });
 }
 
 /** Quelli conquistati, nell'ordine in cui vale la pena leggerli. */

@@ -34,8 +34,24 @@ export const PROFILO_PUBBLICO = {
   emailVerified: { not: null },
 } as const;
 
-/** Come sopra, ristretto agli artisti. */
+/**
+ * Come sopra, ristretto a chi si fa trovare.
+ *
+ * `in` e non uguaglianza, da quando esiste il terzo ruolo: chi fa entrambe le
+ * cose ha un portfolio come chiunque altro e deve comparire negli elenchi. Con
+ * `role: "ARTIST"` sarebbe stato escluso dalla directory, dalla vetrina, dalla
+ * sitemap e dalla rotazione del gioco — invisibile ovunque, senza nessun
+ * errore da nessuna parte.
+ *
+ * È anche la ragione per cui il terzo ruolo è un valore e non una lista
+ * separata da virgole: questo filtro corre su un indice composto, ed è la
+ * query più calda del sito. `in` lo usa, una ricerca per sottostringa no.
+ * Vedi `src/lib/ruolo.ts`.
+ */
 export const ARTISTA_PUBBLICO = {
   ...PROFILO_PUBBLICO,
-  role: "ARTIST",
-} as const;
+  // Senza `as const` di proposito: Prisma vuole un array modificabile per
+  // `in`, e un `readonly` qui fa fallire ogni chiamata con un errore di tipo
+  // che parla di varianza invece che di ruoli.
+  role: { in: ["ARTIST", "ENTRAMBI"] },
+};

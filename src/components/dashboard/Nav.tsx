@@ -104,7 +104,9 @@ const PUBBLICHE = [
  * sotto con la stessa icona fa dubitare che portino nello stesso posto.
  */
 function pubbliche(ruolo: Ruolo) {
-  return ruolo === "RECRUITER" ? PUBBLICHE.filter((v) => v.href !== "/artisti") : PUBBLICHE;
+  // Chi cerca ha già «Cerca artisti» in cima: ripeterlo dodici pixel più sotto
+  // con la stessa icona fa dubitare che portino nello stesso posto.
+  return ruolo === "ARTIST" ? PUBBLICHE : PUBBLICHE.filter((v) => v.href !== "/artisti");
 }
 
 type Voce = { href: string; label: string; icon: typeof Home; exact?: boolean };
@@ -152,9 +154,35 @@ const COSA: Record<string, string> = {
   "/dashboard/moderazione": "segnalazioni in attesa",
 };
 
+/**
+ * Le voci del menu, per ruolo.
+ *
+ * ── Chi fa entrambe le cose ──
+ *
+ * Riceve l'unione, e nell'ordine dell'organizzatore: chi ha anche quel ruolo
+ * ha delle candidature che aspettano una risposta, ed è l'unica cosa in tutta
+ * l'area personale che, se non fa, danneggia qualcun altro. Va per prima.
+ *
+ * I doppioni si tolgono per indirizzo, non per etichetta: «Ingaggi» e «I tuoi
+ * ingaggi» portano allo stesso posto con due nomi, e mostrarli entrambi
+ * sarebbe un menu che sembra rotto. Vince il primo incontrato, quindi la
+ * formulazione dell'organizzatore — che è quella giusta per chi pubblica.
+ */
 function voci(ruolo: Ruolo, puoModerare: boolean): Voce[] {
-  const base = ruolo === "RECRUITER" ? ITEMS_ORGANIZZATORE : ITEMS_ARTISTA;
-  return puoModerare ? [...base, MODERAZIONE] : [...base];
+  let base: Voce[];
+
+  if (ruolo === "ENTRAMBI") {
+    const visti = new Set<string>();
+    base = [...ITEMS_ORGANIZZATORE, ...ITEMS_ARTISTA].filter((v) => {
+      if (visti.has(v.href)) return false;
+      visti.add(v.href);
+      return true;
+    });
+  } else {
+    base = ruolo === "RECRUITER" ? [...ITEMS_ORGANIZZATORE] : [...ITEMS_ARTISTA];
+  }
+
+  return puoModerare ? [...base, MODERAZIONE] : base;
 }
 
 function useIsActive() {
