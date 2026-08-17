@@ -172,11 +172,16 @@ export default async function HomePage() {
             basso, e farglielo arrivare per proprietà vorrebbe dire attraversare
             componenti che non hanno niente a che fare con la questione. */}
         <div data-campo className="relative">
-          {/* La sfumatura a bolle viola/ciano (`mesh-hero`) è stata tolta da
-              qui. Restava dell'epoca in cui il fondo doveva "riempire": adesso
-              il fondo ha un fenomeno vero da mostrare, e due strati colorati
-              sovrapposti erano il motivo per cui la schermata sembrava
-              affollata. Sulle altre pagine resta, perché lì il campo non c'è. */}
+          {/* La sfumatura a bolle, rimessa e attenuata.
+
+              Era stata tolta perché con il marchio grande al centro faceva tre
+              strati colorati sovrapposti. Senza il marchio la schermata è
+              diventata un rettangolo quasi nero con delle righe sottili
+              sopra — corretta come composizione, e spenta. Le due bolle
+              ridanno il colore di fondo su cui le frange si staccano, e a
+              opacità ridotta non competono con niente perché non c'è più
+              niente con cui competere. */}
+          <div className="mesh-hero opacity-60" aria-hidden="true" />
           <div className="grid-lines absolute inset-0 -z-10" aria-hidden="true" />
 
           {/* Il campo d'onda sta **sopra** il fondo e **sotto** il contenuto:

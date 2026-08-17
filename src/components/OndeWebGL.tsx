@@ -23,9 +23,9 @@ import { avviaCampo } from "@/lib/tela-campo";
  * Perché sono la stessa figura del marchio. La spirale del logo è fatta di
  * filamenti che si avvolgono intorno a un centro: esattamente ciò che disegna
  * una sorgente che ruota mentre emette. Qui è quel fenomeno grande e in
- * movimento, con tre sorgenti che orbitano **intorno al marchio** e
- * interferiscono. Non è una decorazione presa da una galleria: è il logo,
- * scalato e messo in moto.
+ * movimento, con tre sorgenti che orbitano e interferiscono. Non è una
+ * decorazione presa da una galleria: è la stessa figura del logo, scalata e
+ * messa in moto.
  *
  * ── Cosa fa questo file, adesso ──
  *
@@ -63,11 +63,15 @@ void main() {
   vec3 tinta = mix(VIOLA, CIANO, 0.5 + 0.5 * sin(a * 0.9));
   tinta = mix(tinta, ROSA, 0.14 * smoothstep(0.7, 1.3, abs(a)));
 
-  // Si spegne allontanandosi dall'ancora — cioe' dal marchio, che e' la
-  // sorgente. Il campo deve sembrare emesso da li', e soprattutto non deve
-  // arrivare a toccare i margini del riquadro, dove il taglio netto
-  // rivelerebbe che e' un rettangolo.
-  float vignetta = 1.0 - smoothstep(0.30, 0.95, length(p - ancora));
+  // Si spegne verso i bordi: il campo deve sembrare emergere dal centro, e
+  // soprattutto non deve arrivare a toccare i margini del riquadro, dove il
+  // taglio netto rivelerebbe che e' un rettangolo.
+  //
+  // Il raggio esterno e' andato da 0,78 a 1,00. Quei numeri erano stati
+  // scelti quando al centro c'era un marchio alto diciassette rem: il campo
+  // doveva stargli intorno senza disturbarlo. Tolto quello, la stessa
+  // vignetta lasciava un terzo di schermata semplicemente vuota.
+  float vignetta = 1.0 - smoothstep(0.34, 1.00, length(p));
 
   // Molto trasparente, e piu' ancora su tema chiaro: li' il testo e' scuro su
   // fondo chiaro e qualunque colore saturo sotto ne abbassa il contrasto — che
@@ -75,7 +79,12 @@ void main() {
   //
   // Scendendo, il campo si ritira: sotto l'hero comincia il contenuto, e un
   // fondo che pulsa dietro un elenco di artisti e' rumore.
-  float alfa = linea * vignetta * mix(0.30, 0.14, chiaro)
+  // Piu' marcato di prima. Anche qui il valore veniva da una schermata che
+  // aveva altre tre cose luminose sopra: da sola, quella opacita' spariva. Il
+  // tema chiaro resta molto piu' basso, perche' li' il testo e' scuro su
+  // fondo chiaro e ogni colore saturo sotto ne abbassa il contrasto — che e'
+  // un problema di leggibilita', non di gusto.
+  float alfa = linea * vignetta * mix(0.62, 0.26, chiaro)
              * (1.0 - scorrimento * 0.7) * (1.0 + impulso * 1.6);
 
   colore = vec4(tinta, alfa);

@@ -13,24 +13,29 @@
  * la regola scritta in più posti e nessuno che la faccia rispettare. Qui la
  * formula sta scritta una volta e i tre frammenti la includono.
  *
- * ── L'ancora ──
+ * ── L'ancora, provata e ritirata ──
  *
- * Le sorgenti non orbitano più intorno al centro dell'hero, ma intorno al
- * **marchio**: è lui a emettere, e la figura è ciò che emette. È la differenza
- * fra un logo appoggiato su uno sfondo animato e un logo che quello sfondo lo
- * causa.
+ * Per un commit le sorgenti orbitavano intorno al marchio invece che intorno
+ * al centro: l'idea era che il logo *causasse* il campo. L'idea regge, la
+ * realizzazione no.
  *
- * La posizione viaggia in questo oggetto e non per proprietà di React: chi la
- * scrive (il marchio) e chi la legge (lo sfondo, il titolo) sono fratelli in
- * punti diversi dell'albero, e farla risalire a un antenato comune per poi
- * ridiscendere legherebbe tre componenti che non hanno altro da dirsi. Il
- * valore cambia a ogni ridimensionamento e viene letto a ogni fotogramma:
- * passarlo per stato vorrebbe dire un rendering per pixel di scorrimento.
+ * Il marchio sta in alto a sinistra, cioè a circa 0,9 unità dal centro in un
+ * riquadro che ne misura 1 in altezza. Spostandoci le sorgenti, l'attenuazione
+ * 1/(1+1,8·r) ha schiacciato l'ampiezza su tutta la metà destra dello schermo,
+ * e la vignetta — che seguiva l'ancora — ha azzerato quel che restava. Le tre
+ * superfici sono diventate: sfondo vuoto a destra, lettere senza frange,
+ * marchio piatto. Un difetto solo, con tre sintomi che sembravano tre.
  *
- * Il valore di partenza è il centro dell'hero: senza marchio in pagina, il
- * campo si comporta esattamente come prima.
+ * La lezione vale più della funzione: **una costante tarata su un centro non
+ * sopravvive allo spostamento del centro**. 0,25 e 0,78 erano i raggi di una
+ * vignetta centrata; letti da un angolo diventano una maschera che copre
+ * mezzo schermo. Spostare l'origine di un campo significa ritarare tutto
+ * quello che da quell'origine dipendeva — e qui erano cinque numeri sparsi in
+ * tre file.
+ *
+ * Il legame fra marchio e campo resta, ma dove non può rompere niente: è la
+ * stessa formula, non la stessa posizione.
  */
-export const ANCORA = { x: 0, y: 0 };
 
 /**
  * Il prelude comune ai tre frammenti: uniform condivise, l'onda, e le due
@@ -49,9 +54,6 @@ uniform float tempo;
 uniform float scorrimento;
 uniform vec2  puntatore;
 uniform float impulso;
-// Dove sta il marchio, in coordinate del campo: le sorgenti gli orbitano
-// intorno. Vale (0,0) quando il marchio non c'e', cioe' il centro dell'hero.
-uniform vec2  ancora;
 
 // Un fronte d'onda a spirale emesso da una sorgente.
 //
@@ -76,14 +78,14 @@ vec2 punto(vec2 frammento) {
   return (frammento + origine - 0.5 * finestra) / min(finestra.x, finestra.y);
 }
 
-// L'interferenza: tre sorgenti che orbitano intorno all'ancora a velocita'
+// L'interferenza: tre sorgenti che orbitano intorno al centro a velocita'
 // diverse. I numeri sono primi fra loro di proposito — con periodi in rapporto
 // semplice la figura si ripete a occhio ogni pochi secondi e si riconosce il
 // ciclo.
 float campo(vec2 p) {
-  vec2 s1 = ancora + 0.45 * vec2(cos(tempo * 0.23), sin(tempo * 0.23));
-  vec2 s2 = ancora + 0.38 * vec2(cos(-tempo * 0.17 + 2.1), sin(-tempo * 0.17 + 2.1));
-  vec2 s3 = ancora + 0.55 * vec2(cos(tempo * 0.11 + 4.2), sin(tempo * 0.11 + 4.2));
+  vec2 s1 = 0.45 * vec2(cos(tempo * 0.23), sin(tempo * 0.23));
+  vec2 s2 = 0.38 * vec2(cos(-tempo * 0.17 + 2.1), sin(-tempo * 0.17 + 2.1));
+  vec2 s3 = 0.55 * vec2(cos(tempo * 0.11 + 4.2), sin(tempo * 0.11 + 4.2));
 
   // La prima sorgente segue chi guarda, ma per meta' strada: seguendo il
   // cursore esattamente il campo diventa un riflesso del mouse e smette di

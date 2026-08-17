@@ -1,4 +1,4 @@
-import { ANCORA, CAMPO_GLSL } from "@/lib/campo";
+import { CAMPO_GLSL } from "@/lib/campo";
 
 /**
  * Il motore comune alle tre superfici del campo.
@@ -30,8 +30,16 @@ const VERTICE = `#version 300 es
 in vec2 posizione;
 void main() { gl_Position = vec4(posizione, 0.0, 1.0); }`;
 
-/** Densità massima: oltre 1,5 non si distingue e la GPU lavora il doppio. */
-const DENSITA_MASSIMA = 1.5;
+/**
+ * Densità massima predefinita: oltre 1,5 su una superficie grande non si
+ * distingue e la GPU lavora il doppio.
+ *
+ * Chi disegna un segno piccolo la alza: là i pixel sono poche migliaia, il
+ * costo è nullo, e a densità 1,5 un contorno curvo di cinquanta pixel si vede
+ * seghettato. È la differenza fra «costa troppo» e «costa niente», e non può
+ * essere lo stesso numero.
+ */
+const DENSITA_PREDEFINITA = 1.5;
 
 /** Le uniform che tutte e tre condividono. */
 const COMUNI = [
@@ -43,7 +51,6 @@ const COMUNI = [
   "scorrimento",
   "puntatore",
   "impulso",
-  "ancora",
 ] as const;
 
 export type Posti = Record<string, WebGLUniformLocation | null>;
@@ -76,6 +83,8 @@ export type Opzioni = {
   suVivo?: () => void;
   /** Per i messaggi di diagnostica in sviluppo. */
   nome: string;
+  /** Densità massima di pixel, se quella predefinita non basta. */
+  densitaMassima?: number;
 };
 
 function compila(
@@ -183,10 +192,14 @@ ${opzioni.frammento}`;
   function ridimensiona(): boolean {
     // Metà risoluzione sotto i 640px: su un telefono la differenza non si vede
     // e il consumo si dimezza. Il pubblico è fatto di artisti col telefono.
+    const tetto = opzioni.densitaMassima ?? DENSITA_PREDEFINITA;
     densita = Math.min(
-      DENSITA_MASSIMA,
+      tetto,
       window.devicePixelRatio || 1,
-      window.innerWidth < 640 ? 1 : DENSITA_MASSIMA
+      // Metà risoluzione sotto i 640px, ma mai sotto 1: su un telefono la
+      // differenza su una superficie grande non si vede e il consumo si
+      // dimezza. Chi ha chiesto una densità maggiore la tiene anche lì.
+      window.innerWidth < 640 ? Math.max(1, tetto / 1.5) : tetto
     );
     const w = Math.floor(canvas.clientWidth * densita);
     const h = Math.floor(canvas.clientHeight * densita);
@@ -251,7 +264,6 @@ ${opzioni.frammento}`;
     puntatoreOra.y += (puntatoreVerso.y - puntatoreOra.y) * 0.2;
     gl!.uniform1f(posti.scorrimento, scorrimentoOra);
     gl!.uniform2f(posti.puntatore, puntatoreOra.x, puntatoreOra.y);
-    gl!.uniform2f(posti.ancora, ANCORA.x, ANCORA.y);
     // Decade da solo a ogni fotogramma: nessun timer da annullare, e una
     // scheda lasciata aperta non accumula niente.
     impulso *= 0.94;
@@ -328,7 +340,13 @@ ${opzioni.frammento}`;
   // diversamente perché la finestra si è stretta.
   const osservaMisura = new ResizeObserver(() => {
     if (!partito) return;
-    if (!ridimensiona()) misura();
+    // `ridimensiona()` **e poi** `misura()`, sempre. Prima era
+    // `if (!ridimensiona()) misura()`: quando la tela cambiava davvero misura,
+    // la prima ritornava true e la seconda non veniva chiamata mai — perché al
+    // fotogramma dopo `disegna` trova la misura già aggiornata. La trama del
+    // titolo restava quindi quella della finestra vecchia, e nessuno lo diceva.
+    ridimensiona();
+    misura();
     if (menoMovimento) disegna(6.5);
   });
   osservaMisura.observe(canvas);
