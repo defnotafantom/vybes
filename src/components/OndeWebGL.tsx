@@ -56,7 +56,9 @@ const FRAMMENTO = `
 void main() {
   vec2 p = punto(gl_FragCoord.xy);
   float a = campo(p);
-  float linea = frange(a);
+  // Piu' spesse di quelle dentro il titolo: qui la riga sta su un fondo quasi
+  // nero, dove un pixel a bassa opacita' non si legge.
+  float linea = frange(a, 2.4, 0.020);
 
   // Il colore segue la fase, ma con poca strada fra le due tinte: un campo che
   // attraversa mezzo arcobaleno compete con il marchio, che ha i suoi colori.
@@ -71,7 +73,15 @@ void main() {
   // scelti quando al centro c'era un marchio alto diciassette rem: il campo
   // doveva stargli intorno senza disturbarlo. Tolto quello, la stessa
   // vignetta lasciava un terzo di schermata semplicemente vuota.
-  float vignetta = 1.0 - smoothstep(0.34, 1.00, length(p));
+  float vignetta = 1.0 - smoothstep(0.34, 1.05, length(p));
+
+  // ── E si concentra in alto ──
+  //
+  // Non e' simmetria estetica: sopra c'e' il titolo, che il campo attraversa
+  // e che sta su una tela sua; sotto c'e' un paragrafo di testo corrente, e
+  // delle righe colorate dietro sedici pixel di testo sono rumore. A piena
+  // opacita' su tutta l'altezza si leggeva peggio — verificato sul sito.
+  float alto = mix(0.30, 1.0, smoothstep(-0.30, 0.30, p.y));
 
   // Molto trasparente, e piu' ancora su tema chiaro: li' il testo e' scuro su
   // fondo chiaro e qualunque colore saturo sotto ne abbassa il contrasto — che
@@ -84,7 +94,7 @@ void main() {
   // tema chiaro resta molto piu' basso, perche' li' il testo e' scuro su
   // fondo chiaro e ogni colore saturo sotto ne abbassa il contrasto — che e'
   // un problema di leggibilita', non di gusto.
-  float alfa = linea * vignetta * mix(0.62, 0.26, chiaro)
+  float alfa = linea * vignetta * alto * mix(0.85, 0.42, chiaro)
              * (1.0 - scorrimento * 0.7) * (1.0 + impulso * 1.6);
 
   colore = vec4(tinta, alfa);

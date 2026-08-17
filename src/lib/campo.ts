@@ -112,10 +112,18 @@ float campo(vec2 p) {
 // fwidth() dice quanto vale un pixel in questa scala: dividendo per quello la
 // linea resta spessa un pixel sia al centro sia ai bordi, dove i fronti sono
 // piu' fitti. Senza, verso il bordo le righe si impastano in un grigio.
-float frange(float a) {
+//
+// I due numeri sono lo **spessore**, e vanno chiesti invece che ereditati.
+// Dentro le lettere del titolo la riga sta su un fondo pieno e un pixel basta;
+// sullo sfondo sta su nero quasi puro, dove un pixel a bassa opacita' e' un
+// grigio che non si vede. Con un valore solo per tutti, o il titolo diventa
+// rigato o lo sfondo sparisce — l'ho visto succedere in tutte e due le
+// direzioni prima di parametrizzarlo.
+float frange(float a, float largo, float minimo) {
   float d = abs(fract(a * 3.0) - 0.5);
-  return 1.0 - smoothstep(0.0, fwidth(a * 3.0) * 1.6 + 0.008, d);
+  return 1.0 - smoothstep(0.0, fwidth(a * 3.0) * largo + minimo, d);
 }
+float frange(float a) { return frange(a, 1.6, 0.008); }
 
 const vec3 VIOLA = vec3(0.545, 0.361, 0.965);
 const vec3 CIANO = vec3(0.024, 0.714, 0.831);
