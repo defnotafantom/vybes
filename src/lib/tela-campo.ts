@@ -356,7 +356,11 @@ ${opzioni.frammento}`;
   const osservatore = new IntersectionObserver(
     ([voce]) => {
       visibile = voce.isIntersecting;
-      visibile && !document.hidden ? avvia() : ferma();
+      // `if`, non un ternario buttato lì: un'espressione condizionale usata per
+      // il suo effetto collaterale è la cosa che ESLint segnalava, e aveva
+      // ragione — si legge come se il valore servisse a qualcosa.
+      if (visibile && !document.hidden) avvia();
+      else ferma();
     },
     { threshold: 0 }
   );
