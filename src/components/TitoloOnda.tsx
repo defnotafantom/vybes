@@ -235,9 +235,41 @@ export function TitoloOnda({
       const sinistra = rt.left - riquadroTela.left;
       const alto = rt.top - riquadroTela.top;
       const x = centrato ? sinistra + rt.width / 2 : sinistra;
+      const righe = h1.querySelectorAll("span");
 
       testoRighe.current.forEach((riga, i) => {
-        ctx.fillText(riga, x, alto + interlinea * (i + 0.5));
+        const y = alto + interlinea * (i + 0.5);
+
+        /*
+         * ── Si misura, non ci si fida ──
+         *
+         * Il motore di testo della tela e quello del documento sono due cose
+         * diverse, e non danno la stessa larghezza nemmeno con lo stesso font.
+         * Misurato su questa pagina: la riga più lunga è 858 pixel nel
+         * documento e 819 sulla tela — quattro per cento, che su un titolo di
+         * novantasei pixel è mezza lettera di scarto verso destra.
+         *
+         * Le cause sono due e nessuna delle due si può «sistemare»: la
+         * crenatura fine di una variabile non si riproduce identica, e la
+         * spaziatura fra lettere in CSS e in canvas non si applica agli stessi
+         * posti (l'ultima lettera).
+         *
+         * Quindi non si insegue: si misura l'ingombro vero della riga e si
+         * comprime il disegno esattamente su quello. Una distorsione
+         * orizzontale del quattro per cento non si vede; mezza lettera di
+         * disallineamento sì. E vale con qualunque font arrivi domani.
+         */
+        const vera = righe[i]?.getBoundingClientRect().width ?? 0;
+        const disegnata = ctx.measureText(riga).width;
+        if (vera > 0 && disegnata > 0) {
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.scale(vera / disegnata, 1);
+          ctx.fillText(riga, 0, 0);
+          ctx.restore();
+        } else {
+          ctx.fillText(riga, x, y);
+        }
       });
 
       gl.bindTexture(gl.TEXTURE_2D, trama);

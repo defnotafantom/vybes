@@ -207,12 +207,14 @@ export function MarchioCampo({
       frammento: FRAMMENTO,
       uniformi: ["logo", "carica"],
       attendi: pronta,
-      // Qui la densità va alzata. Il tetto di 1,5 difende una tela che copre
-      // l'hero — centinaia di migliaia di pixel; questa ne ha diecimila, e a
-      // 1,5 un contorno curvo di cento pixel si vede seghettato. Costa niente
-      // e si nota subito: è esattamente il caso in cui un limite pensato per
-      // un'altra superficie andava riaperto invece che ereditato.
-      densitaMassima: 3,
+      // Densità imposta, non massima: qui la densità dello schermo non
+      // c'entra. La trama del marchio ha 426 pixel per lato e il disco ne
+      // occupa 112; su uno schermo a 0,9 la tela nasceva a cento pixel veri e
+      // le mipmap fondevano i filamenti chiari con le lobature scure — il
+      // logo diventava una palla fangosa. Si disegna a 336 e si lascia
+      // ridurre al browser: sovracampionamento, il modo classico di tenere
+      // netto un dettaglio più fine del pixel. Su diecimila pixel costa nulla.
+      densitaFissa: 3,
       suVivo: segnalaVivo,
       suProgramma: (gl, posti) => {
         trama = gl.createTexture();

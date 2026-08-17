@@ -83,8 +83,22 @@ export type Opzioni = {
   suVivo?: () => void;
   /** Per i messaggi di diagnostica in sviluppo. */
   nome: string;
-  /** Densità massima di pixel, se quella predefinita non basta. */
-  densitaMassima?: number;
+  /**
+   * Densità di pixel imposta, che **ignora** quella dello schermo.
+   *
+   * Serve a chi disegna un dettaglio fine su una superficie piccola. Il
+   * marchio è il caso: una trama da 426 pixel su un disco di 112. Su uno
+   * schermo con `devicePixelRatio` 0,9 — ce ne sono, e quello su cui è stato
+   * provato è uno — la tela veniva creata a cento pixel veri, le mipmap
+   * mediavano i filamenti sottili con le lobature scure, e il logo diventava
+   * una palla fangosa. Non un difetto di taratura: informazione buttata via
+   * prima di arrivare allo schermo.
+   *
+   * Chiedere 3 significa disegnare a 336 e far ridurre al browser — un
+   * sovracampionamento, che è il modo classico di tenere netto un dettaglio
+   * più fine del pixel. Su diecimila pixel costa niente.
+   */
+  densitaFissa?: number;
 };
 
 function compila(
@@ -192,15 +206,18 @@ ${opzioni.frammento}`;
   function ridimensiona(): boolean {
     // Metà risoluzione sotto i 640px: su un telefono la differenza non si vede
     // e il consumo si dimezza. Il pubblico è fatto di artisti col telefono.
-    const tetto = opzioni.densitaMassima ?? DENSITA_PREDEFINITA;
-    densita = Math.min(
-      tetto,
-      window.devicePixelRatio || 1,
-      // Metà risoluzione sotto i 640px, ma mai sotto 1: su un telefono la
-      // differenza su una superficie grande non si vede e il consumo si
-      // dimezza. Chi ha chiesto una densità maggiore la tiene anche lì.
-      window.innerWidth < 640 ? Math.max(1, tetto / 1.5) : tetto
-    );
+    // Una densità imposta si prende così com'è: chi la chiede sa che il suo
+    // disegno contiene dettagli più fini del pixel dello schermo, e la densità
+    // dello schermo non è una risposta a quel problema.
+    densita =
+      opzioni.densitaFissa ??
+      Math.min(
+        DENSITA_PREDEFINITA,
+        window.devicePixelRatio || 1,
+        // Metà risoluzione sotto i 640px: su un telefono, su una superficie
+        // grande, la differenza non si vede e il consumo si dimezza.
+        window.innerWidth < 640 ? 1 : DENSITA_PREDEFINITA
+      );
     const w = Math.floor(canvas.clientWidth * densita);
     const h = Math.floor(canvas.clientHeight * densita);
     if (w === larghezza && h === altezza) return false;
