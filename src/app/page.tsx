@@ -215,10 +215,16 @@ export default async function HomePage() {
                 intorno. Un logo che causa quello che ha attorno non ha bisogno
                 di essere amalgamato: lo è per costruzione. Vedi
                 `MarchioCampo.tsx`. */}
-            <MarchioCampo
-              className="animate-fade-up"
-              classeDisco="h-14 w-14 sm:h-16 sm:w-16"
-            />
+            {/* La misura la decide il componente. Qui c'era un valore
+                esplicito — h-14/h-16, cioè 56 e 64 pixel — rimasto da quando
+                il marchio era un'icona: ha continuato a valere anche dopo che
+                il valore predefinito era stato alzato, perché una prop passata
+                vince sempre sul default. Il logo restava piccolo e io
+                continuavo a dire che l'avevo ingrandito.
+
+                È la forma di difetto numero due: la regola cambiata in un
+                posto solo, con una copia più vecchia che continua a decidere. */}
+            <MarchioCampo className="animate-fade-up" />
 
             {/* Il contatore compare solo quando è un argomento. «7 artisti»
                 scritto nel punto più visibile della pagina non informa:
