@@ -10,6 +10,7 @@ import { ArtistCard } from "@/components/ArtistCard";
 import { EventCard } from "@/components/EventCard";
 import { Spotlight } from "@/components/Spotlight";
 import { TitoloOnda } from "@/components/TitoloOnda";
+import { MarchioCampo } from "@/components/MarchioCampo";
 import { OndeWebGL } from "@/components/OndeWebGL";
 import { Avatar } from "@/components/ui/Avatar";
 import { fromCsv } from "@/lib/slug";
@@ -201,13 +202,26 @@ export default async function HomePage() {
               prima schermata deve contenere titolo **e** pulsanti: un sito che
               deve convincere in tre secondi non può usarli per presentarsi. */}
           <div className="container-page py-20 sm:py-24 lg:py-28">
+            {/* ── Il marchio, tornato ──
+
+                Non al centro e non grande: in cima alla colonna, della misura
+                di un segno. E non è più un'immagine appoggiata sul campo — è
+                la sua sorgente, e le spirali dello sfondo gli orbitano
+                intorno. Un logo che causa quello che ha attorno non ha bisogno
+                di essere amalgamato: lo è per costruzione. Vedi
+                `MarchioCampo.tsx`. */}
+            <MarchioCampo
+              className="animate-fade-up"
+              classeDisco="h-14 w-14 sm:h-16 sm:w-16"
+            />
+
             {/* Il contatore compare solo quando è un argomento. «7 artisti»
                 scritto nel punto più visibile della pagina non informa:
                 comunica che il sito è vuoto, e lo fa prima che il visitatore
                 abbia letto cosa fa. Sotto la soglia si mostrano le città, che
                 sono venti da subito e dicono la stessa cosa — dove siamo —
                 senza dichiarare la propria debolezza. */}
-            <p className="eyebrow animate-fade-up">
+            <p className="eyebrow mt-7 animate-fade-up [animation-delay:80ms]">
               {/* Una scintilla è l'icona che ogni sito mette accanto a ogni
                   cosa e non significa niente. Un'onda dice di che sito si
                   tratta. */}
@@ -252,7 +266,7 @@ export default async function HomePage() {
                  bordo sinistro. Il margine negativo restituisce lo spazio
                  preso dal riempimento, quindi l'allineamento a sinistra della
                  colonna resta quello di tutto il resto. */
-              className="-m-4 mt-6 inline-block animate-fade-up p-4 [animation-delay:120ms]"
+              className="-m-4 mt-6 inline-block animate-fade-up p-4 [animation-delay:160ms]"
               classeTitolo="text-[clamp(1.75rem,7.4vw,6rem)] font-extrabold leading-[0.96] tracking-[-0.04em]"
             />
 
