@@ -117,13 +117,25 @@ void main() {
   uv *= 1.08 - impulso * 0.10;
 
   vec4 t = texture(logo, 0.5 + 0.5 * uv);
-  vec3 vuoto = vec3(0.92, 0.92, 0.95);
-  vec3 col = mix(vuoto, t.rgb, t.a);
+
+  // ── Niente disco bianco ──
+  //
+  // Prima la sfera era piena e i vuoti del marchio si riempivano di chiaro:
+  // veniva fuori una biglia bianca con dentro la spirale, cioe' un oggetto in
+  // piu' sulla schermata. La forma adesso e' la **sagoma del logo**: dove
+  // l'immagine e' trasparente non si disegna niente e si vede la pagina.
+  //
+  // Il volume resta, perche' la normale della sfera e la rifrazione si
+  // calcolano lo stesso: i nastri si incurvano come se stessero sopra una
+  // calotta, ma la calotta non si vede. E' la differenza fra «la spirale sta
+  // dentro una palla» e «la spirale e' tridimensionale».
+  vec3 col = t.rgb;
+  float materia = t.a * dentro;
 
   // Lo scarto dopo le derivate: fwidth() e texture() confrontano frammenti
   // vicini, e uscendo prima si toglierebbero di mezzo proprio i vicini di chi
   // sta sul contorno — l'unico posto in cui lo si guarda.
-  if (dentro <= 0.001) discard;
+  if (materia <= 0.004) discard;
 
   // La luce segue il puntatore, a meta' strada: seguendolo esattamente la
   // sfera diventa un riflesso del mouse e smette di sembrare un oggetto.
@@ -136,28 +148,32 @@ void main() {
 
   col *= diffusa;
   col += lucido;
-  col += bordo * 0.30 * CIANO;
-  // Occlusione all'orlo: senza, la sfera sembra un disco con sopra un riflesso.
-  col *= 1.0 - 0.35 * smoothstep(0.75, 1.0, r);
+  // Il bordo di Fresnel adesso corre lungo il **contorno dei nastri**, non
+  // lungo un cerchio: e' quello che dice «questo pezzo e' curvo» senza
+  // disegnare la sfera che lo contiene.
+  col += bordo * 0.35 * CIANO;
+  // Occlusione verso l'orlo della calotta: i nastri che stanno di taglio si
+  // scuriscono, ed e' cio' che tiene insieme la lettura del volume.
+  col *= 1.0 - 0.30 * smoothstep(0.72, 1.0, r);
   // Carica e impulso lo accendono, con gli stessi due valori del resto della
   // schermata: e' l'unico momento in cui il marchio e il campo si muovono
   // insieme, ed e' quello che li fa leggere come una cosa sola.
   col += (carica * 0.18 + impulso * 0.30) * VIOLA;
 
-  colore = vec4(col, dentro);
+  colore = vec4(col, materia);
 }`;
 
 export function MarchioCampo({
   className = "",
   /**
-   * Il lato del disco, in classi Tailwind.
+   * Il lato del riquadro, in classi Tailwind.
    *
-   * Non diciassette rem come il vecchio marchio d'hero, che pretendeva di
-   * essere il contenuto — ma nemmeno la misura di un'icona: a cinquantasei
-   * pixel i filamenti si toccavano e la spirale si leggeva come un cerchio
-   * colorato. Questa è la misura in cui il segno si riconosce e resta un segno.
+   * Un segno da cento pixel in cima a una colonna non aveva un ruolo: né
+   * marchio in barra né oggetto della schermata — «un po' senza senso», ed era
+   * una lettura giusta. Adesso occupa il vuoto a destra del titolo, e a quella
+   * misura è la seconda cosa che si guarda dopo le parole.
    */
-  classeDisco = "h-20 w-20 sm:h-28 sm:w-28",
+  classeDisco = "h-36 w-36 sm:h-48 sm:w-48 lg:h-64 lg:w-64",
 }: {
   className?: string;
   classeDisco?: string;

@@ -207,24 +207,30 @@ export default async function HomePage() {
               prima schermata deve contenere titolo **e** pulsanti: un sito che
               deve convincere in tre secondi non può usarli per presentarsi. */}
           <div className="container-page py-20 sm:py-24 lg:py-28">
-            {/* ── Il marchio, tornato ──
+            {/* ── Il titolo a sinistra, il marchio nel vuoto a destra ──
 
-                Non al centro e non grande: in cima alla colonna, della misura
-                di un segno. E non è più un'immagine appoggiata sul campo — è
-                la sua sorgente, e le spirali dello sfondo gli orbitano
-                intorno. Un logo che causa quello che ha attorno non ha bisogno
-                di essere amalgamato: lo è per costruzione. Vedi
-                `MarchioCampo.tsx`. */}
-            {/* La misura la decide il componente. Qui c'era un valore
-                esplicito — h-14/h-16, cioè 56 e 64 pixel — rimasto da quando
-                il marchio era un'icona: ha continuato a valere anche dopo che
-                il valore predefinito era stato alzato, perché una prop passata
-                vince sempre sul default. Il logo restava piccolo e io
-                continuavo a dire che l'avevo ingrandito.
+                Il marchio stava in cima alla colonna, sopra l'etichetta, alla
+                misura di un segno: né logo in barra né oggetto della
+                schermata. Non aveva un ruolo, e infatti sembrava messo lì per
+                riempire.
 
-                È la forma di difetto numero due: la regola cambiata in un
-                posto solo, con una copia più vecchia che continua a decidere. */}
-            <MarchioCampo className="animate-fade-up" />
+                Adesso occupa il vuoto grande a destra del titolo. Non è una
+                decorazione che tappa un buco: quel vuoto era la cosa che
+                rendeva leggibile la composizione, e un oggetto **solo**, alla
+                misura giusta, lo trasforma in una tensione fra due poli invece
+                di lasciarlo vuoto e basta. Parole a sinistra, cosa a destra.
+
+                È anche il motivo per cui non si scontrano più: prima stavano
+                sullo stesso asse verticale e si contendevano l'inizio della
+                lettura; adesso ognuno ha il proprio lato.
+
+                La colonna del testo è `auto` e quella del marchio `1fr`: la
+                larghezza la decidono le righe del titolo, che non vanno a capo
+                per costruzione, e il resto è spazio del marchio. Al contrario
+                — testo elastico — una finestra stretta comprimerebbe la
+                colonna e il titolo sborderebbe. */}
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,auto)_1fr] lg:items-center lg:gap-12">
+              <div>
 
             {/* Il contatore compare solo quando è un argomento. «7 artisti»
                 scritto nel punto più visibile della pagina non informa:
@@ -232,7 +238,7 @@ export default async function HomePage() {
                 abbia letto cosa fa. Sotto la soglia si mostrano le città, che
                 sono venti da subito e dicono la stessa cosa — dove siamo —
                 senza dichiarare la propria debolezza. */}
-            <p className="eyebrow mt-7 animate-fade-up [animation-delay:80ms]">
+            <p className="eyebrow animate-fade-up">
               {/* Una scintilla è l'icona che ogni sito mette accanto a ogni
                   cosa e non significa niente. Un'onda dice di che sito si
                   tratta. */}
@@ -280,6 +286,15 @@ export default async function HomePage() {
               className="-m-4 mt-6 inline-block animate-fade-up p-4 [animation-delay:160ms]"
               classeTitolo="text-[clamp(1.75rem,7.4vw,6rem)] font-extrabold leading-[0.96] tracking-[-0.04em]"
             />
+            </div>
+
+              {/* `justify-self-center` da schermo largo: il marchio si mette in
+                  mezzo allo spazio che avanza invece di incollarsi al bordo
+                  destro, che su un monitor molto largo lo spedirebbe a
+                  settecento pixel dal titolo — due cose sullo stesso schermo
+                  che non si guardano piu'. */}
+              <MarchioCampo className="animate-fade-up justify-self-start [animation-delay:240ms] lg:justify-self-center" />
+            </div>
 
             {/* Paragrafo e pulsanti su una riga sola, separati da una regola
                 orizzontale: la riga li lega e allo stesso tempo chiude l'hero,
