@@ -51,7 +51,11 @@ export default function ArtiPage() {
                   portano a una scheda e altre a un guscio, senza dirlo, fa
                   sembrare rotto il sito invece che in costruzione. */}
               <p className="mt-1.5 text-fluid-sm muted">
-                {SCHEDE[d.slug] ? "Scheda completa" : "Scheda da scrivere — c'è chi la pratica"}
+                {SCHEDE[d.slug]?.stato === "rivista"
+                  ? "Scheda rivista"
+                  : SCHEDE[d.slug]
+                    ? "Bozza, da rileggere"
+                    : "Scheda da scrivere"}
               </p>
             </Link>
           </li>

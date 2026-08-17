@@ -155,10 +155,29 @@ export default async function ArtePage({ params }: { params: Promise<{ arte: str
         <div className="mt-8 max-w-3xl rounded-2xl border border-dashed p-6">
           <p className="font-semibold">La scheda di quest&apos;arte non è ancora scritta.</p>
           <p className="mt-2 text-fluid-sm muted">
-            Le schede si scrivono una alla volta, e una fatta bene vale più di dieci
-            abbozzate. Intanto qui sotto c&apos;è la parte viva: chi la pratica adesso.
+            Intanto qui sotto c&apos;è la parte viva: chi la pratica adesso.
           </p>
         </div>
+      )}
+
+      {/* ── La bozza si dichiara ──
+
+          Un abbozzo che non dice di esserlo diventa definitivo per inerzia:
+          nessuno lo riscrive perché nessuno si accorge che andrebbe riscritto.
+          Dichiararlo tiene aperta la revisione, e dice al lettore quanto può
+          pretendere da quello che sta leggendo.
+
+          Ed è anche un invito: chi quest'arte la pratica e legge una frase
+          storta ha adesso un motivo per scrivere. */}
+      {scheda?.stato === "bozza" && (
+        <p className="mt-6 max-w-3xl rounded-xl border border-dashed px-4 py-3 text-fluid-sm muted">
+          <strong className="text-ink">Bozza.</strong> Questo testo è un primo
+          abbozzo e non è stato riletto da chi pratica quest&apos;arte. Se sei tu,{" "}
+          <Link href="/registrati" className="underline underline-offset-4">
+            scrivicelo
+          </Link>
+          .
+        </p>
       )}
 
       {scheda && (

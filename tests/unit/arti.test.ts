@@ -36,6 +36,16 @@ describe("le schede", () => {
     }
   });
 
+  it("ogni scheda dichiara il proprio stato", () => {
+    // Lo stato non è un'etichetta editoriale: decide se la pagina mostra
+    // l'avviso di bozza. Una scheda senza stato mostrerebbe un testo abbozzato
+    // presentandolo come definitivo, che è esattamente la cosa che l'avviso
+    // esiste per impedire.
+    for (const slug of artiConScheda()) {
+      expect(["bozza", "rivista"], slug).toContain(SCHEDE[slug]!.stato);
+    }
+  });
+
   it("elencare più forme è il punto: sotto tre non smonta niente", () => {
     // Uno stereotipo vive perché la parola richiama **una** immagine. Due
     // forme non la moltiplicano abbastanza da spostare l'idea.
