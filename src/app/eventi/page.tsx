@@ -12,11 +12,19 @@ import { JsonLd } from "@/components/JsonLd";
 import { itemListJsonLd } from "@/lib/jsonld";
 import { Suspense } from "react";
 import { SkeletonEventi } from "@/components/SkeletonEventi";
+import { ORE_BREVE } from "@/lib/ingaggi";
 
 export const revalidate = 300;
 const PER_PAGE = 18;
 
-type Search = { page?: string; categoria?: string; citta?: string; quando?: string };
+type Search = {
+  page?: string;
+  categoria?: string;
+  citta?: string;
+  quando?: string;
+  /** `1` per vedere solo gli ingaggi brevi. */
+  brevi?: string;
+};
 
 function categoryFromSlug(slug?: string): EventCategory | undefined {
   if (!slug) return undefined;
@@ -50,7 +58,7 @@ export default async function EventiPage({ searchParams }: { searchParams: Promi
 
   return (
     <Suspense
-      key={`${sp.categoria ?? ""}-${sp.citta ?? ""}-${sp.page ?? "1"}`}
+      key={`${sp.categoria ?? ""}-${sp.citta ?? ""}-${sp.brevi ?? ""}-${sp.page ?? "1"}`}
       fallback={<SkeletonEventi />}
     >
       <Elenco sp={sp} />
@@ -62,12 +70,28 @@ async function Elenco({ sp }: { sp: Search }) {
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const cat = categoryFromSlug(sp.categoria);
 
+  /*
+   * Il filtro degli ingaggi brevi.
+   *
+   * `lte: ORE_BREVE` **e** `gt: 0`, non solo il primo: in SQL `NULL` non
+   * soddisfa nessun confronto, quindi gli annunci senza durata restano fuori
+   * da soli — ed è giusto, perché non hanno dichiarato di essere brevi. Il
+   * `gt: 0` è la difesa contro uno zero entrato da uno script: durata zero
+   * passerebbe `lte` e comparirebbe fra i brevi come «0 ore».
+   *
+   * La soglia non è scritta qui: sta in `lib/ingaggi.ts`, nello stesso posto da
+   * cui la legge chi pubblica. Due copie della stessa soglia è la forma di
+   * difetto numero due.
+   */
+  const soloBrevi = sp.brevi === "1";
+
   const where = {
     isPublic: true,
     status: "PUBLISHED",
     startsAt: { gte: new Date() },
     ...(cat ? { category: cat } : {}),
     ...(sp.citta ? { citySlug: sp.citta } : {}),
+    ...(soloBrevi ? { durataOre: { gt: 0, lte: ORE_BREVE } } : {}),
   };
 
   // La settimana entrante è l'orizzonte utile: un artista che cerca lavoro
@@ -83,6 +107,7 @@ async function Elenco({ sp }: { sp: Search }) {
       select: {
         slug: true, title: true, description: true, coverImage: true, category: true,
         startsAt: true, city: true, venueName: true, isPaid: true, feeMin: true, feeMax: true,
+        durataOre: true,
       },
     }),
     prisma.event.count({ where }),
@@ -117,8 +142,30 @@ async function Elenco({ sp }: { sp: Search }) {
         ]}
         filters={
           <nav aria-label="Filtra per categoria" className="filters">
-            <Link href="/eventi" className="filter" aria-current={!cat}>
+            <Link href="/eventi" className="filter" aria-current={!cat && !soloBrevi}>
               Tutti
+            </Link>
+            {/* ── Gli ingaggi brevi ──
+
+                Prima delle categorie e non in fondo: è il taglio che decide se
+                un annuncio è alla portata di chi ha un pomeriggio libero, e
+                per la maggior parte degli artisti conta più del genere. Le
+                categorie dicono *che tipo* di lavoro è; questo dice *se puoi
+                farlo*.
+
+                Il filtro si somma alla categoria invece di sostituirla —
+                `brevi=1` resta nell'indirizzo — perché «laboratori, ma solo
+                brevi» è una domanda sensata e le due cose non si escludono. */}
+            <Link
+              href={
+                cat
+                  ? `/eventi?categoria=${EVENT_CATEGORIES[cat].slug}&brevi=1`
+                  : "/eventi?brevi=1"
+              }
+              className="filter"
+              aria-current={soloBrevi}
+            >
+              Brevi (max {ORE_BREVE} h)
             </Link>
             {Object.entries(EVENT_CATEGORIES).map(([key, v]) => (
               <Link

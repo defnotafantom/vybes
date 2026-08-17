@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CalendarDays, MapPin, Music2, Users, GraduationCap, Trophy, Mic2 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { EVENT_CATEGORIES, type EventCategory } from "@/lib/constants";
+import { compensoOrario, durataInParole } from "@/lib/ingaggi";
 
 export type EventCardData = {
   slug: string;
@@ -12,6 +13,7 @@ export type EventCardData = {
   startsAt: Date;
   city: string;
   venueName: string | null;
+  durataOre?: number | null;
   isPaid: boolean;
   feeMin: number | null;
   feeMax: number | null;
@@ -54,6 +56,27 @@ export function formatFee(e: Pick<EventCardData, "isPaid" | "feeMin" | "feeMax">
   if (!e.isPaid) return "Non retribuito";
   if (e.feeMin && e.feeMax && e.feeMax !== e.feeMin) return `${e.feeMin}–${e.feeMax} €`;
   return `${e.feeMin ?? 0} €`;
+}
+
+/**
+ * Il compenso di un ingaggio breve, con il conto già fatto.
+ *
+ * «80 € · 2 ore · 40 €/h». Il terzo pezzo è quello che serve davvero: due
+ * annunci di durata diversa non si confrontano a occhio, e chi valuta se
+ * attraversare la città per un pomeriggio sta facendo esattamente quel conto.
+ *
+ * Compare solo quando il compenso è un numero e non un intervallo: su una
+ * forbice, un orario sarebbe la media di due ipotesi — un dato inventato che
+ * sembra misurato.
+ */
+export function formatCompensoBreve(
+  e: Pick<EventCardData, "isPaid" | "feeMin" | "feeMax" | "durataOre">
+): string {
+  const base = formatFee(e);
+  const durata = durataInParole(e.durataOre);
+  if (!durata) return base;
+  const orario = compensoOrario(e.feeMin, e.feeMax, e.durataOre);
+  return orario ? `${base} · ${durata} · ${orario} €/h` : `${base} · ${durata}`;
 }
 
 export function EventCard({ event, priority = false }: { event: EventCardData; priority?: boolean }) {
@@ -116,7 +139,12 @@ export function EventCard({ event, priority = false }: { event: EventCardData; p
           <p className="mt-3 line-clamp-2 text-fluid-sm text-ink-muted">{event.description}</p>
 
           <p className="mt-4">
-            <span className={event.isPaid ? "chip-gold" : "chip"}>{formatFee(event)}</span>
+            {/* Con la durata dichiarata si mostra il conto già fatto: chi
+                valuta un ingaggio breve sta confrontando compensi di durata
+                diversa, e a occhio non si confrontano. */}
+            <span className={event.isPaid ? "chip-gold" : "chip"}>
+              {formatCompensoBreve(event)}
+            </span>
           </p>
         </div>
       </Link>

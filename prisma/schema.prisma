@@ -269,6 +269,24 @@ model Event {
   feeMax    Int?
   currency  String  @default("EUR")
 
+  /// Quanto dura, in ore. E' il campo che distingue un ingaggio breve.
+  ///
+  /// ── Perche' una durata e non un flag ──
+  ///
+  /// Un booleano `isBreve` obbligherebbe a decidere una soglia in fase di
+  /// scrittura, e quella soglia sarebbe scritta due volte: in chi crea
+  /// l'annuncio e in chi lo cerca. Con le ore la soglia sta in un posto solo —
+  /// `ORE_BREVE` in `lib/ingaggi.ts` — e cambiarla non richiede di riscrivere
+  /// nessuna riga gia' salvata.
+  ///
+  /// Ed e' comunque l'informazione che serve a chi legge: «due ore» dice piu'
+  /// di «breve», e per un compenso di ottanta euro e' il primo dato che si
+  /// guarda.
+  ///
+  /// Nullable perche' gli annunci esistenti non ce l'hanno, e perche' per un
+  /// festival la durata non e' una domanda sensata.
+  durataOre Float?
+
   capacity Int?
   status   String  @default("PUBLISHED") // DRAFT | PUBLISHED | CANCELLED | COMPLETED
   isPublic Boolean @default(true)

@@ -14,7 +14,7 @@ type City = { slug: string; name: string; latitude: number; longitude: number };
 const CAMPI_CON_ERRORE = [
   "title", "category", "description", "startsAt", "endsAt", "citySlug",
   "latitude", "longitude", "venueName", "address", "feeMin", "feeMax",
-  "capacity", "coverImage",
+  "capacity", "coverImage", "durataOre",
 ] as const;
 
 /**
@@ -46,6 +46,7 @@ export type EventFormValues = {
   latitude: number;
   longitude: number;
   isPaid: boolean;
+  durataOre: number | null;
   feeMin: number | null;
   feeMax: number | null;
   capacity: number | null;
@@ -95,6 +96,7 @@ export function EventForm({ cities, initial }: { cities: City[]; initial?: Event
       latitude: coords?.lat ?? 0,
       longitude: coords?.lng ?? 0,
       isPaid,
+      durataOre: form.get("durataOre") ? Number(form.get("durataOre")) : null,
       feeMin: form.get("feeMin") ? Number(form.get("feeMin")) : null,
       feeMax: form.get("feeMax") ? Number(form.get("feeMax")) : null,
       capacity: form.get("capacity") ? Number(form.get("capacity")) : null,
@@ -286,6 +288,40 @@ export function EventForm({ cities, initial }: { cities: City[]; initial?: Event
           </div>
         )}
       </fieldset>
+
+      {/* ── La durata ──
+
+          È il campo che rende un annuncio un **ingaggio breve** e lo fa
+          comparire a chi cerca quelli (POSIZIONE.md, asse del lavoro). Sta
+          subito dopo il compenso perché è la seconda domanda che si fa chi
+          legge: quanto pagate, per quanto tempo.
+
+          Facoltativo: per un festival la durata non è una domanda sensata, e
+          obbligarla renderebbe più faticoso pubblicare proprio il tipo di
+          annuncio che oggi funziona. La soglia sotto cui è «breve» non è
+          scritta qui — sta in `lib/ingaggi.ts`, in un posto solo. */}
+      <div>
+        <label htmlFor="durataOre" className="mb-1 block text-sm font-medium">
+          Durata <span className="muted">(ore, facoltativa)</span>
+        </label>
+        <input
+          id="durataOre"
+          name="durataOre"
+          type="number"
+          min={0.25}
+          max={24}
+          step={0.25}
+          className="input"
+          placeholder="2"
+          defaultValue={initial?.durataOre ?? ""}
+          aria-describedby="durata-aiuto"
+        />
+        <p id="durata-aiuto" className="mt-1.5 text-xs muted">
+          Dichiararla fa comparire l&apos;annuncio fra gli ingaggi brevi, dove
+          cerca chi ha due ore libere e sta vicino.
+        </p>
+        <Errore msg={errors.durataOre} />
+      </div>
 
       <div>
         <label htmlFor="capacity" className="mb-1 block text-sm font-medium">Posti disponibili</label>

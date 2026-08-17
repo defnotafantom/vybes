@@ -75,6 +75,18 @@ export const eventSchema = z
     isPaid: z.boolean().default(false),
     feeMin: z.coerce.number().int().min(0).optional().nullable(),
     feeMax: z.coerce.number().int().min(0).optional().nullable(),
+    /**
+     * La durata in ore, che è ciò che distingue un ingaggio breve.
+     *
+     * Un quarto d'ora è il minimo sensato — sotto non è un ingaggio, è un
+     * favore — e ventiquattro il massimo: oltre, si sta descrivendo una
+     * residenza o un festival, e la durata smette di essere il dato utile.
+     *
+     * Facoltativa: gli annunci lunghi non hanno motivo di dichiararla, e
+     * obbligarla renderebbe più faticoso pubblicare proprio il tipo di
+     * annuncio che oggi funziona.
+     */
+    durataOre: z.coerce.number().min(0.25).max(24).optional().nullable(),
     capacity: z.coerce.number().int().min(1).optional().nullable(),
     coverImage: z.string().optional().or(z.literal("")),
   })

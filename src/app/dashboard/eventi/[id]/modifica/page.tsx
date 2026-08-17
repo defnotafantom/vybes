@@ -44,6 +44,7 @@ export default async function ModificaEventoPage({ params }: { params: Promise<{
     latitude: event.latitude,
     longitude: event.longitude,
     isPaid: event.isPaid,
+    durataOre: event.durataOre,
     feeMin: event.feeMin,
     feeMax: event.feeMax,
     capacity: event.capacity,

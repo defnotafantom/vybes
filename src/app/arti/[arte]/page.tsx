@@ -30,15 +30,20 @@ import { fromCsv } from "@/lib/slug";
  * persone. Chi arriva ha già un'idea: se le persone parlano per prime, le
  * guarda attraverso quell'idea.
  *
- * ── Perché la scheda può mancare ──
+ * ── Perché la scheda dichiara il proprio stato ──
  *
- * Delle dieci arti una sola ha il testo scritto. Le altre hanno comunque la
- * pagina, con la parte viva — chi la pratica, quanti sono — e **dichiarano**
- * che la scheda manca.
+ * Tutte e dieci le arti hanno adesso un testo, e tutte e dieci sono `bozza`:
+ * scritte per avere il modello completo, non rilette da chi quelle arti le
+ * pratica. La pagina lo dice.
  *
- * Uno spazio dichiarato vuoto è un invito; uno riempito di parole generiche è
- * una bugia che poi nessuno riscrive. È la stessa regola degli stati vuoti del
- * resto del sito.
+ * Un abbozzo che non dichiara di esserlo diventa definitivo per inerzia —
+ * nessuno lo riscrive perché nessuno si accorge che andrebbe riscritto.
+ *
+ * Il ramo «scheda assente» resta comunque: aggiungere una disciplina a
+ * `DISCIPLINES` senza scriverne la scheda dev'essere possibile, e la pagina
+ * deve reggere dicendo che manca invece di mostrare sezioni vuote. Uno spazio
+ * dichiarato vuoto è un invito; uno riempito di parole generiche è una bugia
+ * che poi nessuno riscrive.
  *
  * ── E la soglia sull'indicizzazione ──
  *

@@ -61,6 +61,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         latitude: data.latitude,
         longitude: data.longitude,
         isPaid: data.isPaid,
+        durataOre: data.durataOre ?? null,
         feeMin: data.feeMin ?? null,
         feeMax: data.feeMax ?? null,
         capacity: data.capacity ?? null,
