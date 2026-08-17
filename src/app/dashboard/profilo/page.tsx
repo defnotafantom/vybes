@@ -10,6 +10,7 @@ import { SchedaReputazione } from "@/components/dashboard/SchedaReputazione";
 import { dettaglioReputazioneDi } from "@/lib/reputazione-server";
 import { vociMisurabili } from "@/lib/reputazione";
 import { cerca, ruoloDi } from "@/lib/ruolo";
+import { ScegliRuolo } from "@/components/ScegliRuolo";
 
 export const dynamic = "force-dynamic";
 
@@ -94,6 +95,29 @@ export default async function ProfiloPage() {
           ruolo={ruoloDi(role)}
         />
       </div>
+
+      {/* ── Il ruolo, fra il profilo e la zona pericolosa ──
+
+          Non è un campo del modulo: cambiarlo non è come cambiare la
+          biografia, cambia **quale formula ti misura** — le voci della
+          reputazione, gli obiettivi che ti si propongono, i distintivi che la
+          tua pagina può mostrare. Mescolarlo agli altri campi lo farebbe
+          sembrare un dettaglio, e verrebbe modificato per sbaglio salvando
+          altro.
+
+          Sotto il modulo e sopra la cancellazione: è più impegnativo di un
+          campo e meno irreversibile di chiudere l'account. */}
+      <section className="mt-14 border-t pt-10">
+        <h2 className="text-fluid-lg font-bold">Che cosa fai qui</h2>
+        <p className="mt-2 max-w-xl text-fluid-sm text-ink-muted">
+          Le due cose possono coesistere: un locale con una band residente, un
+          collettivo che organizza la propria rassegna. Cambiando, il menu e la
+          scheda reputazione si aggiornano subito.
+        </p>
+        <div className="mt-6">
+          <ScegliRuolo attuale={ruoloDi(role)} etichettaConferma="Salva il ruolo" />
+        </div>
+      </section>
 
       <ZonaPericolosa haPassword={Boolean(password)} nome={profilo.name} />
     </div>

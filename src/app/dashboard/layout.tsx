@@ -54,6 +54,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const slug = identita?.slug ?? null;
   const ruolo = ruoloDi(identita?.role);
 
+  /* ── Chi non ha mai scelto il proprio ruolo lo sceglie adesso ──
+   *
+   * Chi entra con Google arriva dentro con nome, email e foto, e senza la sola
+   * informazione che decide cosa mostrargli. Il valore restava il default, e
+   * chi si era iscritto per **cercare** artisti riceveva il prodotto
+   * dell'altro lato senza aver mai avuto occasione di dire il contrario.
+   *
+   * Il controllo è qui e non nel middleware perché serve una lettura dal
+   * database, e il middleware gira sull'edge dove Prisma non arriva. Costa un
+   * campo in più su una query che il layout fa già.
+   */
+  if (!identita?.ruoloSceltoIl) redirect("/benvenuto");
+
   return (
     <div className="container-page py-8">
       {/* Questa riga è l'unica cornice dell'area personale: senza la barra

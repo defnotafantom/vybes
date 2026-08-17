@@ -42,16 +42,29 @@ import { prisma } from "@/lib/prisma";
  * chiederli con due query alla stessa riga sarebbe un giro a vuoto.
  *
  * Il ruolo si legge qui e non dalla sessione per il motivo scritto sopra: il
- * token è una fotografia. Oggi il ruolo non si cambia dal profilo, quindi la
- * fotografia sarebbe ancora giusta — ma il giorno in cui diventerà cambiabile,
- * chi passa da artista a organizzatore vedrebbe il menu vecchio fino alla
- * scadenza della sessione, e nessuno collegherebbe le due cose. Costa la
- * stessa query che stiamo già facendo.
+ * token è una fotografia scritta all'accesso.
+ *
+ * Quando questa nota è stata scritta il ruolo non si cambiava dal profilo, e
+ * diceva: «il giorno in cui diventerà cambiabile, chi passa da artista a
+ * organizzatore vedrebbe il menu vecchio fino alla scadenza della sessione, e
+ * nessuno collegherebbe le due cose». **Quel giorno è arrivato**, e la lettura
+ * dal database era già al suo posto: cambiando ruolo il menu si aggiorna al
+ * caricamento successivo.
+ *
+ * Vale la pena tenerne traccia perché è il caso raro in cui una difesa scritta
+ * in anticipo ha trovato il difetto che aspettava, invece del contrario.
  */
 export async function identitaDi(
   userId: string
-): Promise<{ slug: string; role: string } | null> {
-  return prisma.user.findUnique({ where: { id: userId }, select: { slug: true, role: true } });
+): Promise<{ slug: string; role: string; ruoloSceltoIl: Date | null } | null> {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    // `ruoloSceltoIl` viaggia con gli altri due perché il layout della
+    // dashboard ne ha bisogno nello stesso istante: chi non ha mai scelto va
+    // mandato alla domanda prima di vedere qualunque sezione. Un campo in più
+    // su una query che si fa comunque.
+    select: { slug: true, role: true, ruoloSceltoIl: true },
+  });
 }
 
 export async function slugDi(userId: string): Promise<string | null> {
