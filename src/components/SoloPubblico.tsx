@@ -25,8 +25,29 @@ import { usePathname } from "next/navigation";
  * velocità di caricamento. Se un giorno si riorganizzano le rotte per altri
  * motivi, questo componente sparisce insieme.
  */
-export function SoloPubblico({ children }: { children: React.ReactNode }) {
+export function SoloPubblico({
+  children,
+  ancheSullaLanding = true,
+}: {
+  children: React.ReactNode;
+  /**
+   * Falso per la barra superiore: sulla landing non c'è.
+   *
+   * La prima schermata fa una domanda sola — entri o no — e una barra con
+   * cinque destinazioni è l'invito a non rispondere. Chi arriva la prima volta
+   * non sa ancora cosa siano «Ingaggi» o «Mappa», quindi quei collegamenti non
+   * offrono una scelta: offrono una via di fuga.
+   *
+   * Il piè di pagina invece resta, e non è un'incoerenza: sta **dopo** la
+   * scena, lo si incontra solo avendo già scorso tutto, e porta con sé i
+   * collegamenti interni verso le pagine città e disciplina. Toglierlo
+   * lascerebbe un centinaio di pagine indicizzate senza nessun collegamento
+   * dalla home, che per Google è un declassamento lento e silenzioso.
+   */
+  ancheSullaLanding?: boolean;
+}) {
   const pathname = usePathname();
   if (pathname.startsWith("/dashboard")) return null;
+  if (!ancheSullaLanding && pathname === "/") return null;
   return <>{children}</>;
 }

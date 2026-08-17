@@ -92,7 +92,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 l'area personale la navigazione è nel menu laterale, e due
                 sistemi sovrapposti costringono a decidere ogni volta quale
                 guardare. */}
-            <SoloPubblico>
+            <SoloPubblico ancheSullaLanding={false}>
               <SiteHeader />
             </SoloPubblico>
             <main id="main">{children}</main>

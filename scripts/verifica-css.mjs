@@ -31,7 +31,18 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 /** Iniettate da JS al momento del rendering: vedi ElencoQuest, Logo, Onde. */
-const A_TEMPO_DI_ESECUZIONE = new Set(["--dx", "--dy", "--px", "--py", "--rot"]);
+const A_TEMPO_DI_ESECUZIONE = new Set([
+  "--dx",
+  "--dy",
+  "--px",
+  "--py",
+  "--rot",
+  // Scritte da `ScenaLanding` su ogni battuta: l'indice della frase e
+  // quante sono in tutto. Il CSS le usa per sapere quando questa frase
+  // tocca a lei, senza che il numero di scene sia scritto in due posti.
+  "--indice",
+  "--totale",
+]);
 
 function fogli(cartella = "src") {
   const fuori = [];

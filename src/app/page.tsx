@@ -1,50 +1,50 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, AudioWaveform } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
-import { SITE, DISCIPLINES } from "@/lib/constants";
+import { SITE } from "@/lib/constants";
 import { JsonLd } from "@/components/JsonLd";
 import { faqJsonLd } from "@/lib/jsonld";
-import { ArtistCard } from "@/components/ArtistCard";
-import { EventCard } from "@/components/EventCard";
-import { Spotlight } from "@/components/Spotlight";
-import { TitoloOnda } from "@/components/TitoloOnda";
-import { MarchioCampo } from "@/components/MarchioCampo";
-import { OndeWebGL } from "@/components/OndeWebGL";
-import { Avatar } from "@/components/ui/Avatar";
-import { fromCsv } from "@/lib/slug";
-import { ARTISTA_PUBBLICO } from "@/lib/visibilita";
-import { inVetrina, giornoDi, POSTI_VETRINA } from "@/lib/vetrina";
+import { ScenaLanding } from "@/components/ScenaLanding";
 
-// Rigenerata ogni 10 minuti: HTML statico servito dalla CDN, dati freschi.
 /**
- * Sotto quanti artisti il numero è un argomento contro di noi.
+ * La landing.
  *
- * Venti è la stessa soglia di RECLUTAMENTO.md: è il punto in cui chi cerca a
- * Milano trova abbastanza da tornare. Prima di allora il conteggio si tace, e
- * si dice invece la copertura geografica.
+ * ── Cosa c'era, e perché non c'è più ──
+ *
+ * Nove sezioni: vetrina degli artisti, prossimi ingaggi, nastro delle città,
+ * discipline, riquadri, FAQ, con sopra una barra di navigazione a cinque voci.
+ * Materiale utile — a chi ha già deciso. A chi arriva per la prima volta
+ * chiedeva di leggere una rivista per capire una cosa che si dice in una riga,
+ * e gli offriva cinque modi per andarsene prima di averla capita.
+ *
+ * Adesso la prima schermata fa una cosa sola: dire cos'è questo posto, e
+ * chiedere di entrare. Il resto del sito non è sparito — esiste, è indicizzato,
+ * e il piè di pagina ci porta.
+ *
+ * ── Il conto con la SEO, dichiarato ──
+ *
+ * Questa pagina portava testo indicizzabile e i collegamenti interni verso un
+ * centinaio di pagine città/disciplina. Toglierli tutti sarebbe stato un
+ * declassamento lento e invisibile: le pagine restano nella sitemap, ma una
+ * pagina che nessuno collega vale meno, e non arriva nessun errore a dirlo.
+ *
+ * Quindi restano due cose. Il **piè di pagina**, che porta i collegamenti
+ * interni e si incontra solo dopo aver scorso tutta la scena. E le **FAQ come
+ * dati strutturati**: non sono più visibili, ma continuano a stare nell'HTML
+ * in `JsonLd`, che è la forma in cui Google le usa per i risultati arricchiti.
+ * Il testo delle quattro battute della scena è nel documento fin dall'inizio —
+ * non compare scorrendo, cambia solo opacità — quindi è indicizzabile com'era.
+ *
+ * ── E la velocità ──
+ *
+ * La pagina non interroga più il database. Prima ne faceva quattro query per
+ * comporre vetrina, ingaggi e conteggi; adesso è statica, e l'`export const
+ * revalidate` non serve più perché non c'è niente da rivalidare.
  */
-const SOGLIA_VANTO = 20;
-
-/*
- * Dieci minuti, non ventiquattro ore.
- *
- * La vetrina ruota una volta al giorno, quindi in teoria basterebbe
- * rigenerare a mezzanotte. Ma questa pagina mostra anche i prossimi ingaggi e
- * i conteggi, che cambiano quando qualcuno pubblica: una cache giornaliera
- * farebbe apparire un annuncio nuovo in home il giorno dopo.
- *
- * Dieci minuti servono la parte che cambia spesso; la rotazione, che dipende
- * solo dalla data, resta identica per tutte le rigenerazioni dello stesso
- * giorno — quindi non costa niente.
- */
-export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
   title: `${SITE.name} — ${SITE.tagline}`,
   description:
-    "Trova artisti in tutta Italia o pubblica un ingaggio in due minuti. Musicisti, DJ, band, ballerini e performer con portfolio e disponibilità.",
+    "Artisti e chi li ingaggia si trovano qui, senza intermediari. Musicisti, DJ, band, ballerini e performer da una parte; locali, festival e agenzie dall'altra.",
   path: "/",
   keywords: [
     "trovare artisti",
@@ -55,6 +55,15 @@ export const metadata: Metadata = buildMetadata({
   ],
 });
 
+/**
+ * Le FAQ non si vedono più, ma continuano a valere.
+ *
+ * Erano una sezione a fondo pagina. Come sezione erano rumore — nessuno arriva
+ * su una landing per leggere domande frequenti — ma come dati strutturati sono
+ * la cosa che fa comparire le risposte direttamente nei risultati di Google.
+ * Tolta la vista, resta il marcatore: è l'unico posto del progetto in cui una
+ * cosa invisibile è comunque quella giusta da tenere.
+ */
 const FAQ = [
   {
     q: "Quanto costa usare Vybes?",
@@ -74,451 +83,11 @@ const FAQ = [
   },
 ];
 
-export default async function HomePage() {
-  const [featuredArtists, upcomingEvents, stats, cities] = await Promise.all([
-    /*
-     * ── Perché non più «i sei con la reputazione più alta» ──
-     *
-     * Sembra meritocratico e come incentivo è morto: i primi sei sono sempre
-     * gli stessi, chi è settimo non ci arriverà mai, e chi è primo non ha
-     * motivo di fare altro. Una classifica premia una volta e poi smette di
-     * chiedere qualcosa.
-     *
-     * Ora si prendono tutti quelli che superano la soglia — profilo pubblico,
-     * indirizzo confermato — e la vetrina ruota fra loro un giorno alla volta
-     * (`lib/vetrina.ts`). L'ordine è per data d'iscrizione perché deve essere
-     * **stabile**: ordinare per reputazione farebbe saltare il turno a
-     * qualcuno ogni volta che un numero cambia, senza che nessuno l'abbia
-     * deciso.
-     *
-     * Il limite a duecento è una difesa sul costo della query, non sulla
-     * regola: sopra quel numero il turno arriverebbe comunque una volta ogni
-     * sette mesi, e a quel punto la vetrina andrà ripensata per città.
-     */
-    prisma.user.findMany({
-      where: ARTISTA_PUBBLICO,
-      orderBy: { createdAt: "asc" },
-      take: 200,
-      select: {
-        slug: true,
-        name: true,
-        headline: true,
-        image: true,
-        city: true,
-        disciplines: true,
-        reputation: true,
-        isVerified: true,
-      },
-    }),
-    prisma.event.findMany({
-      where: { isPublic: true, status: "PUBLISHED", startsAt: { gte: new Date() } },
-      orderBy: { startsAt: "asc" },
-      take: 3,
-      select: {
-        slug: true,
-        title: true,
-        description: true,
-        coverImage: true,
-        category: true,
-        startsAt: true,
-        city: true,
-        venueName: true,
-        isPaid: true,
-        feeMin: true,
-        feeMax: true,
-      },
-    }),
-    Promise.all([
-      prisma.user.count({ where: ARTISTA_PUBBLICO }),
-      prisma.event.count({ where: { isPublic: true, status: "PUBLISHED" } }),
-      prisma.city.count(),
-    ]),
-    prisma.city.findMany({
-      orderBy: { population: "desc" },
-      select: { slug: true, name: true },
-    }),
-  ]);
-
-  const [artistCount, eventCount, cityCount] = stats;
-  /*
-   * Tre posti — uno grande e due piccoli — perché tre sono le schede che
-   * questa griglia rende davvero: il resto sono i conteggi e l'invito a
-   * vedere tutti. Il numero sta in `POSTI_VETRINA` e non qui, perché la
-   * dashboard lo usa per dire a ciascuno fra quanti giorni tocca a lui: due
-   * copie che divergono significano promettere un turno che non arriva.
-   *
-   * La finestra avanza di uno al giorno: chi torna domani trova due volti
-   * conosciuti e uno nuovo. Cambiare tutto farebbe sembrare un'altra pagina;
-   * non cambiare niente toglie il motivo di tornare.
-   */
-  const vetrina = inVetrina(featuredArtists, POSTI_VETRINA, giornoDi());
-  const hero = vetrina[0];
-  const rest = vetrina.slice(1);
-
+export default function HomePage() {
   return (
     <>
       <JsonLd data={faqJsonLd(FAQ)} />
-
-      {/* ═══════════════════════════ HERO ═══════════════════════════ */}
-      <Spotlight className="relative isolate overflow-hidden">
-        {/* ── `data-campo`: il riquadro in cui il campo d'onda è definito ──
-
-            Due tele disegnano la stessa figura: questa, a pieno campo dietro
-            tutto, e quella dentro le lettere del titolo. Perché le frange si
-            allineino attraverso il bordo dei glifi, la seconda deve sapere
-            dove sta dentro la prima — e lo scopre risalendo a questo elemento.
-
-            Un attributo e non una prop: il titolo sta tre livelli più in
-            basso, e farglielo arrivare per proprietà vorrebbe dire attraversare
-            componenti che non hanno niente a che fare con la questione. */}
-        <div data-campo className="relative">
-          {/* La sfumatura a bolle, rimessa e attenuata.
-
-              Era stata tolta perché con il marchio grande al centro faceva tre
-              strati colorati sovrapposti. Senza il marchio la schermata è
-              diventata un rettangolo quasi nero con delle righe sottili
-              sopra — corretta come composizione, e spenta. Le due bolle
-              ridanno il colore di fondo su cui le frange si staccano, e a
-              opacità ridotta non competono con niente perché non c'è più
-              niente con cui competere. */}
-          <div className="mesh-hero opacity-60" aria-hidden="true" />
-          <div className="grid-lines absolute inset-0 -z-10" aria-hidden="true" />
-
-          {/* Il campo d'onda sta **sopra** il fondo e **sotto** il contenuto:
-              se WebGL non c'è resta esattamente la pagina di prima. Un effetto
-              decorativo che può rompere quello che decora non vale il rischio. */}
-          <OndeWebGL className="pointer-events-none absolute inset-0 -z-10 h-full w-full" />
-
-          {/* ── Perché non più al centro ──
-
-              La composizione era una colonna centrata: etichetta, marchio,
-              titolo, paragrafo, due pulsanti, tutti sullo stesso asse. È lo
-              schema di ogni landing di ogni prodotto, e con un campo animato
-              dietro diventa affollato — ogni elemento ha lo stesso peso e
-              nessuno guida l'occhio.
-
-              Allineato a sinistra e ancorato in alto c'è una gerarchia sola e
-              un vuoto grande a destra, che è quello che rende leggibile il
-              campo. È la griglia dei siti che gli award premiano, e non per
-              moda: il vuoto è la cosa che permette a una pagina di avere un
-              punto focale.
-
-              Il riempimento non cresce con lo schermo. Su un portatile la
-              prima schermata deve contenere titolo **e** pulsanti: un sito che
-              deve convincere in tre secondi non può usarli per presentarsi. */}
-          <div className="container-page py-20 sm:py-24 lg:py-28">
-            {/* ── Il marchio in alto a destra, fuori dal flusso ──
-
-                Di fianco al titolo era una collisione garantita: due colonne,
-                una delle quali contiene tre righe che **non vanno a capo per
-                costruzione**. Basta stringere la finestra e il titolo sborda
-                sotto il marchio — che è esattamente quello che si vedeva.
-
-                Una griglia non salva da questo: può solo scegliere chi viene
-                schiacciato. Il problema è che due oggetti larghi sulla stessa
-                riga orizzontale non stanno su uno schermo stretto, e nessuna
-                regola di layout inventa lo spazio che non c'è.
-
-                Quindi il marchio esce dal flusso e va nell'angolo in alto a
-                destra, che nella schermata era vuoto: sopra la linea del
-                titolo, quindi non può incrociarlo per nessuna larghezza. E la
-                composizione ci guadagna — parole in basso a sinistra, oggetto
-                in alto a destra, una diagonale invece di due cose in fila.
-
-                Sotto i 1024px torna nel flusso, in cima alla colonna: lì lo
-                spazio orizzontale non c'è e l'unica disposizione possibile è
-                l'una sopra l'altra. */}
-            <MarchioCampo className="mb-10 animate-fade-up lg:absolute lg:right-[7%] lg:top-[14%] lg:mb-0" />
-
-
-            {/* Il contatore compare solo quando è un argomento. «7 artisti»
-                scritto nel punto più visibile della pagina non informa:
-                comunica che il sito è vuoto, e lo fa prima che il visitatore
-                abbia letto cosa fa. Sotto la soglia si mostrano le città, che
-                sono venti da subito e dicono la stessa cosa — dove siamo —
-                senza dichiarare la propria debolezza. */}
-            <p className="eyebrow animate-fade-up">
-              {/* Una scintilla è l'icona che ogni sito mette accanto a ogni
-                  cosa e non significa niente. Un'onda dice di che sito si
-                  tratta. */}
-              <AudioWaveform className="mr-1.5 inline h-3.5 w-3.5" aria-hidden="true" />
-              {artistCount >= SOGLIA_VANTO
-                ? `${artistCount} artisti · ${cityCount} città`
-                : `${cityCount} città in tutta Italia`}
-            </p>
-
-            {/* ── Il titolo, e perché queste tre righe ──
-
-                Prima diceva «Trova artisti. Trova ingaggi. Senza
-                intermediari.»: chiaro, e identico a quello di ogni altro
-                mercato a due lati. Due imperativi che non dicono niente di
-                **questo** posto.
-
-                Adesso dice la stessa cosa attraverso il fenomeno che dà il
-                nome al sito. Un'onda ha due estremità: qualcuno la emette,
-                qualcuno la riceve — che è esattamente cosa sono i due lati di
-                questo mercato, ed è cosa il titolo adesso *mostra*, perché le
-                lettere sono una finestra sul campo.
-
-                La terza riga resta identica perché è l'unica che dichiara un
-                vantaggio invece di descrivere: nessuno prende una percentuale.
-                È la ragione per cui qualcuno preferisce questo a un'agenzia, e
-                non si sostituisce con una metafora.
-
-                Il gradiente sull'ultima riga è sparito: il colore adesso ce
-                l'hanno tutte e tre, e viene dalle frange che le attraversano.
-                Due sistemi di colore sullo stesso titolo erano uno di troppo.
-
-                La misura del corpo è scelta perché la riga più lunga stia su
-                una riga sola anche a 320px: le tre righe sono decise qui, e la
-                tela le disegna una per una. Vedi `TitoloOnda.tsx`. */}
-            <TitoloOnda
-              righe={["Qualcuno suona.", "Qualcuno lo cerca.", "Senza intermediari."]}
-              /* `-m-4 p-4`: la tela coincide con il riquadro dell'`h1`, e due
-                 cose sporgono da quel riquadro. In verticale, un'interlinea di
-                 0,96 e' piu' bassa dei glifi: le aste alte e le code
-                 verrebbero tagliate. In orizzontale, sotto carica le lettere
-                 si spostano di una decina di pixel e la prima e' incollata al
-                 bordo sinistro. Il margine negativo restituisce lo spazio
-                 preso dal riempimento, quindi l'allineamento a sinistra della
-                 colonna resta quello di tutto il resto. */
-              className="-m-4 mt-6 inline-block animate-fade-up p-4 [animation-delay:160ms]"
-              classeTitolo="text-[clamp(1.75rem,7.4vw,6rem)] font-extrabold leading-[0.96] tracking-[-0.04em]"
-            />
-
-            {/* Paragrafo e pulsanti su una riga sola, separati da una regola
-                orizzontale: la riga li lega e allo stesso tempo chiude l'hero,
-                che senza un bordo inferiore sfumava nel contenuto sotto senza
-                che si capisse dove finiva. Su schermo stretto tornano
-                impilati, che è l'unica cosa che ci sta. */}
-            <div className="mt-14 grid animate-fade-up gap-8 border-t pt-8 [animation-delay:240ms] lg:grid-cols-[minmax(0,34rem)_auto] lg:items-start lg:justify-between lg:gap-16">
-              <p className="text-fluid-lg text-ink-muted">
-                {/* I nomi delle discipline restano tutti: sono le parole con
-                    cui la gente cerca su Google, e una metafora che se le
-                    mangia costa traffico vero. La figura si aggiunge davanti,
-                    non al posto. */}
-                Una vibrazione parte da chi la fa e arriva a chi la cerca. Da una parte
-                musicisti, DJ, band, ballerini e performer; dall&apos;altra i locali, i
-                festival e le agenzie che li ingaggiano.
-              </p>
-
-              <div className="flex shrink-0 flex-wrap gap-3 lg:justify-end">
-                <Link
-                  href="/registrati?ruolo=artista"
-                  className="btn-primary px-7 py-3.5 text-fluid-base"
-                >
-                  Sono un artista
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-                <Link
-                  href="/registrati?ruolo=recruiter"
-                  className="btn-ghost px-7 py-3.5 text-fluid-base"
-                >
-                  Cerco artisti
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Spotlight>
-
-      {/* ═══════════════════ NASTRO DELLE CITTÀ ═══════════════════ */}
-      {cities.length > 0 && (
-        <section className="border-y py-5" aria-label="Città coperte">
-          <div className="marquee">
-            {/* Due copie identiche: quando la prima esce, la seconda è già in
-                posizione e il ciclo non ha stacchi. */}
-            {[0, 1].map((copy) => (
-              <div key={copy} className="marquee__track" aria-hidden={copy === 1}>
-                {cities.map((c) => (
-                  <Link
-                    key={`${copy}-${c.slug}`}
-                    href={`/citta/${c.slug}`}
-                    className="whitespace-nowrap text-fluid-lg font-semibold text-ink-faint transition-colors hover:text-brand-600 dark:hover:text-brand-400"
-                  >
-                    {c.name}
-                    <span className="ml-8 text-brand-500/40">✦</span>
-                  </Link>
-                ))}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ═══════════════════════ GRIGLIA BENTO ═══════════════════════ */}
-      <section className="container-page py-24">
-        <div className="reveal">
-          {/* «In onda» non è un modo di dire preso a prestito: la vetrina è
-              davvero una rotazione, una fila che avanza di un posto al giorno
-              (ADR-044). Il titolo descrive il meccanismo invece di decorarlo. */}
-          <p className="eyebrow">In onda</p>
-          <h2 className="mt-2 text-fluid-2xl">Chi si sente questa settimana</h2>
-        </div>
-
-        <div className="bento reveal-scale mt-10">
-          {/* Cella grande: il profilo con la reputazione più alta */}
-          {hero && (
-            <Link
-              href={`/artisti/${hero.slug}`}
-              className="border-glow card-interactive bento__hero group flex flex-col overflow-hidden"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <Avatar name={hero.name} src={hero.image} size="lg" priority />
-                <span className="chip-accent">Più seguito</span>
-              </div>
-
-              <div className="mt-5">
-                <h3 className="text-fluid-xl transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
-                  {hero.name}
-                </h3>
-                {hero.headline && (
-                  <p className="mt-2 line-clamp-2 text-fluid-sm text-ink-muted">{hero.headline}</p>
-                )}
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {fromCsv(hero.disciplines)
-                    .slice(0, 3)
-                    .map((d) => (
-                      <span key={d} className="chip">
-                        {d}
-                      </span>
-                    ))}
-                </div>
-              </div>
-            </Link>
-          )}
-
-          {/* Tessere numeriche */}
-          {[
-            { value: artistCount, label: "Chi suona" },
-            { value: eventCount, label: "Chi cerca" },
-          ].map((s) => (
-            <div key={s.label} className="card flex flex-col justify-end">
-              <p className="text-gradient text-fluid-3xl font-bold tabular-nums">{s.value}</p>
-              <p className="mt-1 text-fluid-xs uppercase tracking-wider text-ink-faint">
-                {s.label}
-              </p>
-            </div>
-          ))}
-
-          {/* Profili restanti */}
-          {rest.slice(0, 2).map((a) => (
-            <ArtistCard key={a.slug} artist={{ ...a, disciplines: fromCsv(a.disciplines) }} />
-          ))}
-
-          {/* Largo una colonna, non due: dentro c'è una riga di testo, e su
-              due colonne diventava un rettangolo quasi vuoto più grande delle
-              schede degli artisti — cioè l'invito pesava più di ciò a cui
-              invita. */}
-          <Link
-            href="/artisti"
-            className="border-glow card-interactive group flex items-center justify-between gap-3"
-          >
-            <span className="text-fluid-base font-semibold">Vedi tutti gli artisti</span>
-            <ArrowRight
-              className="h-5 w-5 transition-transform group-hover:translate-x-1"
-              aria-hidden="true"
-            />
-          </Link>
-        </div>
-      </section>
-
-      {/* ═══════════════════════ INGAGGI ═══════════════════════ */}
-      {upcomingEvents.length > 0 && (
-        <section className="border-y bg-surface-sunken py-24">
-          <div className="container-page">
-            <div className="reveal mb-10 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="eyebrow">Chi chiama</p>
-                <h2 className="mt-2 text-fluid-2xl">Ingaggi aperti adesso</h2>
-              </div>
-              <Link href="/eventi" className="link-underline text-fluid-sm">
-                Tutti gli ingaggi
-              </Link>
-            </div>
-
-            <div className="reveal-scale grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {upcomingEvents.map((e) => (
-                <EventCard key={e.slug} event={e} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ═════════ DISCIPLINE — hub di link per la long tail ═════════ */}
-      <section className="container-page py-24">
-        <div className="reveal">
-          <p className="eyebrow">Per disciplina</p>
-          <h2 className="mt-2 text-fluid-2xl">Che suono stai cercando</h2>
-        </div>
-
-        <ul className="reveal mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {DISCIPLINES.map((d) => (
-            <li key={d.slug}>
-              <Link
-                href={`/artisti?disciplina=${d.slug}`}
-                className="border-glow group flex items-center justify-between rounded-xl border px-4 py-3.5 text-fluid-sm font-medium transition-all hover:-translate-y-0.5"
-              >
-                {d.plural}
-                <ArrowRight
-                  className="h-3.5 w-3.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-                  aria-hidden="true"
-                />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* ═══════════════════════ FAQ ═══════════════════════ */}
-      <section className="container-narrow py-24">
-        <div className="reveal">
-          <p className="eyebrow">Domande frequenti</p>
-          <h2 className="mt-2 text-fluid-2xl">Prima che tu lo chieda</h2>
-        </div>
-
-        <div className="reveal mt-10 divide-y border-y">
-          {FAQ.map((f) => (
-            <details key={f.q} className="group py-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-fluid-base font-semibold transition-colors marker:hidden group-hover:text-brand-600 dark:group-hover:text-brand-400">
-                {f.q}
-                <span
-                  aria-hidden="true"
-                  className="shrink-0 text-fluid-xl font-light text-ink-faint transition-transform duration-250 group-open:rotate-45"
-                >
-                  +
-                </span>
-              </summary>
-              <p className="mt-3 max-w-2xl text-fluid-sm leading-relaxed text-ink-muted">{f.a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      {/* ═══════════════════════ CHIUSURA ═══════════════════════ */}
-      <section className="container-page pb-24">
-        <Spotlight className="reveal-scale relative isolate overflow-hidden rounded-3xl border px-8 py-20 text-center sm:px-16">
-          <div className="mesh-hero opacity-70" aria-hidden="true" />
-          {/* La chiusura chiude il cerchio aperto dal titolo: là qualcuno
-              suona e qualcuno cerca, qui l'onda arriva. Ed è anche vero —
-              è quello che il sito fa. */}
-          <h2 className="text-fluid-3xl">
-            Fatti <span className="text-gradient">sentire</span> da chi ti sta cercando
-          </h2>
-          <p className="mx-auto mt-5 max-w-lg text-fluid-base text-ink-muted">
-            Due minuti per il profilo. Il portfolio lo costruisci con calma, e da lì in poi
-            sei tu a essere trovato.
-          </p>
-          <Link
-            href="/registrati?ruolo=artista"
-            className="btn-primary mt-9 px-8 py-3.5 text-fluid-base"
-          >
-            Inizia gratis
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </Spotlight>
-      </section>
+      <ScenaLanding />
     </>
   );
 }

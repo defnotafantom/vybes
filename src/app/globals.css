@@ -624,3 +624,166 @@
     opacity: 0 !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   LA SCENA DELLA LANDING
+
+   Tutto il movimento dipende da una sola variabile, `--avanzamento`,
+   che va da 0 a 1 mentre si scorre. Il JavaScript la scrive e non
+   fa altro: qui dentro non c'è nessun valore che il componente
+   debba conoscere, e nel componente non c'è nessun pixel.
+
+   Ogni regola tocca solo `opacity` e `transform` — le due proprietà
+   che il browser anima senza rifare il layout. Nessuna tocca
+   larghezze, altezze o margini: quelle costringerebbero a
+   ricalcolare la pagina a ogni pixel di scorrimento.
+   ════════════════════════════════════════════════════════════ */
+
+.scena-pista {
+  /* Quattro schermate di corsa: una per battuta. Meno, e le frasi si
+     accavallano; molto di più, e si scorre a vuoto fra una e l'altra. */
+  height: 400svh;
+  position: relative;
+}
+
+.scena-palco {
+  --avanzamento: 0;
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+/* ── Il marchio ──
+   Si allontana appena mentre si avanza, e verso la fine si sposta in
+   alto per lasciare il centro ai pulsanti. Sono due trasformazioni
+   sullo stesso elemento, quindi vanno scritte in una `transform`
+   sola: due dichiarazioni separate si sovrascriverebbero. */
+.scena-marchio {
+  grid-area: 1 / 1;
+  transform: translateY(calc(var(--avanzamento) * -14svh))
+             scale(calc(1 - var(--avanzamento) * 0.22));
+  filter: blur(calc(var(--avanzamento) * var(--avanzamento) * 3px));
+}
+
+.scena-testi {
+  grid-area: 1 / 1;
+  position: relative;
+  width: min(90vw, 62rem);
+  /* Le frasi stanno sotto il marchio, non sopra: il marchio è il perno e
+     nessuna parola deve tagliarlo. */
+  align-self: end;
+  padding-bottom: 18svh;
+  text-align: center;
+}
+
+/* ── Una battuta alla volta ──
+
+   `--quando` è il punto della corsa in cui questa battuta è al centro
+   della scena. Le battute sono equidistanti, quindi il punto è
+   semplicemente l'indice diviso il totale.
+
+   L'opacità è una campana intorno a quel punto: cresce arrivando,
+   cala andandosene. In CSS non esiste una campana, ma la si ottiene
+   con due `clamp` moltiplicati — uno che sale e uno che scende. */
+.scena-battuta {
+  --quando: calc((var(--indice) + 0.5) / var(--totale));
+  --distanza: calc((var(--avanzamento) - var(--quando)) * var(--totale));
+  position: absolute;
+  inset: auto 0 0 0;
+  /* `max(d, -1 * d)` e non `abs(d)`: abs() in CSS è arrivato solo di
+     recente e su un browser che non ce l'ha l'intera dichiarazione viene
+     scartata — la frase resterebbe opaca per tutta la corsa e le quattro
+     battute si vedrebbero tutte insieme. max() esiste da sempre e fa la
+     stessa cosa. */
+  --lontananza: max(var(--distanza), -1 * var(--distanza));
+  opacity: clamp(0, calc(1.6 - var(--lontananza) * 2.2), 1);
+  transform: translateY(calc(var(--distanza) * -3svh));
+  will-change: opacity, transform;
+}
+
+.scena-frase {
+  font-size: clamp(1.9rem, 6.4vw, 4.6rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  color: rgb(var(--fg));
+}
+
+.scena-nota {
+  margin-top: 0.9rem;
+  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+  color: rgb(var(--muted));
+  text-wrap: balance;
+}
+
+/* ── I pulsanti ──
+   Compaiono nell'ultimo quinto della corsa, dal basso. Prima di
+   allora sono trasparenti **e** inerti: vedi il commento nel
+   componente sul perché l'opacità da sola non basta. */
+.scena-uscita {
+  grid-area: 1 / 1;
+  align-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  padding-bottom: 8svh;
+  opacity: clamp(0, calc((var(--avanzamento) - 0.82) * 6), 1);
+  transform: translateY(calc((1 - clamp(0, calc((var(--avanzamento) - 0.82) * 6), 1)) * 2rem));
+}
+
+/* ── L'invito a scorrere ──
+   Sparisce nel primo decimo: un invito che resta dopo essere stato
+   accolto diventa un rimprovero. */
+.scena-invito {
+  grid-area: 1 / 1;
+  align-self: end;
+  justify-self: center;
+  padding-bottom: 2.5svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgb(var(--faint));
+  opacity: clamp(0, calc(1 - var(--avanzamento) * 9), 1);
+}
+
+.scena-invito-linea {
+  width: 1px;
+  height: 2.5rem;
+  background: linear-gradient(to bottom, transparent, rgb(var(--faint)));
+  animation: scena-scendi 2.2s ease-in-out infinite;
+}
+
+@keyframes scena-scendi {
+  0%, 100% { transform: translateY(-30%); opacity: 0.3; }
+  50%      { transform: translateY(0);    opacity: 1; }
+}
+
+/* Senza movimento la scena smette di essere una scena: la pista si
+   accorcia, il riquadro non si appiccica più, e le frasi stanno una
+   sotto l'altra come in una pagina qualunque. Stessa informazione,
+   nessuno spostamento. */
+@media (prefers-reduced-motion: reduce) {
+  .scena-pista { height: auto; }
+  .scena-palco {
+    position: static;
+    height: auto;
+    display: block;
+    padding: 6rem 0 4rem;
+  }
+  .scena-marchio { transform: none; filter: none; display: flex; justify-content: center; }
+  .scena-testi { align-self: auto; padding-bottom: 0; margin-top: 3rem; }
+  .scena-battuta { position: static; opacity: 1; transform: none; margin-bottom: 3.5rem; }
+  .scena-uscita { opacity: 1; transform: none; padding-bottom: 0; }
+  .scena-invito { display: none; }
+}
