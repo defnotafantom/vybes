@@ -198,11 +198,11 @@ export function ScenaLanding() {
             punto la domanda è una sola. `inert` finché non è il momento —
             l'opacità nasconde agli occhi, non al tabulatore. */}
         <div className="scena-uscita" aria-hidden={!arrivato} inert={!arrivato}>
-          <Link href="/registrati" className="btn-primary px-8 py-4 text-fluid-base">
+          <Link href="/registrati" className="scena-porta scena-porta--forte">
             Crea il tuo profilo
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
-          <Link href="/accedi" className="btn-ghost px-8 py-4 text-fluid-base">
+          <Link href="/accedi" className="scena-porta">
             Ho già un account
           </Link>
         </div>

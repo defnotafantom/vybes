@@ -38,11 +38,23 @@ export function SoloPubblico({
    * non sa ancora cosa siano «Ingaggi» o «Mappa», quindi quei collegamenti non
    * offrono una scelta: offrono una via di fuga.
    *
-   * Il piè di pagina invece resta, e non è un'incoerenza: sta **dopo** la
-   * scena, lo si incontra solo avendo già scorso tutto, e porta con sé i
-   * collegamenti interni verso le pagine città e disciplina. Toglierlo
-   * lascerebbe un centinaio di pagine indicizzate senza nessun collegamento
-   * dalla home, che per Google è un declassamento lento e silenzioso.
+   * Vale anche per il piè di pagina, per la stessa ragione: la scena finisce
+   * con una domanda, e un elenco di venti collegamenti subito sotto è la
+   * risposta sbagliata.
+   *
+   * ── Il costo, che è reale ──
+   *
+   * Il piè di pagina portava i collegamenti interni verso un centinaio di
+   * pagine città e disciplina. Da qui non ci arriva più niente.
+   *
+   * Non è un problema di **scoperta**: quelle pagine stanno nella sitemap, e
+   * Google le trova lo stesso. È un problema di **peso**: una pagina che
+   * nessuno collega dalla home riceve meno autorità, e il calo non produce
+   * nessun errore da nessuna parte — si vede solo nelle posizioni, mesi dopo.
+   *
+   * È una scelta deliberata, non una dimenticanza. Se un giorno il traffico
+   * organico sulle pagine città conta più della prima impressione, il posto
+   * dove rimetterli è questo, e la riga da cambiare è una.
    */
   ancheSullaLanding?: boolean;
 }) {

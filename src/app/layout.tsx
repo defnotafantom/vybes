@@ -96,7 +96,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <SiteHeader />
             </SoloPubblico>
             <main id="main">{children}</main>
-            <SoloPubblico>
+            <SoloPubblico ancheSullaLanding={false}>
               <SiteFooter />
             </SoloPubblico>
           </ToastProvider>

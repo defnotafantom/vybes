@@ -787,3 +787,107 @@
   .scena-uscita { opacity: 1; transform: none; padding-bottom: 0; }
   .scena-invito { display: none; }
 }
+
+/* ── Le due porte in fondo alla scena ──
+
+   I pulsanti erano quelli del resto del sito: una pillola viola piena e
+   una con il bordo grigio. Su una dashboard vanno benissimo — sono
+   solidi, si vedono, si cliccano. Alla fine di questa scena erano due
+   oggetti di un'altra pagina: l'unica cosa piena e opaca in una
+   schermata dove tutto è luce su nero, marchio compreso.
+
+   Qui non c'è niente di pieno. Il filo luminoso attorno è lo stesso
+   gradiente del bordo di Fresnel del marchio — viola che passa al ciano
+   — e l'alone che si accende avvicinandosi è la stessa luce, sfocata.
+   Non «somigliano» al logo: sono fatti con la sua stessa regola, cioè
+   un contorno che si illumina invece di una superficie che riflette.
+
+   Il testo è piccolo, spaziato e maiuscolo per lo stesso motivo per cui
+   le frasi della scena sono enormi: due misure lontane si distinguono
+   senza doversi contendere l'attenzione. */
+.scena-porta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.05rem 2.1rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--fg));
+  isolation: isolate;
+  transition: color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+/* Il filo: un gradiente ritagliato a bordo con due maschere sovrapposte.
+   Un `border-color` non può essere sfumato, e disegnarlo con un secondo
+   elemento costerebbe un nodo in più per ottenere meno. */
+.scena-porta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    120deg,
+    rgb(139 92 246 / 0.95),
+    rgb(34 211 238 / 0.8),
+    rgb(139 92 246 / 0.3)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.5;
+  transition: opacity var(--dur) var(--ease);
+}
+
+/* L'alone. `inset` negativo e `z-index: -1`: sta dietro al pulsante ma
+   dentro il suo contesto di impilamento, quindi non può finire sopra
+   niente altro della scena. */
+.scena-porta::after {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(closest-side, rgb(139 92 246 / 0.32), transparent 72%);
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease);
+}
+
+.scena-porta:hover,
+.scena-porta:focus-visible {
+  transform: translateY(-2px);
+}
+.scena-porta:hover::before,
+.scena-porta:focus-visible::before {
+  opacity: 1;
+}
+.scena-porta:hover::after,
+.scena-porta:focus-visible::after {
+  opacity: 1;
+}
+.scena-porta:focus-visible {
+  outline: none;
+}
+
+/* La differenza fra le due non è un colore diverso: è un velo appena
+   acceso sotto quella principale. Due pulsanti che si distinguono per
+   intensità e non per tinta restano una coppia. */
+.scena-porta--forte {
+  background: rgb(139 92 246 / 0.09);
+}
+.scena-porta--forte::before {
+  opacity: 0.85;
+}
+.scena-porta--forte::after {
+  background: radial-gradient(closest-side, rgb(139 92 246 / 0.5), transparent 72%);
+  opacity: 0.45;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scena-porta:hover,
+  .scena-porta:focus-visible { transform: none; }
+}
