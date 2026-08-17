@@ -94,6 +94,8 @@ uniform float chiaro;      // 1.0 su tema chiaro, 0.0 su scuro
 // valido — un errore di sintassi a trenta righe di distanza dalla causa.)
 uniform float scorrimento;
 uniform vec2  puntatore;
+// L'impulso rilasciato dal marchio: allarga le frange e decade da solo.
+uniform float impulso;
 out vec4 colore;
 
 const vec3 VIOLA = vec3(0.545, 0.361, 0.965);  // brand-500
@@ -130,21 +132,38 @@ void main() {
   // Scorrendo, i fronti si infittiscono e rallentano: la figura si stringe
   // verso il basso invece di limitarsi a scorrere via. È l'unico legame fra
   // il gesto e il campo che si sente senza doverlo cercare.
-  float k = 1.0 + scorrimento * 1.6;
+  // L'impulso allarga i fronti al contrario dello scorrimento: si vede
+  // un'onda che parte dal marchio e si apre.
+  float k = (1.0 + scorrimento * 1.6) * (1.0 - impulso * 0.55);
   float w = 1.0 - scorrimento * 0.45;
 
   float a = onda(p, s1, 26.0 * k, 1.30 * w, 2.0, tempo)
           + onda(p, s2, 19.0 * k, 0.95 * w, 3.0, tempo)
           + onda(p, s3, 33.0 * k, 1.70 * w, 1.0, tempo);
 
-  // Le creste, non tutta l'onda: \`smoothstep\` tiene solo i massimi e lascia
-  // il resto al fondo. Mostrando l'onda intera si otterrebbe una zebratura
-  // che compete con il testo che ci sta sopra.
-  float cresta = smoothstep(0.35, 0.95, abs(a));
+  // ── Le frange, non le macchie ──
+  //
+  // Prima qui c'era smoothstep(0.35, 0.95, abs(a)): teneva tutto cio' che
+  // superava una soglia, e il risultato era una distesa di bolle morbide che
+  // sembravano una lampada lava. Il campo doveva essere interferenza — la
+  // ragione stessa per cui esiste — e non si vedeva affatto.
+  //
+  // Un'onda si legge dalle sue **frange**: le righe sottili dove i fronti si
+  // sommano. Si isolano prendendo la distanza dal massimo piu' vicino invece
+  // di una soglia sull'ampiezza, che e' la differenza fra disegnare una linea
+  // e riempire una regione.
+  //
+  // fwidth() dice quanto vale un pixel in questa scala: dividendo per quello,
+  // la linea resta spessa un pixel sia al centro sia ai bordi, dove i fronti
+  // sono piu' fitti. Senza, verso il bordo le righe si impastano in un grigio.
+  float frangia = abs(fract(a * 3.0) - 0.5);
+  float linea = 1.0 - smoothstep(0.0, fwidth(a * 3.0) * 1.6 + 0.008, frangia);
 
-  // Il colore segue la fase: le tre tinte del progetto, non una scala a caso.
-  vec3 tinta = mix(VIOLA, CIANO, 0.5 + 0.5 * sin(a * 1.7));
-  tinta = mix(tinta, ROSA, 0.28 * smoothstep(0.6, 1.2, abs(a)));
+  // Il colore segue la fase, ma con meno strada fra le due tinte: un campo
+  // che attraversa mezzo arcobaleno compete con il marchio, che ha i suoi
+  // colori. Qui viola e ciano si sfiorano appena.
+  vec3 tinta = mix(VIOLA, CIANO, 0.5 + 0.5 * sin(a * 0.9));
+  tinta = mix(tinta, ROSA, 0.14 * smoothstep(0.7, 1.3, abs(a)));
 
   // Verso i bordi si spegne: il campo deve sembrare emergere dal centro, e
   // soprattutto non deve arrivare a toccare i margini del riquadro, dove il
@@ -156,7 +175,11 @@ void main() {
   // che è un problema di leggibilità, non di gusto.
   // Scendendo il campo si ritira: sotto l'hero comincia il contenuto, e un
   // fondo che pulsa dietro un elenco di artisti è rumore.
-  float alfa = cresta * vignetta * mix(0.55, 0.22, chiaro) * (1.0 - scorrimento * 0.7);
+  // Molto piu' basso di prima. Le righe sono sottili e continue, quindi si
+  // leggono anche piatte: alzarle vorrebbe dire farle competere con il testo,
+  // che e' la ragione per cui la versione a macchie risultava confusionaria.
+  float alfa = linea * vignetta * mix(0.34, 0.16, chiaro)
+             * (1.0 - scorrimento * 0.7) * (1.0 + impulso * 1.6);
 
   colore = vec4(tinta, alfa);
 }`;
@@ -253,6 +276,7 @@ export function OndeWebGL({ className }: { className?: string }) {
     const uChiaro = gl.getUniformLocation(programma, "chiaro");
     const uScorrimento = gl.getUniformLocation(programma, "scorrimento");
     const uPuntatore = gl.getUniformLocation(programma, "puntatore");
+    const uImpulso = gl.getUniformLocation(programma, "impulso");
 
     /* ── I due valori che vengono da chi guarda ──
      *
@@ -269,6 +293,10 @@ export function OndeWebGL({ className }: { className?: string }) {
      * l'inseguimento sembra che abbia una massa — che è quello che gli dà
      * l'aria di essere una cosa e non un valore.
      */
+    // Decade da solo a ogni fotogramma: nessun timer da annullare, e una
+    // scheda lasciata aperta non accumula niente.
+    let impulso = 0;
+
     let scorrimentoVerso = 0;
     let scorrimentoOra = 0;
     const puntatoreVerso = { x: 0, y: 0 };
@@ -327,6 +355,8 @@ export function OndeWebGL({ className }: { className?: string }) {
       puntatoreOra.y += (puntatoreVerso.y - puntatoreOra.y) * 0.2;
       gl.uniform1f(uScorrimento, scorrimentoOra);
       gl.uniform2f(uPuntatore, puntatoreOra.x, puntatoreOra.y);
+      impulso *= 0.94;
+      gl.uniform1f(uImpulso, impulso);
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -376,6 +406,14 @@ export function OndeWebGL({ className }: { className?: string }) {
     // browser di non aspettare prima di far scorrere la pagina.
     window.addEventListener("pointermove", suPuntatore, { passive: true });
 
+    // Il marchio, tenuto premuto e rilasciato, scarica qui.
+    const suImpulso = (e: Event) => {
+      const forza = (e as CustomEvent<{ forza: number }>).detail?.forza ?? 1;
+      impulso = Math.min(1, impulso + forza);
+      if (menoMovimento) disegna(6.5);
+    };
+    window.addEventListener("vybes:impulso", suImpulso);
+
     const osservatore = new IntersectionObserver(
       ([voce]) => {
         visibile = voce.isIntersecting;
@@ -395,6 +433,7 @@ export function OndeWebGL({ className }: { className?: string }) {
       window.removeEventListener("scroll", suGesto);
       window.removeEventListener("resize", suGesto);
       window.removeEventListener("pointermove", suPuntatore);
+      window.removeEventListener("vybes:impulso", suImpulso);
       // Il contesto si libera a mano: lasciarlo al raccoglitore significa
       // tenere occupata la GPU finché non gli va, e i contesti WebGL per
       // scheda sono un numero piccolo e finito.

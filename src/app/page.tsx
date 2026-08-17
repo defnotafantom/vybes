@@ -170,6 +170,29 @@ export default async function HomePage() {
             vale il rischio. Vedi `OndeWebGL.tsx`. */}
         <OndeWebGL className="pointer-events-none absolute inset-0 -z-10 h-full w-full" />
 
+        {/* ── Il velo sotto il testo ──
+
+            La domanda era se chiudere le scritte in dei riquadri. No: un
+            riquadro è un cerotto sul sintomo, e aggiunge un quarto elemento a
+            una pagina che era confusa proprio perché ne aveva già tre.
+
+            Quello che serve è **contrasto**, non un contorno. Un velo radiale
+            morbido, centrato dove sta il testo, spegne il fondo esattamente lì
+            e svanisce prima dei bordi: chi guarda non vede un pannello, vede
+            il testo staccarsi. È il trucco della vignetta in fotografia, e
+            funziona per la stessa ragione — l'occhio legge il contrasto
+            locale, non il colore assoluto.
+
+            `-z-10` come il campo, ma dopo: stessa profondità, dipinto sopra. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{
+            background:
+              "radial-gradient(60% 55% at 50% 62%, rgb(var(--bg) / 0.82) 0%, rgb(var(--bg) / 0.55) 45%, transparent 78%)",
+          }}
+        />
+
         {/* Il riempimento verticale era py-24 e cresceva fino a py-40 sui
             monitor grandi. Sommato al marchio, spingeva titolo e pulsanti sotto
             la piega: su un portatile la prima schermata mostrava il logo e

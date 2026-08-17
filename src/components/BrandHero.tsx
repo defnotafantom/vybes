@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SITE } from "@/lib/constants";
-import { MACCHIE, INCHIOSTRI } from "@/lib/splat";
 
 /**
  * Marchio grande della landing, con l'esplosione a inchiostro.
@@ -33,55 +32,11 @@ import { MACCHIE, INCHIOSTRI } from "@/lib/splat";
 const CARICA_PIENA = 900;
 /** Sotto questa soglia è un tocco: esplosione ridotta. */
 const SOGLIA_TOCCO = 140;
-/** Quanto resta a schermo una macchia prima di sparire del tutto. */
-const DURATA_MACCHIA = 2600;
 
-type Schizzo = {
-  id: number;
-  indice: number;
-  colore: string;
-  /** Posizione in percentuale della finestra. */
-  x: number;
-  y: number;
-  scala: number;
-  rotazione: number;
-  ritardo: number;
-};
 
-let contatore = 0;
-
-/**
- * Le macchie escono dal centro verso l'esterno, mai al centro esatto: lì c'è
- * il marchio, e una macchia sopra di lui lo coprirebbe proprio nell'istante in
- * cui si guarda.
- */
-function generaSchizzi(quanti: number, forza: number): Schizzo[] {
-  return Array.from({ length: quanti }, () => {
-    const ang = Math.random() * 2 * Math.PI;
-    // Il minimo non è zero: sotto le venti unità la macchia finirebbe sopra il
-    // marchio e lo coprirebbe proprio nell'istante in cui lo si sta guardando.
-    const dist = 20 + Math.random() * 32 * forza;
-    return {
-      id: contatore++,
-      indice: Math.floor(Math.random() * MACCHIE.length),
-      colore: INCHIOSTRI[Math.floor(Math.random() * INCHIOSTRI.length)],
-      // Le percentuali orizzontali corrono su una finestra più larga che alta:
-      // senza allargare la componente x, gli schizzi si stringerebbero in una
-      // colonna centrale invece di sporcare tutto lo schermo.
-      x: 50 + dist * Math.cos(ang) * 1.7,
-      y: 50 + dist * Math.sin(ang),
-      scala: (0.5 + Math.random() * 0.9) * (0.6 + forza * 0.7),
-      rotazione: Math.random() * 360,
-      // Sfalsare le comparse di poche decine di millisecondi trasforma un
-      // lampo simultaneo in uno schizzo che si propaga.
-      ritardo: Math.random() * 180,
-    };
-  });
-}
 
 export function BrandHero() {
   const [carica, setCarica] = useState(false);
-  const [schizzi, setSchizzi] = useState<Schizzo[]>([]);
 
   /**
    * Di quanto il marchio è inclinato, in gradi.
@@ -129,15 +84,22 @@ export function BrandHero() {
     []
   );
 
+  /**
+   * Lo scoppio, adesso che non ci sono più macchie.
+   *
+   * Rilasciando, il marchio scarica un impulso **nel campo dietro**: le frange
+   * si allargano di colpo e poi tornano. È la cosa che il concetto chiedeva
+   * dall'inizio — una vibrazione si propaga, non schizza — e che la vernice
+   * impediva di vedere, perché copriva mezzo schermo proprio nell'istante in
+   * cui il campo avrebbe dovuto reagire.
+   *
+   * L'impulso viaggia su un evento del documento e non per proprietà: il campo
+   * è un fratello nell'albero, non un figlio, e farlo risalire fino a un
+   * antenato comune per poi ridiscendere avrebbe legato due componenti che non
+   * hanno altro da dirsi.
+   */
   const esplodi = useCallback((forza: number) => {
-    const nuovi = generaSchizzi(Math.round(5 + forza * 9), forza);
-    setSchizzi((s) => [...s, ...nuovi]);
-    // Rimozione dal DOM dopo la dissolvenza: senza, una pagina lasciata aperta
-    // accumulerebbe centinaia di nodi invisibili.
-    setTimeout(
-      () => setSchizzi((s) => s.filter((x) => !nuovi.some((n) => n.id === x.id))),
-      DURATA_MACCHIA + 400
-    );
+    window.dispatchEvent(new CustomEvent("vybes:impulso", { detail: { forza } }));
   }, []);
 
   const premi = useCallback(() => {
@@ -163,42 +125,22 @@ export function BrandHero() {
 
   return (
     <>
-      {/* Le macchie stanno fuori dal marchio e coprono la finestra: sono lo
-          sfondo che si sporca, non un ornamento del logo. `fixed` perché la
-          vernice non deve scorrere con la pagina mentre svanisce. */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-        {schizzi.map((s) => (
-          <svg
-            key={s.id}
-            viewBox="-12 -12 124 124"
-            className="macchia absolute"
-            // La rotazione passa da una variabile CSS perché il `transform` è
-            // già occupato dai keyframes: due dichiarazioni sulla stessa
-            // proprietà si sovrascrivono, una variabile letta dentro i
-            // keyframes no. Il cast serve perché `CSSProperties` non prevede
-            // le proprietà personalizzate.
-            style={
-              {
-                left: `${s.x}%`,
-                top: `${s.y}%`,
-                width: `${s.scala * 17}vmin`,
-                height: `${s.scala * 17}vmin`,
-                color: s.colore,
-                animationDelay: `${s.ritardo}ms`,
-                "--rot": `${s.rotazione}deg`,
-              } as React.CSSProperties
-            }
-          >
-            <g fill="currentColor">
-              <path d={MACCHIE[s.indice].corpo} />
-              {MACCHIE[s.indice].gocce.map((g, i) => (
-                <circle key={i} cx={g.cx} cy={g.cy} r={g.r} />
-              ))}
-            </g>
-          </svg>
-        ))}
-      </div>
+      {/* ── Gli schizzi d'inchiostro sono stati tolti ──
 
+          Erano il terzo linguaggio visivo di questa pagina, dopo il marchio
+          reso in tre dimensioni e il campo d'onda: una texture pittorica, con
+          una sua tavolozza, sopra due cose che non c'entravano niente con la
+          pittura. Non stonavano per un colore sbagliato — stonavano perché
+          raccontavano un'altra storia.
+
+          Erano nati quando la landing non aveva un concetto: allora un
+          divertimento valeva per sé. Adesso il concetto c'è — vibrazioni,
+          fronti che si propagano — e una macchia di vernice non è una
+          vibrazione. Tolti.
+
+          La pressione resta: il marchio si carica e reagisce, e quel gesto è
+          la cosa che la gente prova. Cambia solo cosa produce, e lo produce
+          il campo dietro. */}
       <div className="brand flex flex-col items-center">
         <button
           type="button"

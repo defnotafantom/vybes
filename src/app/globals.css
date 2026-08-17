@@ -745,33 +745,7 @@
   opacity: 1;
 }
 
-/* Il volo di una macchia: parte piccola dal centro, arriva oltre misura e
-   rientra — l'inerzia della vernice che si schianta — poi resta, e infine
-   svanisce.
 
-   Le percentuali sono sbilanciate in avanti apposta: l'impatto occupa il primo
-   dodicesimo del tempo, il resto è permanenza e dissolvenza. Uno schizzo che
-   impiega mezzo secondo ad arrivare non è uno schizzo. */
-.macchia {
-  transform-origin: center;
-  /* `translate` è una proprietà a sé e non entra in conflitto con il
-     `transform` animato: senza, la centratura verrebbe sovrascritta dai
-     keyframes al primo fotogramma. */
-  translate: -50% -50%;
-  /* Sul fondo scuro l'inchiostro pieno stacca come un ritaglio incollato
-     sopra: la fusione additiva lo fa leggere come vernice che sta *sulla*
-     pagina, e lascia trasparire la mesh e la griglia sotto. */
-  mix-blend-mode: screen;
-  animation: macchia-scoppio 2600ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes macchia-scoppio {
-  0%   { opacity: 0;    transform: scale(0.05) rotate(var(--rot, 0deg)); }
-  8%   { opacity: 0.9;  transform: scale(1.12) rotate(var(--rot, 0deg)); }
-  14%  { opacity: 0.85; transform: scale(1) rotate(var(--rot, 0deg)); }
-  68%  { opacity: 0.85; transform: scale(1) rotate(var(--rot, 0deg)); }
-  100% { opacity: 0;    transform: scale(1.06) rotate(var(--rot, 0deg)); }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .brand-float,
@@ -779,18 +753,11 @@
   .brand:hover .brand-scale { transform: none; }
   /* La carica resta, ridotta a un accenno: è la risposta a un comando
      deliberato, e toglierla del tutto farebbe sembrare il pulsante rotto.
-     La scritta compare invece di crescere. Sparisce il volo delle macchie,
-     che è il movimento ampio e involontario che questa preferenza esclude:
-     compaiono e se ne vanno. */
+     La scritta compare invece di crescere. */
   .brand-scritta { transition-duration: 150ms; }
   .brand-scritta-carica { scale: 0.85; }
-  .macchia { animation: macchia-quieta 2600ms linear both; }
 }
 
-@keyframes macchia-quieta {
-  0%, 100% { opacity: 0; }
-  10%, 70% { opacity: 0.7; }
-}
 
 /**
  * Il volo dell'XP riscosso, dal pulsante della quest alla barra del livello.
