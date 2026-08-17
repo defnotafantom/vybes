@@ -9,7 +9,7 @@ import { faqJsonLd } from "@/lib/jsonld";
 import { ArtistCard } from "@/components/ArtistCard";
 import { EventCard } from "@/components/EventCard";
 import { Spotlight } from "@/components/Spotlight";
-import { BrandHero } from "@/components/BrandHero";
+import { TitoloOnda } from "@/components/TitoloOnda";
 import { OndeWebGL } from "@/components/OndeWebGL";
 import { Avatar } from "@/components/ui/Avatar";
 import { fromCsv } from "@/lib/slug";
@@ -160,116 +160,134 @@ export default async function HomePage() {
 
       {/* ═══════════════════════════ HERO ═══════════════════════════ */}
       <Spotlight className="relative isolate overflow-hidden">
-        <div className="mesh-hero" aria-hidden="true" />
-        <div className="grid-lines absolute inset-0 -z-10" aria-hidden="true" />
+        {/* ── `data-campo`: il riquadro in cui il campo d'onda è definito ──
 
-        {/* ── Il campo d'onda ──
-            Sta **sopra** il gradiente e **sotto** il contenuto: se WebGL non
-            c'è, o se il contesto non si crea, resta esattamente la pagina di
-            prima. Un effetto decorativo che può rompere quello che decora non
-            vale il rischio. Vedi `OndeWebGL.tsx`. */}
-        <OndeWebGL className="pointer-events-none absolute inset-0 -z-10 h-full w-full" />
+            Due tele disegnano la stessa figura: questa, a pieno campo dietro
+            tutto, e quella dentro le lettere del titolo. Perché le frange si
+            allineino attraverso il bordo dei glifi, la seconda deve sapere
+            dove sta dentro la prima — e lo scopre risalendo a questo elemento.
 
-        {/* ── Il velo sotto il testo ──
+            Un attributo e non una prop: il titolo sta tre livelli più in
+            basso, e farglielo arrivare per proprietà vorrebbe dire attraversare
+            componenti che non hanno niente a che fare con la questione. */}
+        <div data-campo className="relative">
+          {/* La sfumatura a bolle viola/ciano (`mesh-hero`) è stata tolta da
+              qui. Restava dell'epoca in cui il fondo doveva "riempire": adesso
+              il fondo ha un fenomeno vero da mostrare, e due strati colorati
+              sovrapposti erano il motivo per cui la schermata sembrava
+              affollata. Sulle altre pagine resta, perché lì il campo non c'è. */}
+          <div className="grid-lines absolute inset-0 -z-10" aria-hidden="true" />
 
-            La domanda era se chiudere le scritte in dei riquadri. No: un
-            riquadro è un cerotto sul sintomo, e aggiunge un quarto elemento a
-            una pagina che era confusa proprio perché ne aveva già tre.
+          {/* Il campo d'onda sta **sopra** il fondo e **sotto** il contenuto:
+              se WebGL non c'è resta esattamente la pagina di prima. Un effetto
+              decorativo che può rompere quello che decora non vale il rischio. */}
+          <OndeWebGL className="pointer-events-none absolute inset-0 -z-10 h-full w-full" />
 
-            Quello che serve è **contrasto**, non un contorno. Un velo radiale
-            morbido, centrato dove sta il testo, spegne il fondo esattamente lì
-            e svanisce prima dei bordi: chi guarda non vede un pannello, vede
-            il testo staccarsi. È il trucco della vignetta in fotografia, e
-            funziona per la stessa ragione — l'occhio legge il contrasto
-            locale, non il colore assoluto.
+          {/* ── Perché non più al centro ──
 
-            `-z-10` come il campo, ma dopo: stessa profondità, dipinto sopra. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{
-            background:
-              "radial-gradient(60% 55% at 50% 62%, rgb(var(--bg) / 0.82) 0%, rgb(var(--bg) / 0.55) 45%, transparent 78%)",
-          }}
-        />
+              La composizione era una colonna centrata: etichetta, marchio,
+              titolo, paragrafo, due pulsanti, tutti sullo stesso asse. È lo
+              schema di ogni landing di ogni prodotto, e con un campo animato
+              dietro diventa affollato — ogni elemento ha lo stesso peso e
+              nessuno guida l'occhio.
 
-        {/* Il riempimento verticale era py-24 e cresceva fino a py-40 sui
-            monitor grandi. Sommato al marchio, spingeva titolo e pulsanti sotto
-            la piega: su un portatile la prima schermata mostrava il logo e
-            metà di una frase. Un sito che deve convincere in tre secondi non
-            può usarli tutti per presentarsi.
+              Allineato a sinistra e ancorato in alto c'è una gerarchia sola e
+              un vuoto grande a destra, che è quello che rende leggibile il
+              campo. È la griglia dei siti che gli award premiano, e non per
+              moda: il vuoto è la cosa che permette a una pagina di avere un
+              punto focale.
 
-            Adesso il riempimento *si riduce* al crescere della finestra invece
-            di crescere: su uno schermo alto lo spazio ce l'hai già. */}
-        <div className="container-page flex flex-col items-center py-14 text-center sm:py-16 lg:py-20">
-          <BrandHero />
+              Il riempimento non cresce con lo schermo. Su un portatile la
+              prima schermata deve contenere titolo **e** pulsanti: un sito che
+              deve convincere in tre secondi non può usarli per presentarsi. */}
+          <div className="container-page py-20 sm:py-24 lg:py-28">
+            {/* Il contatore compare solo quando è un argomento. «7 artisti»
+                scritto nel punto più visibile della pagina non informa:
+                comunica che il sito è vuoto, e lo fa prima che il visitatore
+                abbia letto cosa fa. Sotto la soglia si mostrano le città, che
+                sono venti da subito e dicono la stessa cosa — dove siamo —
+                senza dichiarare la propria debolezza. */}
+            <p className="eyebrow animate-fade-up">
+              {/* Una scintilla è l'icona che ogni sito mette accanto a ogni
+                  cosa e non significa niente. Un'onda dice di che sito si
+                  tratta. */}
+              <AudioWaveform className="mr-1.5 inline h-3.5 w-3.5" aria-hidden="true" />
+              {artistCount >= SOGLIA_VANTO
+                ? `${artistCount} artisti · ${cityCount} città`
+                : `${cityCount} città in tutta Italia`}
+            </p>
 
-          {/* Il contatore compare solo quando è un argomento.
-              «7 artisti» scritto nel punto più visibile della pagina non
-              informa: comunica che il sito è vuoto, e lo fa prima che il
-              visitatore abbia letto cosa fa. Sotto la soglia si mostrano le
-              città coperte, che sono venti da subito e dicono la stessa cosa
-              — dove siamo — senza dichiarare la propria debolezza.
+            {/* ── Il titolo, e perché queste tre righe ──
 
-              Non è nascondere un dato: il numero esatto è in cima a /artisti,
-              che è la pagina di chi quel dato lo sta cercando davvero. */}
-          <p className="eyebrow mt-8 animate-fade-up [animation-delay:400ms]">
-            {/* Una scintilla è l'icona che ogni sito mette accanto a ogni cosa
-                e non significa niente. Un'onda dice di che sito si tratta. */}
-            <AudioWaveform className="mr-1.5 inline h-3.5 w-3.5" aria-hidden="true" />
-            {artistCount >= SOGLIA_VANTO
-              ? `${artistCount} artisti · ${cityCount} città`
-              : `${cityCount} città in tutta Italia`}
-          </p>
+                Prima diceva «Trova artisti. Trova ingaggi. Senza
+                intermediari.»: chiaro, e identico a quello di ogni altro
+                mercato a due lati. Due imperativi che non dicono niente di
+                **questo** posto.
 
-          {/* ── Il titolo, e perché queste tre righe ──
+                Adesso dice la stessa cosa attraverso il fenomeno che dà il
+                nome al sito. Un'onda ha due estremità: qualcuno la emette,
+                qualcuno la riceve — che è esattamente cosa sono i due lati di
+                questo mercato, ed è cosa il titolo adesso *mostra*, perché le
+                lettere sono una finestra sul campo.
 
-              Prima diceva «Trova artisti. Trova ingaggi. Senza intermediari.»:
-              chiaro, e identico a quello di ogni altro mercato a due lati.
-              Due imperativi che non dicono niente di **questo** posto.
+                La terza riga resta identica perché è l'unica che dichiara un
+                vantaggio invece di descrivere: nessuno prende una percentuale.
+                È la ragione per cui qualcuno preferisce questo a un'agenzia, e
+                non si sostituisce con una metafora.
 
-              Adesso dice la stessa cosa attraverso il fenomeno che dà il nome
-              al sito. Un'onda ha due estremità: qualcuno la emette, qualcuno
-              la riceve — che è esattamente cosa sono i due lati di questo
-              mercato, e cosa disegna il marchio qui sopra.
+                Il gradiente sull'ultima riga è sparito: il colore adesso ce
+                l'hanno tutte e tre, e viene dalle frange che le attraversano.
+                Due sistemi di colore sullo stesso titolo erano uno di troppo.
 
-              La terza riga resta identica perché è l'unica che dichiara un
-              vantaggio invece di descrivere: nessuno prende una percentuale.
-              È la ragione per cui qualcuno preferisce questo a un'agenzia, e
-              non si sostituisce con una metafora. */}
-          <h1 className="mt-5 max-w-4xl animate-fade-up text-fluid-hero [animation-delay:480ms]">
-            Qualcuno suona.
-            <br />
-            Qualcuno lo cerca.
-            <br />
-            {/* nowrap solo da tablet in su: sotto i 640px la riga
-                sfonderebbe la larghezza dello schermo */}
-            <span className="text-gradient sm:whitespace-nowrap">Senza intermediari.</span>
-          </h1>
+                La misura del corpo è scelta perché la riga più lunga stia su
+                una riga sola anche a 320px: le tre righe sono decise qui, e la
+                tela le disegna una per una. Vedi `TitoloOnda.tsx`. */}
+            <TitoloOnda
+              righe={["Qualcuno suona.", "Qualcuno lo cerca.", "Senza intermediari."]}
+              /* `-m-4 p-4`: la tela coincide con il riquadro dell'`h1`, e due
+                 cose sporgono da quel riquadro. In verticale, un'interlinea di
+                 0,96 e' piu' bassa dei glifi: le aste alte e le code
+                 verrebbero tagliate. In orizzontale, sotto carica le lettere
+                 si spostano di una decina di pixel e la prima e' incollata al
+                 bordo sinistro. Il margine negativo restituisce lo spazio
+                 preso dal riempimento, quindi l'allineamento a sinistra della
+                 colonna resta quello di tutto il resto. */
+              className="-m-4 mt-6 inline-block animate-fade-up p-4 [animation-delay:120ms]"
+              classeTitolo="text-[clamp(1.75rem,7.4vw,6rem)] font-extrabold leading-[0.96] tracking-[-0.04em]"
+            />
 
-          <p className="mt-6 max-w-xl animate-fade-up text-fluid-lg text-ink-muted [animation-delay:560ms]">
-            {/* I nomi delle discipline restano tutti: sono le parole con cui la
-                gente cerca su Google, e una metafora che se le mangia costa
-                traffico vero. La figura si aggiunge davanti, non al posto. */}
-            Una vibrazione parte da chi la fa e arriva a chi la cerca. Da una parte musicisti,
-            DJ, band, ballerini e performer; dall&apos;altra i locali, i festival e le agenzie
-            che li ingaggiano.
-          </p>
+            {/* Paragrafo e pulsanti su una riga sola, separati da una regola
+                orizzontale: la riga li lega e allo stesso tempo chiude l'hero,
+                che senza un bordo inferiore sfumava nel contenuto sotto senza
+                che si capisse dove finiva. Su schermo stretto tornano
+                impilati, che è l'unica cosa che ci sta. */}
+            <div className="mt-14 grid animate-fade-up gap-8 border-t pt-8 [animation-delay:240ms] lg:grid-cols-[minmax(0,34rem)_auto] lg:items-start lg:justify-between lg:gap-16">
+              <p className="text-fluid-lg text-ink-muted">
+                {/* I nomi delle discipline restano tutti: sono le parole con
+                    cui la gente cerca su Google, e una metafora che se le
+                    mangia costa traffico vero. La figura si aggiunge davanti,
+                    non al posto. */}
+                Una vibrazione parte da chi la fa e arriva a chi la cerca. Da una parte
+                musicisti, DJ, band, ballerini e performer; dall&apos;altra i locali, i
+                festival e le agenzie che li ingaggiano.
+              </p>
 
-          <div className="mt-8 flex animate-fade-up flex-wrap justify-center gap-3 [animation-delay:640ms]">
-            <Link
-              href="/registrati?ruolo=artista"
-              className="btn-primary px-7 py-3.5 text-fluid-base"
-            >
-              Sono un artista
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-            <Link
-              href="/registrati?ruolo=recruiter"
-              className="btn-ghost px-7 py-3.5 text-fluid-base"
-            >
-              Cerco artisti
-            </Link>
+              <div className="flex shrink-0 flex-wrap gap-3 lg:justify-end">
+                <Link
+                  href="/registrati?ruolo=artista"
+                  className="btn-primary px-7 py-3.5 text-fluid-base"
+                >
+                  Sono un artista
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+                <Link
+                  href="/registrati?ruolo=recruiter"
+                  className="btn-ghost px-7 py-3.5 text-fluid-base"
+                >
+                  Cerco artisti
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </Spotlight>
