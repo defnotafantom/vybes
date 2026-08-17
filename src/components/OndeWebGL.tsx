@@ -81,6 +81,19 @@ precision highp float;
 uniform vec2  risoluzione;
 uniform float tempo;
 uniform float chiaro;      // 1.0 su tema chiaro, 0.0 su scuro
+
+// Le due mani del visitatore sul campo.
+//
+// scorrimento va da 0 in cima a 1 a fondo hero; puntatore e' dove sta il dito
+// o il cursore, in coordinate centrate come p. Sono la differenza fra guardare
+// un'animazione e suonare qualcosa: la stessa figura, ma il movimento e' tuo.
+//
+// (Niente apici inversi in questo commento: il frammento vive dentro un
+// template literal di JavaScript, e un apice inverso lo chiuderebbe a meta'.
+// Lo shader smetteva di compilare e il file smetteva di essere TypeScript
+// valido — un errore di sintassi a trenta righe di distanza dalla causa.)
+uniform float scorrimento;
+uniform vec2  puntatore;
 out vec4 colore;
 
 const vec3 VIOLA = vec3(0.545, 0.361, 0.965);  // brand-500
@@ -109,9 +122,20 @@ void main() {
   vec2 s2 = 0.38 * vec2(cos(-tempo * 0.17 + 2.1), sin(-tempo * 0.17 + 2.1));
   vec2 s3 = 0.55 * vec2(cos(tempo * 0.11 + 4.2), sin(tempo * 0.11 + 4.2));
 
-  float a = onda(p, s1, 26.0, 1.30, 2.0, tempo)
-          + onda(p, s2, 19.0, 0.95, 3.0, tempo)
-          + onda(p, s3, 33.0, 1.70, 1.0, tempo);
+  // La prima sorgente segue chi guarda, ma per metà strada: seguendo il
+  // cursore esattamente il campo diventa un riflesso del mouse e smette di
+  // sembrare un fenomeno che esiste per conto suo. A metà, la si trascina.
+  s1 = mix(s1, puntatore, 0.5);
+
+  // Scorrendo, i fronti si infittiscono e rallentano: la figura si stringe
+  // verso il basso invece di limitarsi a scorrere via. È l'unico legame fra
+  // il gesto e il campo che si sente senza doverlo cercare.
+  float k = 1.0 + scorrimento * 1.6;
+  float w = 1.0 - scorrimento * 0.45;
+
+  float a = onda(p, s1, 26.0 * k, 1.30 * w, 2.0, tempo)
+          + onda(p, s2, 19.0 * k, 0.95 * w, 3.0, tempo)
+          + onda(p, s3, 33.0 * k, 1.70 * w, 1.0, tempo);
 
   // Le creste, non tutta l'onda: \`smoothstep\` tiene solo i massimi e lascia
   // il resto al fondo. Mostrando l'onda intera si otterrebbe una zebratura
@@ -130,7 +154,9 @@ void main() {
   // Molto trasparente, e più ancora su tema chiaro: lì il testo è scuro su
   // fondo chiaro e qualunque colore saturo sotto ne abbassa il contrasto —
   // che è un problema di leggibilità, non di gusto.
-  float alfa = cresta * vignetta * mix(0.55, 0.22, chiaro);
+  // Scendendo il campo si ritira: sotto l'hero comincia il contenuto, e un
+  // fondo che pulsa dietro un elenco di artisti è rumore.
+  float alfa = cresta * vignetta * mix(0.55, 0.22, chiaro) * (1.0 - scorrimento * 0.7);
 
   colore = vec4(tinta, alfa);
 }`;
@@ -225,6 +251,46 @@ export function OndeWebGL({ className }: { className?: string }) {
     const uRisoluzione = gl.getUniformLocation(programma, "risoluzione");
     const uTempo = gl.getUniformLocation(programma, "tempo");
     const uChiaro = gl.getUniformLocation(programma, "chiaro");
+    const uScorrimento = gl.getUniformLocation(programma, "scorrimento");
+    const uPuntatore = gl.getUniformLocation(programma, "puntatore");
+
+    /* ── I due valori che vengono da chi guarda ──
+     *
+     * Si tengono in variabili semplici e non in stato di React: cambiano a
+     * ogni movimento del dito, e farli passare da un `useState` significherebbe
+     * un rendering per pixel percorso. Qui il ciclo di disegno li legge
+     * direttamente, ed è l'unico posto che li usa.
+     *
+     * ── Perché inseguono invece di saltare ──
+     *
+     * `verso` è il valore vero, `ora` quello disegnato, e a ogni fotogramma il
+     * secondo si avvicina al primo di un quinto. Senza questo scatto, il campo
+     * seguirebbe il cursore a strappi e ogni frenata sarebbe uno scossone. Con
+     * l'inseguimento sembra che abbia una massa — che è quello che gli dà
+     * l'aria di essere una cosa e non un valore.
+     */
+    let scorrimentoVerso = 0;
+    let scorrimentoOra = 0;
+    const puntatoreVerso = { x: 0, y: 0 };
+    const puntatoreOra = { x: 0, y: 0 };
+
+    function leggiScorrimento() {
+      if (!canvas) return;
+      const r = canvas.getBoundingClientRect();
+      // Quanto dell'hero è già uscito dallo schermo, fra 0 e 1.
+      scorrimentoVerso = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height)));
+    }
+
+    function suPuntatore(e: PointerEvent) {
+      if (!canvas) return;
+      const r = canvas.getBoundingClientRect();
+      const lato = Math.min(r.width, r.height);
+      puntatoreVerso.x = ((e.clientX - r.left) - r.width / 2) / lato;
+      // L'asse verticale è rovesciato: in WebGL lo zero sta in basso, nel
+      // documento in alto. Senza il segno, il campo insegue il cursore
+      // specchiato — che si nota subito e sembra un difetto di calibrazione.
+      puntatoreVerso.y = -(((e.clientY - r.top) - r.height / 2) / lato);
+    }
 
     const menoMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -254,6 +320,13 @@ export function OndeWebGL({ className }: { className?: string }) {
         uChiaro,
         document.documentElement.classList.contains("dark") ? 0 : 1
       );
+
+      // L'inseguimento: un quinto della distanza per fotogramma.
+      scorrimentoOra += (scorrimentoVerso - scorrimentoOra) * 0.2;
+      puntatoreOra.x += (puntatoreVerso.x - puntatoreOra.x) * 0.2;
+      puntatoreOra.y += (puntatoreVerso.y - puntatoreOra.y) * 0.2;
+      gl.uniform1f(uScorrimento, scorrimentoOra);
+      gl.uniform2f(uPuntatore, puntatoreOra.x, puntatoreOra.y);
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -285,6 +358,24 @@ export function OndeWebGL({ className }: { className?: string }) {
 
     // Fuori schermo o scheda in secondo piano: si sospende. Una GPU che macina
     // per una pagina che nessuno guarda è batteria rubata.
+    /* Il campo deve rispondere anche a chi scorre **senza** che il ciclo sia
+     * partito — con `prefers-reduced-motion` non parte affatto. In quel caso
+     * si ridisegna un fotogramma per gesto: nessuna animazione continua, ma la
+     * pagina non resta sorda a quello che si fa.
+     */
+    function suGesto() {
+      leggiScorrimento();
+      if (menoMovimento) disegna(6.5);
+    }
+
+    leggiScorrimento();
+    window.addEventListener("scroll", suGesto, { passive: true });
+    window.addEventListener("resize", suGesto, { passive: true });
+    // `pointermove` copre mouse, penna e dito con un ascoltatore solo.
+    // `passive`: non si chiama mai `preventDefault`, e dirlo permette al
+    // browser di non aspettare prima di far scorrere la pagina.
+    window.addEventListener("pointermove", suPuntatore, { passive: true });
+
     const osservatore = new IntersectionObserver(
       ([voce]) => {
         visibile = voce.isIntersecting;
@@ -301,6 +392,9 @@ export function OndeWebGL({ className }: { className?: string }) {
       ferma();
       osservatore.disconnect();
       document.removeEventListener("visibilitychange", suVisibilita);
+      window.removeEventListener("scroll", suGesto);
+      window.removeEventListener("resize", suGesto);
+      window.removeEventListener("pointermove", suPuntatore);
       // Il contesto si libera a mano: lasciarlo al raccoglitore significa
       // tenere occupata la GPU finché non gli va, e i contesti WebGL per
       // scheda sono un numero piccolo e finito.

@@ -82,6 +82,41 @@ function generaSchizzi(quanti: number, forza: number): Schizzo[] {
 export function BrandHero() {
   const [carica, setCarica] = useState(false);
   const [schizzi, setSchizzi] = useState<Schizzo[]>([]);
+
+  /**
+   * Di quanto il marchio è inclinato, in gradi.
+   *
+   * Sta in stato di React e non in una variabile perché qui il valore *è* il
+   * rendering: cambia poche volte al secondo — la transizione CSS copre il
+   * resto — e non a ogni pixel come nel campo d'onda dietro, dove infatti si
+   * usa una variabile.
+   */
+  const [inclina, setInclina] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    // Chi ha disattivato le animazioni non riceve nemmeno questa: un oggetto
+    // che si muove seguendo il cursore è esattamente il tipo di movimento
+    // periferico che dà fastidio a chi ha un disturbo vestibolare.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    function segui(e: PointerEvent) {
+      // Rispetto al centro della finestra, non del marchio: usando il marchio
+      // l'inclinazione si azzererebbe ogni volta che il cursore ci passa
+      // sopra, cioè proprio quando qualcuno lo sta guardando.
+      const dx = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+      const dy = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+      setInclina({
+        // L'asse X ruota **contro** il movimento verticale: è quello che dà
+        // l'impressione di guardare un oggetto da sopra o da sotto invece di
+        // vederlo scivolare.
+        x: Math.max(-12, Math.min(12, -dy * 12)),
+        y: Math.max(-12, Math.min(12, dx * 12)),
+      });
+    }
+
+    window.addEventListener("pointermove", segui, { passive: true });
+    return () => window.removeEventListener("pointermove", segui);
+  }, []);
   const inizio = useRef(0);
   const timerScoppio = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -197,7 +232,33 @@ export function BrandHero() {
             if (e.key === " " || e.key === "Enter") rilascia();
           }}
         >
-          <div className="brand-glow brand-float relative">
+          {/* ── L'inclinazione ──
+
+              Il marchio prende una prospettiva e si inclina verso chi guarda,
+              seguendo il puntatore. Non è un'animazione che parte da sola: è
+              una **risposta**, e la differenza si sente — un oggetto che
+              reagisce sembra avere una posizione nello spazio, uno che ruota
+              per conto suo sembra una GIF.
+
+              Sono trasformazioni CSS, non una scena 3D: la spirale è già un
+              disegno, e farla diventare geometria vera costerebbe una libreria
+              intera per un risultato che a questa scala non si distingue.
+
+              L'ampiezza è deliberatamente piccola, dodici gradi. Oltre, il
+              marchio si deforma abbastanza da non essere più leggibile come
+              marchio — e un logo che a tratti non si riconosce ha smesso di
+              fare il suo mestiere. */}
+          <div
+            className="brand-glow brand-float relative"
+            style={{
+              transform: `perspective(900px) rotateX(${inclina.x}deg) rotateY(${inclina.y}deg)`,
+              transformStyle: "preserve-3d",
+              // Segue con un ritardo percettibile ma breve: senza transizione
+              // scatta a ogni pixel, con più di 300ms sembra che il marchio
+              // arrivi in ritardo alle intenzioni di chi lo muove.
+              transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+            }}
+          >
             <div className="brand-scale">
               <div className="brand-spin">
                 <Image
