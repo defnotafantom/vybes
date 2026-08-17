@@ -5,149 +5,146 @@ import Image from "next/image";
 import { avviaCampo } from "@/lib/tela-campo";
 
 /**
- * Il marchio, rivisitato: la spirale disegnata dal campo che emette.
+ * Il marchio: l'immagine originale, resa come oggetto.
  *
- * ── Che cos'era, e cosa non andava ──
+ * ── Due strade sbagliate, e perché ──
  *
- * Il logo è un disco di filamenti che si avvolgono intorno a un centro, dal
- * viola al blu al ciano, con i vuoti bianchi. Come immagine era un oggetto
- * reso altrove: lucido, con la propria luce e i propri riflessi, appoggiato su
- * una pagina che di luci e riflessi non ne ha. Non stonava per un colore
- * sbagliato — stonava perché era di un altro materiale.
+ * Prima il PNG appoggiato sulla pagina: un oggetto reso altrove, lucido, con
+ * la propria luce, sopra una schermata che di luci non ne aveva. Stonava.
  *
- * ── L'osservazione che risolve tutto ──
+ * Poi la spirale **ridisegnata** dalla formula del campo: perfettamente
+ * coerente col resto, e senza identità. I filamenti del logo somigliano a
+ * fronti d'onda a spirale, ma «una spirale» non è **quella** spirale: le
+ * lobature, il verso, il taglio del ciano in basso a destra sono il marchio, e
+ * una figura generata non li ha. Coerenza pagata con il riconoscimento — un
+ * pessimo cambio per un logo.
  *
- * Quei filamenti **sono già** dei fronti d'onda a spirale. È esattamente la
- * figura che disegna una sorgente che ruota mentre emette, cioè la formula che
- * la pagina sta già valutando per lo sfondo e per il titolo.
+ * ── La terza ──
  *
- * Quindi il marchio non viene reimportato: viene **rigenerato**. Stessa
- * funzione delle altre due superfici, ritagliata su un disco, con le frange
- * ispessite in nastri invece che ridotte a linee — che è la sola differenza
- * fra il logo e lo sfondo, e la ragione per cui a quarantotto pixel il logo si
- * legge e un reticolo di righe no.
+ * La figura resta l'immagine vera, pixel per pixel. Cambia cosa le sta
+ * intorno: non è più incollata alla pagina, è **dentro una sfera di vetro**.
  *
- * ── Perché adesso ci sta ──
+ * Il volume non è dipinto, è calcolato. Per ogni pixel del cerchio si ricava
+ * la normale della sfera corrispondente, e la trama si campiona **rifratta**:
+ * il raggio devia entrando nel vetro, e la deviazione cresce verso l'orlo — al
+ * centro l'immagine si ingrandisce, ai bordi si comprime. È ciò che fa una
+ * biglia con un disegno dentro, e nessun gradiente lo imita: quella
+ * compressione è la cosa che l'occhio legge come «curvo».
  *
- * Perché è fatto dello stesso materiale di tutto il resto della schermata:
- * nessuna luce, nessun riflesso, la stessa equazione e la stessa tavolozza.
- * Non è più un oggetto reso altrove e appoggiato sopra.
+ * Sopra ci vanno una luce diffusa, un riflesso speculare e un bordo di
+ * Fresnel — di taglio il vetro riflette quasi tutto, ed è quell'orlo luminoso
+ * che dice «sfera» prima di qualunque altra cosa.
  *
- * Per un commit ha anche *causato* il campo — le sorgenti dello sfondo gli
- * orbitavano intorno. Bella idea, e ha spento le onde su mezza pagina: le
- * costanti dello sfondo erano tarate su un centro che non c'era più. La nota
- * sta in `lib/campo.ts`; il legame è rimasto dove è vero e non può rompere
- * niente.
+ * ── E il contesto ──
  *
- * E la scala fa il resto. Il vecchio marchio era alto diciassette rem al
- * centro della pagina, dove pretendeva di essere il contenuto. Questo è un
- * segno in cima alla colonna, della misura di un segno — ma non di un'icona:
- * a cinquantasei pixel i filamenti si toccavano e restava un cerchio
- * colorato.
+ * La luce segue il puntatore a metà strada, la spirale gira piano, e tenendo
+ * premuto il titolo il vetro si ispessisce e il marchio si gonfia — con gli
+ * stessi due valori (carica e impulso) che muovono il campo dietro. È lì che
+ * l'oggetto smette di essere estraneo: non perché sia fatto della stessa
+ * materia, ma perché risponde alle stesse cose.
  *
  * ── Il ripiego ──
  *
- * Il PNG originale resta e sparisce solo quando la tela ha davvero disegnato.
- * Senza WebGL il marchio c'è comunque, con la sua immagine: è un logo, e
- * l'unica cosa peggiore di un logo che non si amalgama è un logo che manca.
+ * Lo stesso PNG, in un `<img>`, finché la tela non ha davvero disegnato. È un
+ * logo: l'unica cosa peggiore di un logo che non si amalgama è un logo che
+ * manca. E siccome è lo stesso file, il browser lo scarica una volta sola —
+ * quando la trama serve, è già in cache.
  */
 
 const FRAMMENTO = `
+uniform sampler2D logo;
 uniform float carica;
 
 /*
- * ── Perche' il marchio ha un'onda tutta sua ──
+ * ── Il marchio vero, reso come oggetto ──
  *
- * Prima leggeva il campo nel riferimento dell'hero, come le altre due
- * superfici: era l'idea di «finestra sullo stesso fenomeno». Su un disco di
- * cento pixel dentro un riquadro di settecento, pero', il campo cambia
- * pochissimo da un bordo all'altro. Il risultato non era una spirale: era una
- * macchia di colore quasi uniforme. Nessun errore, nessun sintomo — solo un
- * disegno campionato dove non c'e' niente da vedere.
+ * I due tentativi precedenti ridisegnavano la spirale da zero con la formula
+ * del campo. Coerente, e sbagliato: il logo perdeva la propria identita' —
+ * quelle lobature, quella rotazione, quel taglio del ciano in basso a destra
+ * non sono «una spirale qualunque», sono **quella**.
  *
- * Un marchio deve leggersi alla propria misura. Qui le sorgenti stanno nelle
- * coordinate del disco e i numeri d'onda sono scelti perche' i filamenti
- * compiano il loro giro dentro il cerchio. Il legame con lo sfondo resta dov'e'
- * vero — stessa equazione, stessa tavolozza — e non dove sarebbe costato la
- * leggibilita' del logo.
+ * Qui la figura e' l'immagine originale, pixel per pixel. Cambia solo cosa le
+ * sta intorno: non e' piu' appiccicata alla pagina, e' dentro una sfera.
  *
- * ── La cucitura, e come la si toglie ──
+ * ── Come nasce il volume ──
  *
- * atan() salta di 2π sull'asse negativo. Con un numero **intero** di bracci il
- * salto e' invisibile, perche' sin(x + 2πn) = sin(x). Il primo tentativo
- * smorzava l'angolo vicino alla sorgente moltiplicandolo per uno smoothstep —
- * e quel fattore rompeva l'interezza: attraverso il disco compariva una riga
- * dritta e bianca, netta come un graffio.
+ * Per ogni pixel dentro il cerchio si ricava la normale della sfera che
+ * quel cerchio sarebbe: z = sqrt(1 - r*r). Da li' in poi e' geometria vera.
  *
- * Qui invece si fonde l'onda a spirale con quella **circolare**: entrambe sono
- * continue, la mescolanza pure, e vicino alla sorgente resta il fronte
- * circolare — che e' anche fisicamente giusto, perche' il termine a spirale
- * nasce dalla rotazione e a raggio nullo non c'e' rotazione da vedere.
+ * La trama non si campiona dritta: si rifrange. Il raggio che entra nel vetro
+ * devia, e la deviazione cresce verso il bordo — al centro l'immagine si
+ * ingrandisce, ai bordi si comprime. E' esattamente quello che fa una biglia
+ * di vetro con un disegno dentro, ed e' cio' che rende la curvatura *vera*
+ * invece che dipinta: nessun gradiente puo' imitare quella compressione.
+ *
+ * ── Perche' i vuoti si riempiono di chiaro ──
+ *
+ * I filamenti chiari del logo sono **buchi** nel PNG, non pixel bianchi: su un
+ * fondo chiaro si leggono bianchi, su questo fondo scuro diventerebbero neri e
+ * il marchio si capovolgerebbe. Si riempiono di chiaro, che e' come il segno
+ * si e' sempre letto.
  */
-float ondaM(vec2 q, vec2 s, float k, float w, float bracci) {
-  vec2 d = q - s;
-  float r = length(d);
-  float base = k * r - w * tempo;
-  float m = smoothstep(0.0, 0.30, r);
-  return mix(sin(base), sin(base + bracci * atan(d.y, d.x)), m) / (0.7 + r * 1.5);
-}
-
 void main() {
-  // Il disco, in coordinate proprie: -1..1 sul lato corto della tela.
   vec2 q = (gl_FragCoord.xy - 0.5 * risoluzione) / (0.5 * min(risoluzione.x, risoluzione.y));
-  float d = length(q);
+  float r = length(q);
 
-  // Il bordo si ammorbidisce su un pixel, non su una frazione fissa del
-  // raggio: cosi' il contorno e' netto uguale a ottanta pixel e a trecento.
-  // Con un valore fisso, da piccolo sarebbe sfocato.
-  float px = fwidth(d) * 1.5;
-  float dentro = 1.0 - smoothstep(1.0 - px, 1.0, d);
+  // Il bordo si ammorbidisce su un pixel, non su una frazione fissa del raggio:
+  // cosi' il contorno e' netto uguale a ottanta pixel e a trecento.
+  float px = fwidth(r) * 1.5;
+  float dentro = 1.0 - smoothstep(1.0 - px, 1.0, r);
 
-  // Sotto pressione la figura si stringe verso il centro; al rilascio si
-  // allarga. E' la sorgente che si carica prima di scaricare nel campo.
-  vec2 qq = q * (1.0 + carica * 0.30 - impulso * 0.20);
+  // La sfera. z e' l'altezza della calotta sopra il piano dello schermo.
+  float z = sqrt(max(0.0, 1.0 - r * r));
+  vec3 n = normalize(vec3(q, max(z, 1e-4)));
 
-  float a = ondaM(qq, 0.10 * vec2(cos(tempo * 0.55), sin(tempo * 0.55)), 6.0, 1.30, 3.0)
-          + ondaM(qq, 0.55 * vec2(cos(tempo * 0.31 + 2.1), sin(tempo * 0.31 + 2.1)), 4.5, 0.95, 2.0)
-          + ondaM(qq, 0.85 * vec2(cos(tempo * 0.23 + 4.2), sin(tempo * 0.23 + 4.2)), 5.5, 1.70, 1.0);
+  // La rifrazione attraverso il vetro. L'indice 1,45 e' quello del vetro
+  // comune: non serve che sia esatto, serve che il rapporto fra centro e bordo
+  // sia quello che l'occhio conosce.
+  vec3 rd = vec3(0.0, 0.0, -1.0);
+  float eta = 1.0 / 1.45;
+  float cosi = -dot(n, rd);
+  float k = 1.0 - eta * eta * (1.0 - cosi * cosi);
+  vec3 rifratto = eta * rd + (eta * cosi - sqrt(max(k, 0.0))) * n;
+  // Tenendo premuto il vetro si «ispessisce»: la deviazione cresce e il
+  // marchio si gonfia verso di te.
+  vec2 dev = q + rifratto.xy * (0.42 + carica * 0.20);
 
-  // ── Filamenti chiari su fondo pieno, non il contrario ──
-  //
-  // Il primo tentativo teneva le bande colorate su un disco bianco: l'inverso
-  // del logo, che e' un disco saturo attraversato da filamenti chiari. La
-  // differenza non e' di gusto — e' che il marchio, per essere riconoscibile,
-  // deve avere la stessa figura/sfondo dell'originale.
-  //
-  // Lo spessore minimo (il termine costante accanto a fwidth) e' quello che
-  // tiene i filamenti visibili da lontano: lasciato al solo fwidth, sarebbero
-  // spessi un pixel e a ottanta pixel di disco sparirebbero.
-  float ph = a * 1.35;
-  float dist = abs(fract(ph) - 0.5);
-  float filo = 1.0 - smoothstep(0.0, fwidth(ph) * 1.5 + 0.11, dist);
+  // La spirale gira. Lentamente: e' un marchio, non una rotella di caricamento.
+  float ang = tempo * 0.12;
+  float ca = cos(ang), sa = sin(ang);
+  vec2 uv = vec2(dev.x * ca - dev.y * sa, dev.x * sa + dev.y * ca);
+  // L'impulso allarga di un soffio, come il campo dietro.
+  uv *= 1.08 - impulso * 0.10;
 
-  // Lo scarto viene **dopo** le derivate: fwidth() confronta frammenti vicini,
-  // e uscendo prima si toglierebbero di mezzo proprio i vicini di chi sta sul
-  // contorno del disco — l'unico posto in cui la si guarda.
+  vec4 t = texture(logo, 0.5 + 0.5 * uv);
+  vec3 vuoto = vec3(0.92, 0.92, 0.95);
+  vec3 col = mix(vuoto, t.rgb, t.a);
+
+  // Lo scarto dopo le derivate: fwidth() e texture() confrontano frammenti
+  // vicini, e uscendo prima si toglierebbero di mezzo proprio i vicini di chi
+  // sta sul contorno — l'unico posto in cui lo si guarda.
   if (dentro <= 0.001) discard;
 
-  // La tavolozza del logo: viola in alto a sinistra, ciano in basso a destra.
-  // La diagonale e' quella dell'originale e resta fissa rispetto al disco — un
-  // marchio deve essere riconoscibile, non cambiare tinta ogni secondo.
-  vec3 tinta = mix(VIOLA, CIANO, clamp(0.5 + 0.5 * (q.x - q.y) - 0.12 * a, 0.0, 1.0));
+  // La luce segue il puntatore, a meta' strada: seguendolo esattamente la
+  // sfera diventa un riflesso del mouse e smette di sembrare un oggetto.
+  vec3 luce = normalize(vec3(-0.35 + puntatore.x * 0.5, 0.45 + puntatore.y * 0.5, 0.82));
+  float diffusa = 0.62 + 0.38 * max(dot(n, luce), 0.0);
+  float lucido = pow(max(reflect(-luce, n).z, 0.0), 34.0) * 0.55;
+  // Fresnel: di taglio il vetro riflette quasi tutto, ed e' il bordo luminoso
+  // che dice «sfera» prima di qualunque altra cosa.
+  float bordo = pow(1.0 - z, 3.0);
 
-  // Il fondo respira con la fase: e' cio' che nell'immagine sono le zone piu'
-  // scure fra un filamento e l'altro, e senza il disco resterebbe piatto.
-  vec3 fondo = tinta * (0.42 + 0.56 * (0.5 + 0.5 * sin(a * 1.1)));
-  vec3 c = mix(fondo, mix(vec3(1.0), tinta, 0.06), filo);
+  col *= diffusa;
+  col += lucido;
+  col += bordo * 0.30 * CIANO;
+  // Occlusione all'orlo: senza, la sfera sembra un disco con sopra un riflesso.
+  col *= 1.0 - 0.35 * smoothstep(0.75, 1.0, r);
+  // Carica e impulso lo accendono, con gli stessi due valori del resto della
+  // schermata: e' l'unico momento in cui il marchio e il campo si muovono
+  // insieme, ed e' quello che li fa leggere come una cosa sola.
+  col += (carica * 0.18 + impulso * 0.30) * VIOLA;
 
-  // Verso il bordo si scurisce appena: da' al disco il volume che l'immagine
-  // otteneva con un'ombra, senza aggiungere una luce che qui non esiste.
-  c *= 1.0 - 0.22 * smoothstep(0.55, 1.0, d);
-
-  // Tenendo premuto il titolo la sorgente si accende; al rilascio scarica.
-  c += (carica * 0.16 + impulso * 0.28) * tinta;
-
-  colore = vec4(c, dentro);
+  colore = vec4(col, dentro);
 }`;
 
 export function MarchioCampo({
@@ -190,10 +187,26 @@ export function MarchioCampo({
     };
     window.addEventListener("vybes:carica", suCarica);
 
+    /**
+     * Il PNG del marchio, caricato una volta e messo in una trama.
+     *
+     * È la stessa immagine del ripiego, quindi il browser la scarica una volta
+     * sola: quando la tela è pronta, il file è già in cache. Il primo disegno
+     * la aspetta — senza, la sfera comparirebbe vuota per un istante, e una
+     * sfera vuota si nota molto più di un logo che arriva un decimo dopo.
+     */
+    const immagine = new window.Image();
+    immagine.decoding = "async";
+    immagine.src = "/logo-vybes.png";
+    const pronta = immagine.decode().catch(() => {});
+    let trama: WebGLTexture | null = null;
+    let caricata = false;
+
     const stop = avviaCampo(canvas, {
       nome: "MarchioCampo",
       frammento: FRAMMENTO,
-      uniformi: ["carica"],
+      uniformi: ["logo", "carica"],
+      attendi: pronta,
       // Qui la densità va alzata. Il tetto di 1,5 difende una tela che copre
       // l'hero — centinaia di migliaia di pixel; questa ne ha diecimila, e a
       // 1,5 un contorno curvo di cento pixel si vede seghettato. Costa niente
@@ -201,6 +214,34 @@ export function MarchioCampo({
       // un'altra superficie andava riaperto invece che ereditato.
       densitaMassima: 3,
       suVivo: segnalaVivo,
+      suProgramma: (gl, posti) => {
+        trama = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, trama);
+        // `CLAMP_TO_EDGE`: la trama viene campionata **rifratta**, quindi
+        // vicino all'orlo si legge oltre il bordo dell'immagine. Ripetendola,
+        // il marchio ricomparirebbe specchiato sull'altro lato della sfera.
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        // Mipmap e filtro trilineare: il disco è disegnato a un terzo della
+        // misura dell'immagine, e senza mipmap i filamenti sottili
+        // sfarfallerebbero mentre la spirale gira.
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+        gl.uniform1i(posti.logo, 0);
+      },
+      // Il caricamento avviene alla prima misura, che arriva dopo `attendi`:
+      // è il primo istante in cui l'immagine esiste davvero.
+      suMisura: ({ gl }) => {
+        if (caricata || !immagine.naturalWidth) return;
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, trama);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, immagine);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        caricata = true;
+      },
       // Insegue invece di saltare, con la stessa costante del titolo: i due si
       // gonfiano allo stesso ritmo, ed è quello che li fa leggere come un
       // pezzo solo invece che come due animazioni che partono insieme.
