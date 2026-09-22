@@ -35,7 +35,9 @@ const schema = z.object({
   // ---- Redis (facoltativo: senza, il rate limit vale per istanza)
   SIGHTENGINE_USER: z.string().optional(),
   SIGHTENGINE_SECRET: z.string().optional(),
-  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  // Vuota vale «spento»: gli end-to-end la azzerano apposta per disattivare il
+  // rate limit. Il resto del codice la legge già come falsy.
+  UPSTASH_REDIS_REST_URL: z.union([z.literal(""), z.string().url()]).optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
   // ---- Email
