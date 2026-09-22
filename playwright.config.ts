@@ -185,6 +185,8 @@ export default defineConfig({
             : {}),
         },
         reuseExistingServer: !process.env.CI,
-        timeout: 180_000,
+        // In CI la build di produzione da sola supera i tre minuti: il server non
+        // faceva in tempo a rispondere e la suite falliva prima di partire.
+        timeout: process.env.CI ? 600_000 : 180_000,
       },
 });
