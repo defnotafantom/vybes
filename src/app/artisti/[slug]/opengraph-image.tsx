@@ -27,35 +27,33 @@ export default async function Image({ params }: { params: { slug: string } }) {
     .join(" · ");
 
   return new ImageResponse(
-    (
-      <div
-        style={{
-          height: "100%",
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          background: "linear-gradient(135deg, #0c0c10 0%, #2e1065 60%, #6d28d9 100%)",
-          padding: 72,
-          color: "white",
-          fontFamily: "sans-serif",
-        }}
-      >
-        <div style={{ display: "flex", fontSize: 34, opacity: 0.85, letterSpacing: -0.5 }}>Vybes</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          <div style={{ fontSize: 76, fontWeight: 700, lineHeight: 1.05 }}>{name}</div>
-          {disciplines && <div style={{ fontSize: 36, opacity: 0.9 }}>{disciplines}</div>}
-          {artist?.headline && (
-            <div style={{ fontSize: 28, opacity: 0.7, maxWidth: 900 }}>
-              {artist.headline.slice(0, 110)}
-            </div>
-          )}
-        </div>
-        <div style={{ display: "flex", gap: 28, fontSize: 26, opacity: 0.8 }}>
-          {artist?.city && <span>{artist.city}</span>}
-        </div>
+    <div
+      style={{
+        height: "100%",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        background: "linear-gradient(135deg, #0c0c10 0%, #2e1065 60%, #6d28d9 100%)",
+        padding: 72,
+        color: "white",
+        fontFamily: "sans-serif",
+      }}
+    >
+      <div style={{ display: "flex", fontSize: 34, opacity: 0.85, letterSpacing: -0.5 }}>Vybes</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div style={{ fontSize: 76, fontWeight: 700, lineHeight: 1.05 }}>{name}</div>
+        {disciplines && <div style={{ fontSize: 36, opacity: 0.9 }}>{disciplines}</div>}
+        {artist?.headline && (
+          <div style={{ fontSize: 28, opacity: 0.7, maxWidth: 900 }}>
+            {artist.headline.slice(0, 110)}
+          </div>
+        )}
       </div>
-    ),
+      <div style={{ display: "flex", gap: 28, fontSize: 26, opacity: 0.8 }}>
+        {artist?.city && <span>{artist.city}</span>}
+      </div>
+    </div>,
     size
   );
 }

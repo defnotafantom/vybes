@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { buildMetadata, metaDescription, alternateLanguages, absoluteUrl, localizedPath } from "@/lib/seo";
+import {
+  buildMetadata,
+  metaDescription,
+  alternateLanguages,
+  absoluteUrl,
+  localizedPath,
+} from "@/lib/seo";
 
 const SITE = "https://vybeshub.art";
 
@@ -12,7 +18,9 @@ afterEach(() => {
 
 describe("metaDescription", () => {
   it("tiene le descrizioni corte così come sono", () => {
-    expect(metaDescription("Cantautrice indie-pop a Milano.")).toBe("Cantautrice indie-pop a Milano.");
+    expect(metaDescription("Cantautrice indie-pop a Milano.")).toBe(
+      "Cantautrice indie-pop a Milano."
+    );
   });
 
   it("taglia sotto i 155 caratteri senza spezzare le parole", () => {

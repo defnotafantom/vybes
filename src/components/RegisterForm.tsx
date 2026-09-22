@@ -116,14 +116,13 @@ export function RegisterForm({
             Account creato. Ora conferma l&apos;email.
           </p>
           <p className="mt-3 text-fluid-sm text-ink-muted">
-            Abbiamo scritto a <strong className="text-ink">{inviata}</strong>. Apri
-            il link nel messaggio per attivare l&apos;account: fino ad allora non
-            puoi accedere, e il tuo profilo non compare negli elenchi pubblici.
+            Abbiamo scritto a <strong className="text-ink">{inviata}</strong>. Apri il link nel
+            messaggio per attivare l&apos;account: fino ad allora non puoi accedere, e il tuo
+            profilo non compare negli elenchi pubblici.
           </p>
           <p className="mt-3 text-fluid-sm text-ink-muted">
-            Il link scade tra ventiquattro ore. Se non lo trovi, guarda nello
-            spam — è lì che finisce quasi sempre il primo messaggio da un
-            dominio nuovo.
+            Il link scade tra ventiquattro ore. Se non lo trovi, guarda nello spam — è lì che
+            finisce quasi sempre il primo messaggio da un dominio nuovo.
           </p>
         </div>
 
@@ -155,25 +154,71 @@ export function RegisterForm({
         <label htmlFor="name" className="mb-1 block text-sm font-medium">
           {role === "ARTIST" ? "Nome d'arte" : "Nome o ragione sociale"}
         </label>
-        <input id="name" name="name" required autoComplete="name" className="input" aria-describedby="name-help" />
-        <p id="name-help" className="mt-1 text-xs muted">Diventerà l&apos;indirizzo pubblico del tuo profilo.</p>
-        {errors.name && <p role="alert" className="mt-1 text-sm text-red-600">{errors.name}</p>}
+        <input
+          id="name"
+          name="name"
+          required
+          autoComplete="name"
+          className="input"
+          aria-describedby="name-help"
+        />
+        <p id="name-help" className="muted mt-1 text-xs">
+          Diventerà l&apos;indirizzo pubblico del tuo profilo.
+        </p>
+        {errors.name && (
+          <p role="alert" className="mt-1 text-sm text-red-600">
+            {errors.name}
+          </p>
+        )}
       </div>
 
       <div>
-        <label htmlFor="email" className="mb-1 block text-sm font-medium">Email</label>
-        <input id="email" name="email" type="email" required autoComplete="email" className="input" />
-        {errors.email && <p role="alert" className="mt-1 text-sm text-red-600">{errors.email}</p>}
+        <label htmlFor="email" className="mb-1 block text-sm font-medium">
+          Email
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          className="input"
+        />
+        {errors.email && (
+          <p role="alert" className="mt-1 text-sm text-red-600">
+            {errors.email}
+          </p>
+        )}
       </div>
 
       <div>
-        <label htmlFor="password" className="mb-1 block text-sm font-medium">Password</label>
-        <input id="password" name="password" type="password" required autoComplete="new-password" className="input" aria-describedby="pw-help" />
-        <p id="pw-help" className="mt-1 text-xs muted">Almeno 10 caratteri, con maiuscola, minuscola e numero.</p>
-        {errors.password && <p role="alert" className="mt-1 text-sm text-red-600">{errors.password}</p>}
+        <label htmlFor="password" className="mb-1 block text-sm font-medium">
+          Password
+        </label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          required
+          autoComplete="new-password"
+          className="input"
+          aria-describedby="pw-help"
+        />
+        <p id="pw-help" className="muted mt-1 text-xs">
+          Almeno 10 caratteri, con maiuscola, minuscola e numero.
+        </p>
+        {errors.password && (
+          <p role="alert" className="mt-1 text-sm text-red-600">
+            {errors.password}
+          </p>
+        )}
       </div>
 
-      {errors._ && <p role="alert" className="text-sm text-red-600">{errors._}</p>}
+      {errors._ && (
+        <p role="alert" className="text-sm text-red-600">
+          {errors._}
+        </p>
+      )}
 
       <button type="submit" className="btn-primary w-full" disabled={pending}>
         {pending ? "Creazione…" : "Crea account"}
@@ -181,7 +226,7 @@ export function RegisterForm({
       {/* I due documenti erano nominati ma non raggiungibili da qui. Chiedere
           di accettare qualcosa senza dare modo di leggerlo è un consenso che
           non vale, e sono due link. */}
-      <p className="text-xs muted">
+      <p className="muted text-xs">
         Iscrivendoti accetti i{" "}
         <Link href="/termini" className="link-underline">
           termini di servizio
@@ -192,7 +237,6 @@ export function RegisterForm({
         </Link>
         .
       </p>
-
     </form>
   );
 }

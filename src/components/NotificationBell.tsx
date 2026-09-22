@@ -102,13 +102,17 @@ export function NotificationBell() {
           <div className="flex items-center justify-between px-2 py-1">
             <p className="text-sm font-semibold">Notifiche</p>
             {unread > 0 && (
-              <button type="button" className="text-xs text-brand-600 hover:underline" onClick={markAllRead}>
+              <button
+                type="button"
+                className="text-xs text-brand-600 hover:underline"
+                onClick={markAllRead}
+              >
                 Segna tutte come lette
               </button>
             )}
           </div>
           {items.length === 0 ? (
-            <p className="px-2 py-6 text-center text-sm muted">Nessuna notifica</p>
+            <p className="muted px-2 py-6 text-center text-sm">Nessuna notifica</p>
           ) : (
             <ul>
               {items.map((n) => (

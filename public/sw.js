@@ -11,7 +11,10 @@ const PRECACHE = [OFFLINE_URL, "/icon-192.png", "/icon-512.png", "/favicon.ico"]
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(VERSION).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting())
+    caches
+      .open(VERSION)
+      .then((cache) => cache.addAll(PRECACHE))
+      .then(() => self.skipWaiting())
   );
 });
 

@@ -17,10 +17,19 @@ export async function generateStaticParams() {
   return cities.map((c) => ({ citta: c.slug }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ citta: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ citta: string }>;
+}): Promise<Metadata> {
   const { citta } = await params;
   const city = await prisma.city.findUnique({ where: { slug: citta } });
-  if (!city) return buildMetadata({ title: "Città non trovata", path: `/citta/${citta}/eventi`, noindex: true });
+  if (!city)
+    return buildMetadata({
+      title: "Città non trovata",
+      path: `/citta/${citta}/eventi`,
+      noindex: true,
+    });
 
   return buildMetadata({
     title: `Ingaggi e casting a ${city.name}`,
@@ -42,12 +51,26 @@ export default async function CityEventsPage({ params }: { params: Promise<{ cit
 
   const [upcoming, past] = await Promise.all([
     prisma.event.findMany({
-      where: { isPublic: true, status: "PUBLISHED", citySlug: city.slug, startsAt: { gte: new Date() } },
+      where: {
+        isPublic: true,
+        status: "PUBLISHED",
+        citySlug: city.slug,
+        startsAt: { gte: new Date() },
+      },
       orderBy: { startsAt: "asc" },
       take: 30,
       select: {
-        slug: true, title: true, description: true, coverImage: true, category: true,
-        startsAt: true, city: true, venueName: true, isPaid: true, feeMin: true, feeMax: true,
+        slug: true,
+        title: true,
+        description: true,
+        coverImage: true,
+        category: true,
+        startsAt: true,
+        city: true,
+        venueName: true,
+        isPaid: true,
+        feeMin: true,
+        feeMax: true,
       },
     }),
     prisma.event.findMany({
@@ -69,11 +92,12 @@ export default async function CityEventsPage({ params }: { params: Promise<{ cit
       />
 
       <h1 className="text-3xl font-bold sm:text-4xl">Ingaggi e casting a {city.name}</h1>
-      <p className="mt-3 max-w-2xl muted">
+      <p className="muted mt-3 max-w-2xl">
         {upcoming.length} opportunità aperte. Sei un artista di {city.name}?{" "}
         <Link href={`/citta/${city.slug}/artisti`} className="text-brand-600 hover:underline">
           Vedi chi c&apos;è in zona
-        </Link>.
+        </Link>
+        .
       </p>
 
       {upcoming.length === 0 ? (

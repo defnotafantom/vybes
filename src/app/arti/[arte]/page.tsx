@@ -148,9 +148,7 @@ export default async function ArtePage({ params }: { params: Promise<{ arte: str
         <h1 className="mt-2 text-[clamp(1.8rem,5vw,3.2rem)] font-extrabold leading-[1.05] tracking-[-0.03em]">
           {scheda ? `«${scheda.siCrede}»` : disciplina.plural}
         </h1>
-        {scheda && (
-          <p className="mt-6 text-fluid-lg text-ink-muted">{scheda.invece}</p>
-        )}
+        {scheda && <p className="mt-6 text-fluid-lg text-ink-muted">{scheda.invece}</p>}
       </header>
 
       {!scheda && (
@@ -159,7 +157,7 @@ export default async function ArtePage({ params }: { params: Promise<{ arte: str
            capirebbe che il sito parla senza avere niente da dire. */
         <div className="mt-8 max-w-3xl rounded-2xl border border-dashed p-6">
           <p className="font-semibold">La scheda di quest&apos;arte non è ancora scritta.</p>
-          <p className="mt-2 text-fluid-sm muted">
+          <p className="muted mt-2 text-fluid-sm">
             Intanto qui sotto c&apos;è la parte viva: chi la pratica adesso.
           </p>
         </div>
@@ -175,9 +173,9 @@ export default async function ArtePage({ params }: { params: Promise<{ arte: str
           Ed è anche un invito: chi quest'arte la pratica e legge una frase
           storta ha adesso un motivo per scrivere. */}
       {scheda?.stato === "bozza" && (
-        <p className="mt-6 max-w-3xl rounded-xl border border-dashed px-4 py-3 text-fluid-sm muted">
-          <strong className="text-ink">Bozza.</strong> Questo testo è un primo
-          abbozzo e non è stato riletto da chi pratica quest&apos;arte. Se sei tu,{" "}
+        <p className="muted mt-6 max-w-3xl rounded-xl border border-dashed px-4 py-3 text-fluid-sm">
+          <strong className="text-ink">Bozza.</strong> Questo testo è un primo abbozzo e non è stato
+          riletto da chi pratica quest&apos;arte. Se sei tu,{" "}
           <Link href="/registrati" className="underline underline-offset-4">
             scrivicelo
           </Link>
@@ -197,7 +195,7 @@ export default async function ArtePage({ params }: { params: Promise<{ arte: str
               {scheda.forme.map((f) => (
                 <li key={f.nome} className="rounded-2xl border p-5">
                   <h3 className="font-semibold">{f.nome}</h3>
-                  <p className="mt-1.5 text-fluid-sm muted">{f.nota}</p>
+                  <p className="muted mt-1.5 text-fluid-sm">{f.nota}</p>
                 </li>
               ))}
             </ul>
@@ -205,7 +203,7 @@ export default async function ArtePage({ params }: { params: Promise<{ arte: str
 
           <section className="mt-14 max-w-3xl">
             <h2 className="text-fluid-xl font-bold">Dove la si incontra</h2>
-            <p className="mt-4 text-fluid-base muted">{scheda.doveVederla}</p>
+            <p className="muted mt-4 text-fluid-base">{scheda.doveVederla}</p>
           </section>
         </>
       )}
@@ -219,7 +217,7 @@ export default async function ArtePage({ params }: { params: Promise<{ arte: str
         </h2>
 
         {artisti.length === 0 ? (
-          <p className="mt-4 muted">
+          <p className="muted mt-4">
             Ancora nessuno su Vybes.{" "}
             <Link href="/registrati" className="underline underline-offset-4">
               Se la pratichi, comincia tu
@@ -235,10 +233,7 @@ export default async function ArtePage({ params }: { params: Promise<{ arte: str
                 // la scheda le vuole già divise. Convertire nel punto d'uso
                 // evita che il formato di archiviazione risalga fino al
                 // componente.
-                <ArtistCard
-                  key={a.slug}
-                  artist={{ ...a, disciplines: fromCsv(a.disciplines) }}
-                />
+                <ArtistCard key={a.slug} artist={{ ...a, disciplines: fromCsv(a.disciplines) }} />
               ))}
             </div>
             {quanti > artisti.length && (
@@ -256,7 +251,7 @@ export default async function ArtePage({ params }: { params: Promise<{ arte: str
         )}
       </section>
 
-      <p className="mt-16 text-fluid-sm muted">
+      <p className="muted mt-16 text-fluid-sm">
         <Link href="/incontra" className="underline underline-offset-4">
           Incontra un&apos;opera
         </Link>{" "}

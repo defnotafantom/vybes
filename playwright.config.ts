@@ -178,7 +178,10 @@ export default defineConfig({
           // comunque in produzione — cioè il difetto di prima, con in più la
           // convinzione di averlo risolto.
           ...(process.env.E2E_DATABASE_URL
-            ? { DATABASE_URL: process.env.E2E_DATABASE_URL, DIRECT_URL: process.env.E2E_DATABASE_URL }
+            ? {
+                DATABASE_URL: process.env.E2E_DATABASE_URL,
+                DIRECT_URL: process.env.E2E_DATABASE_URL,
+              }
             : {}),
         },
         reuseExistingServer: !process.env.CI,

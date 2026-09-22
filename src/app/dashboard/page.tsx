@@ -26,8 +26,14 @@ export default async function DashboardPage() {
   const me = await prisma.user.findUnique({
     where: { id: userId },
     select: {
-      name: true, experience: true, reputation: true, slug: true, isPublic: true, role: true,
-      bio: true, disciplines: true,
+      name: true,
+      experience: true,
+      reputation: true,
+      slug: true,
+      isPublic: true,
+      role: true,
+      bio: true,
+      disciplines: true,
       _count: {
         select: {
           followers: true,
@@ -89,7 +95,9 @@ export default async function DashboardPage() {
   const [annunciPubblicati, daDecidere] = cercaArtisti
     ? await Promise.all([
         prisma.event.count({ where: { organizerId: userId, status: { not: "DRAFT" } } }),
-        prisma.participation.count({ where: { status: "PENDING", event: { organizerId: userId } } }),
+        prisma.participation.count({
+          where: { status: "PENDING", event: { organizerId: userId } },
+        }),
       ])
     : [0, 0];
 
@@ -138,9 +146,9 @@ export default async function DashboardPage() {
           <div className="card mb-8 border-brand-400/40">
             <p className="text-fluid-base font-semibold">Da dove si comincia</p>
             <p className="mt-2 text-fluid-sm text-ink-muted">
-              Pubblica quello che cerchi e lascia che siano gli artisti a
-              candidarsi. Con data, luogo e compenso in chiaro l&apos;annuncio
-              riceve risposte pertinenti; senza compenso ne riceve poche.
+              Pubblica quello che cerchi e lascia che siano gli artisti a candidarsi. Con data,
+              luogo e compenso in chiaro l&apos;annuncio riceve risposte pertinenti; senza compenso
+              ne riceve poche.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/dashboard/eventi/nuovo" className="btn-primary">
@@ -170,9 +178,13 @@ export default async function DashboardPage() {
               {conta(daDecidere, "candidatura in attesa", "candidature in attesa")}
             </h2>
             <p className="mt-2 text-fluid-sm text-ink-muted">
-              {concorda(daDecidere, "Una persona si è candidata", "Delle persone si sono candidate")}{" "}
-              e non ha ancora saputo niente. Anche un no vale: chi aspetta ha
-              bisogno di sapere, e chi riceve una risposta si ricandida.
+              {concorda(
+                daDecidere,
+                "Una persona si è candidata",
+                "Delle persone si sono candidate"
+              )}{" "}
+              e non ha ancora saputo niente. Anche un no vale: chi aspetta ha bisogno di sapere, e
+              chi riceve una risposta si ricandida.
             </p>
             <Link href="/dashboard/eventi" className="btn-primary mt-5 inline-flex">
               Vedi chi si è candidato
@@ -195,9 +207,8 @@ export default async function DashboardPage() {
               Non compari su Google
             </h2>
             <p className="mt-2 text-fluid-sm text-ink-muted">
-              Il profilo è pubblico, ma troppo scarno perché i motori di ricerca
-              lo mostrino. Chi ti cerca per nome ti trova; chi cerca la tua
-              disciplina no.
+              Il profilo è pubblico, ma troppo scarno perché i motori di ricerca lo mostrino. Chi ti
+              cerca per nome ti trova; chi cerca la tua disciplina no.
             </p>
             <ul className="mt-3 space-y-2 text-fluid-sm">
               {gaps.map((g) => (
@@ -257,8 +268,7 @@ export default async function DashboardPage() {
             />
           </div>
           <p className="mt-3 text-fluid-xs text-ink-muted">
-            Sale con quello che fai qui dentro. Resta tuo: non decide come ti
-            vedono gli altri.
+            Sale con quello che fai qui dentro. Resta tuo: non decide come ti vedono gli altri.
           </p>
           <dl className="mt-4 border-t pt-3 text-fluid-xs">
             <div className="flex items-center justify-between">
@@ -297,8 +307,7 @@ export default async function DashboardPage() {
         {cercaArtisti && annunciPubblicati > 0 && (
           <div className="card">
             <h2 className="flex items-center gap-2 text-fluid-sm font-semibold">
-              <CalendarDays className="h-4 w-4 text-ink-faint" aria-hidden="true" />
-              I tuoi annunci
+              <CalendarDays className="h-4 w-4 text-ink-faint" aria-hidden="true" />I tuoi annunci
             </h2>
             <p className="mt-2 text-fluid-xs text-ink-muted">
               {conta(annunciPubblicati, "annuncio pubblicato", "annunci pubblicati")} in tutto.
@@ -335,7 +344,10 @@ export default async function DashboardPage() {
                     <p className="mt-1 text-fluid-xs text-ink-muted">{q.description}</p>
                     <div className="mt-2 flex items-center gap-2">
                       <div className="h-1 flex-1 overflow-hidden rounded-full bg-surface-sunken">
-                        <div className="h-full rounded-full bg-brand-500" style={{ width: `${perc}%` }} />
+                        <div
+                          className="h-full rounded-full bg-brand-500"
+                          style={{ width: `${perc}%` }}
+                        />
                       </div>
                       <span className="text-fluid-xs tabular-nums text-ink-faint">
                         {fatto}/{q.target}

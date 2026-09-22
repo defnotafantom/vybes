@@ -163,7 +163,9 @@ export function PortfolioManager({ initialItems }: { initialItems: Item[] }) {
                       {item.title}
                     </Link>
                     {item.year && (
-                      <p className="mt-0.5 text-fluid-xs tabular-nums text-ink-faint">{item.year}</p>
+                      <p className="mt-0.5 text-fluid-xs tabular-nums text-ink-faint">
+                        {item.year}
+                      </p>
                     )}
                   </div>
 
@@ -216,8 +218,8 @@ export function PortfolioManager({ initialItems }: { initialItems: Item[] }) {
             <div>
               <h2 className="text-fluid-lg font-bold">Aggiungi un lavoro</h2>
               <p className="mt-1 text-fluid-sm text-ink-muted">
-                Il titolo è quello con cui ti si troverà: «Cover jazz al Bravo
-                Caffè» dice più di «Live 3».
+                Il titolo è quello con cui ti si troverà: «Cover jazz al Bravo Caffè» dice più di
+                «Live 3».
               </p>
             </div>
             {items.length > 0 && (
@@ -287,8 +289,8 @@ export function PortfolioManager({ initialItems }: { initialItems: Item[] }) {
               aria-describedby="p-credenza-aiuto"
             />
             <p id="p-credenza-aiuto" className="mt-1.5 text-fluid-xs text-ink-faint">
-              Il pregiudizio che quest&apos;opera smentisce. Serve a farla
-              incontrare a chi non l&apos;avrebbe mai cercata.
+              Il pregiudizio che quest&apos;opera smentisce. Serve a farla incontrare a chi non
+              l&apos;avrebbe mai cercata.
             </p>
           </div>
 
@@ -307,7 +309,11 @@ export function PortfolioManager({ initialItems }: { initialItems: Item[] }) {
             />
           </div>
 
-          <FileUpload folder="portfolio" label="Carica foto, video o audio" onUploaded={setUpload} />
+          <FileUpload
+            folder="portfolio"
+            label="Carica foto, video o audio"
+            onUploaded={setUpload}
+          />
           {upload && (
             <p className="text-fluid-sm text-ink-muted">
               Pronto: {upload.url.split("/").pop()} ({Math.round(upload.bytes / 1024)} kB)

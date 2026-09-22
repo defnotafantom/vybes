@@ -46,7 +46,7 @@ export function PageHero({
         <p className="eyebrow animate-fade-up">{eyebrow}</p>
 
         <h1
-          className="mt-3 max-w-4xl text-fluid-3xl animate-fade-up"
+          className="mt-3 max-w-4xl animate-fade-up text-fluid-3xl"
           style={{ animationDelay: "60ms" }}
         >
           {title}
@@ -59,7 +59,7 @@ export function PageHero({
         </h1>
 
         <p
-          className="mt-5 max-w-2xl text-fluid-base leading-relaxed text-ink-muted animate-fade-up"
+          className="mt-5 max-w-2xl animate-fade-up text-fluid-base leading-relaxed text-ink-muted"
           style={{ animationDelay: "120ms" }}
         >
           {lead}
@@ -67,7 +67,7 @@ export function PageHero({
 
         {stats && stats.length > 0 && (
           <dl
-            className="mt-10 flex flex-wrap gap-x-10 gap-y-5 animate-fade-up"
+            className="mt-10 flex animate-fade-up flex-wrap gap-x-10 gap-y-5"
             style={{ animationDelay: "180ms" }}
           >
             {stats.map((s) => (

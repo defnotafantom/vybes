@@ -113,7 +113,9 @@ test("i moduli non fanno ingrandire la pagina", async ({ page }) => {
   for (const percorso of ["/accedi", "/registrati", "/cerca"]) {
     await page.goto(percorso);
 
-    const campi = page.locator("input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]), textarea, select");
+    const campi = page.locator(
+      "input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]), textarea, select"
+    );
     const quanti = await campi.count();
 
     for (let i = 0; i < quanti; i++) {
@@ -222,7 +224,9 @@ test.describe("dentro l'area personale", () => {
       const quanti = await campi.count();
       for (let i = 0; i < quanti; i++) {
         const px = await campi.nth(i).evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
-        expect(px, `${percorso}, campo ${i} a ${px}px: iOS ingrandirebbe`).toBeGreaterThanOrEqual(16);
+        expect(px, `${percorso}, campo ${i} a ${px}px: iOS ingrandirebbe`).toBeGreaterThanOrEqual(
+          16
+        );
       }
     }
   });
@@ -234,7 +238,7 @@ test.describe("dentro l'area personale", () => {
     await entra(page);
     await page.goto("/dashboard/profilo");
 
-    const casella = page.locator('input[type=checkbox]').first();
+    const casella = page.locator("input[type=checkbox]").first();
     await casella.scrollIntoViewIfNeeded();
     const box = await casella.boundingBox();
     expect(box!.height, "casella troppo piccola per un dito").toBeGreaterThanOrEqual(19);

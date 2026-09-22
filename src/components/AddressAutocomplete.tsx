@@ -96,7 +96,7 @@ export function AddressAutocomplete({
         aria-controls="address-results"
         aria-autocomplete="list"
       />
-      <p className="mt-1 text-xs muted">
+      <p className="muted mt-1 text-xs">
         {loading ? "Ricerca…" : "Scrivi almeno 3 caratteri. I dati vengono da OpenStreetMap."}
       </p>
 
@@ -111,11 +111,17 @@ export function AddressAutocomplete({
           className="absolute z-20 mt-1 max-h-64 w-full origin-top animate-scale-in overflow-y-auto rounded-xl border bg-surface-raised shadow-float"
         >
           {results.map((r, i) => (
-            <li key={`${r.latitude}-${r.longitude}-${i}`} role="option" aria-selected={i === highlight}>
+            <li
+              key={`${r.latitude}-${r.longitude}-${i}`}
+              role="option"
+              aria-selected={i === highlight}
+            >
               <button
                 type="button"
                 className={`block w-full px-3 py-2 text-left text-sm ${
-                  i === highlight ? "bg-brand-50 dark:bg-white/10" : "hover:bg-brand-50 dark:hover:bg-white/5"
+                  i === highlight
+                    ? "bg-brand-50 dark:bg-white/10"
+                    : "hover:bg-brand-50 dark:hover:bg-white/5"
                 }`}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => choose(r)}

@@ -82,7 +82,9 @@
 }
 
 @layer base {
-  * { border-color: rgb(var(--border)); }
+  * {
+    border-color: rgb(var(--border));
+  }
 
   html {
     scroll-behavior: smooth;
@@ -90,7 +92,9 @@
     -webkit-tap-highlight-color: transparent;
     color-scheme: light;
   }
-  html.dark { color-scheme: dark; }
+  html.dark {
+    color-scheme: dark;
+  }
 
   body {
     /* Un solo elemento largo più della finestra rende scorrevole in
@@ -120,8 +124,17 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  h1, h2, h3, h4 { @apply font-bold; text-wrap: balance; }
-  p, li { text-wrap: pretty; }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-bold;
+    text-wrap: balance;
+  }
+  p,
+  li {
+    text-wrap: pretty;
+  }
 
   /* Focus visibile: requisito WCAG 2.4.7. Solo da tastiera. */
   :focus-visible {
@@ -129,13 +142,26 @@
     outline-offset: 2px;
     border-radius: 6px;
   }
-  :focus:not(:focus-visible) { outline: none; }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
 
-  ::selection { background: rgb(var(--ring) / 0.3); color: rgb(var(--fg)); }
+  ::selection {
+    background: rgb(var(--ring) / 0.3);
+    color: rgb(var(--fg));
+  }
 
-  * { scrollbar-width: thin; scrollbar-color: rgb(var(--border-strong)) transparent; }
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-track { background: transparent; }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--border-strong)) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
   ::-webkit-scrollbar-thumb {
     background: rgb(var(--border-strong));
     border-radius: 99px;
@@ -143,42 +169,61 @@
     background-clip: content-box;
   }
 
-  img, video { content-visibility: auto; }
+  img,
+  video {
+    content-visibility: auto;
+  }
 }
 
 @layer components {
-  .container-page { @apply relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8; }
-  .container-narrow { @apply relative z-10 mx-auto w-full max-w-3xl px-4 sm:px-6; }
+  .container-page {
+    @apply relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+  .container-narrow {
+    @apply relative z-10 mx-auto w-full max-w-3xl px-4 sm:px-6;
+  }
 
-  .surface { @apply rounded-2xl border bg-surface; box-shadow: var(--shadow-card); }
-  .card { @apply surface p-5 transition-all duration-250 ease-out; }
+  .surface {
+    @apply rounded-2xl border bg-surface;
+    box-shadow: var(--shadow-card);
+  }
+  .card {
+    @apply surface p-5 transition-all duration-250 ease-out;
+  }
 
   /* Sollevamento all'hover: due pixel, non otto. Deve suggerire che
      l'elemento è cliccabile, non farlo saltare. */
-  .card-interactive { @apply card cursor-pointer hover:-translate-y-0.5 hover:border-brand-400/50; }
-  .card-interactive:hover { box-shadow: var(--shadow-card-hover); }
+  .card-interactive {
+    @apply card cursor-pointer hover:-translate-y-0.5 hover:border-brand-400/50;
+  }
+  .card-interactive:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
 
-  .card-glow { @apply card relative overflow-hidden; }
+  .card-glow {
+    @apply card relative overflow-hidden;
+  }
   .card-glow::before {
     content: "";
     @apply pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-400;
     background: radial-gradient(600px circle at 50% 0%, rgb(139 92 246 / 0.12), transparent 40%);
   }
-  .card-glow:hover::before { @apply opacity-100; }
+  .card-glow:hover::before {
+    @apply opacity-100;
+  }
 
   /* `min-h-11` = 44px: sotto quella misura, su un telefono, si manca il
      bersaglio. Su desktop non cambia niente, perché il riempimento verticale
      porta già il bottone oltre quella soglia. */
   .btn {
-    @apply inline-flex min-h-11 select-none items-center justify-center gap-2 rounded-xl
-           px-4 py-2.5 text-fluid-sm font-semibold transition-all duration-150 ease-out
-           active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex min-h-11 select-none items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-fluid-sm font-semibold transition-all duration-150 ease-out active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-brand-600 text-white hover:bg-brand-500 hover:shadow-glow-brand
-           focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2;
+    @apply btn bg-brand-600 text-white hover:bg-brand-500 hover:shadow-glow-brand focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2;
   }
-  .btn-accent { @apply btn bg-accent-500 text-[#04222a] hover:bg-accent-400 hover:shadow-glow-accent; }
+  .btn-accent {
+    @apply btn bg-accent-500 text-[#04222a] hover:bg-accent-400 hover:shadow-glow-accent;
+  }
   .btn-ghost {
     @apply btn border bg-surface text-ink hover:border-brand-400/60 hover:bg-brand-500/[0.07];
   }
@@ -203,12 +248,7 @@
      sotto la quale un dito adulto sbaglia bersaglio; il criterio WCAG 2.5.8
      ne chiede 24, che è il minimo per non fallire, non un obiettivo. */
   .input {
-    @apply w-full rounded-xl border bg-surface-sunken px-4 py-3 text-base
-           transition-all duration-150 placeholder:text-ink-faint
-           hover:border-line-strong
-           focus:border-brand-500 focus:bg-surface focus:outline-none
-           focus:ring-4 focus:ring-brand-500/[0.15] disabled:opacity-60
-           sm:text-fluid-sm;
+    @apply w-full rounded-xl border bg-surface-sunken px-4 py-3 text-base transition-all duration-150 placeholder:text-ink-faint hover:border-line-strong focus:border-brand-500 focus:bg-surface focus:outline-none focus:ring-4 focus:ring-brand-500/[0.15] disabled:opacity-60 sm:text-fluid-sm;
   }
 
   /**
@@ -231,38 +271,40 @@
    * al testo accanto.
    */
   .checkbox {
-    @apply h-5 w-5 shrink-0 cursor-pointer rounded border-line
-           accent-brand-600 dark:accent-brand-500;
+    @apply h-5 w-5 shrink-0 cursor-pointer rounded border-line accent-brand-600 dark:accent-brand-500;
   }
 
   .chip {
-    @apply inline-flex items-center gap-1 rounded-lg bg-brand-500/10 px-2.5 py-1
-           text-fluid-xs font-semibold text-brand-700 transition-colors
-           dark:bg-brand-400/[0.12] dark:text-brand-300;
+    @apply inline-flex items-center gap-1 rounded-lg bg-brand-500/10 px-2.5 py-1 text-fluid-xs font-semibold text-brand-700 transition-colors dark:bg-brand-400/[0.12] dark:text-brand-300;
   }
-  .chip-accent { @apply chip bg-accent-500/10 text-accent-700 dark:bg-accent-400/[0.12] dark:text-accent-300; }
-  .chip-gold { @apply chip bg-gold-500/[0.12] text-gold-600 dark:bg-gold-400/[0.12] dark:text-gold-300; }
+  .chip-accent {
+    @apply chip bg-accent-500/10 text-accent-700 dark:bg-accent-400/[0.12] dark:text-accent-300;
+  }
+  .chip-gold {
+    @apply chip bg-gold-500/[0.12] text-gold-600 dark:bg-gold-400/[0.12] dark:text-gold-300;
+  }
 
-  .muted { color: rgb(var(--muted)); }
-  .faint { color: rgb(var(--faint)); }
+  .muted {
+    color: rgb(var(--muted));
+  }
+  .faint {
+    color: rgb(var(--faint));
+  }
 
   .link-underline {
-    @apply relative text-brand-600 no-underline dark:text-brand-400
-           after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0
-           after:bg-current after:transition-all after:duration-250 hover:after:w-full;
+    @apply relative text-brand-600 no-underline after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-250 hover:after:w-full dark:text-brand-400;
   }
 
-  .prose-vybes p { @apply mb-5 text-fluid-base leading-relaxed; }
+  .prose-vybes p {
+    @apply mb-5 text-fluid-base leading-relaxed;
+  }
 
   .skip-link {
-    @apply absolute left-3 top-3 z-50 -translate-y-24 rounded-lg bg-brand-600 px-4 py-2
-           text-fluid-sm font-semibold text-white transition-transform duration-200
-           focus:translate-y-0;
+    @apply absolute left-3 top-3 z-50 -translate-y-24 rounded-lg bg-brand-600 px-4 py-2 text-fluid-sm font-semibold text-white transition-transform duration-200 focus:translate-y-0;
   }
 
   .divider-text {
-    @apply flex items-center gap-3 text-fluid-xs text-ink-faint
-           before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line;
+    @apply flex items-center gap-3 text-fluid-xs text-ink-faint before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line;
   }
 
   /* Etichetta di sezione: piccola, maiuscoletto, distanziata. Costruisce
@@ -357,17 +399,15 @@
      comunica che ce n'è dell'altra. La barra di scorrimento è nascosta ma
      il contenitore resta focalizzabile da tastiera. */
   .filters {
-    @apply -mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1
-           sm:mx-0 sm:flex-wrap sm:px-0;
+    @apply -mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0;
     scrollbar-width: none;
   }
-  .filters::-webkit-scrollbar { display: none; }
+  .filters::-webkit-scrollbar {
+    display: none;
+  }
 
   .filter {
-    @apply inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border
-           px-4 py-2 text-fluid-xs font-semibold text-ink-muted
-           transition-all duration-200 ease-out hover:-translate-y-0.5
-           hover:border-line-strong hover:text-ink;
+    @apply inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-4 py-2 text-fluid-xs font-semibold text-ink-muted transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-line-strong hover:text-ink;
   }
 
   /* Lo stato attivo è marcato con aria-current, non con una classe:
@@ -377,15 +417,22 @@
     @apply border-transparent bg-brand-600 text-white hover:text-white;
     box-shadow: 0 6px 20px -8px rgb(139 92 246 / 0.8);
   }
-  .filter[aria-current="true"]:hover { @apply border-transparent; }
+  .filter[aria-current="true"]:hover {
+    @apply border-transparent;
+  }
 }
 
 @layer utilities {
   /* Mesh di gradienti per l'hero: due macchie radiali sfocate in deriva
      lentissima. Nessuna immagine, nessun JavaScript. */
-  .mesh-hero { @apply pointer-events-none absolute inset-0 overflow-hidden; }
+  .mesh-hero {
+    @apply pointer-events-none absolute inset-0 overflow-hidden;
+  }
   .mesh-hero::before,
-  .mesh-hero::after { content: ""; @apply absolute rounded-full blur-[100px] animate-drift; }
+  .mesh-hero::after {
+    content: "";
+    @apply absolute animate-drift rounded-full blur-[100px];
+  }
   .mesh-hero::before {
     @apply -left-[10%] -top-[30%] h-[60vh] w-[60vw];
     background: radial-gradient(circle, rgb(139 92 246 / 0.35), transparent 70%);
@@ -400,16 +447,34 @@
     @apply bg-gradient-to-br from-brand-400 via-brand-500 to-accent-400 bg-clip-text text-transparent;
   }
 
-  .stagger > * { animation: fade-up 380ms var(--ease) both; }
-  .stagger > *:nth-child(1) { animation-delay: 0ms; }
-  .stagger > *:nth-child(2) { animation-delay: 50ms; }
-  .stagger > *:nth-child(3) { animation-delay: 100ms; }
-  .stagger > *:nth-child(4) { animation-delay: 150ms; }
-  .stagger > *:nth-child(5) { animation-delay: 200ms; }
-  .stagger > *:nth-child(6) { animation-delay: 250ms; }
-  .stagger > *:nth-child(n + 7) { animation-delay: 300ms; }
+  .stagger > * {
+    animation: fade-up 380ms var(--ease) both;
+  }
+  .stagger > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .stagger > *:nth-child(2) {
+    animation-delay: 50ms;
+  }
+  .stagger > *:nth-child(3) {
+    animation-delay: 100ms;
+  }
+  .stagger > *:nth-child(4) {
+    animation-delay: 150ms;
+  }
+  .stagger > *:nth-child(5) {
+    animation-delay: 200ms;
+  }
+  .stagger > *:nth-child(6) {
+    animation-delay: 250ms;
+  }
+  .stagger > *:nth-child(n + 7) {
+    animation-delay: 300ms;
+  }
 
-  .shimmer { @apply relative overflow-hidden; }
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
   .shimmer::after {
     content: "";
     @apply absolute inset-0 -translate-x-full animate-shimmer;
@@ -428,8 +493,12 @@
 /* Non è cortesia: per chi soffre di disturbi vestibolari le animazioni
    possono provocare nausea vera. */
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -467,12 +536,24 @@
 }
 
 @keyframes reveal-in {
-  from { opacity: 0; transform: translateY(28px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes reveal-scale {
-  from { opacity: 0; transform: scale(0.94) translateY(20px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* ── Nastro scorrevole ──
@@ -487,9 +568,13 @@
   @apply flex shrink-0 items-center gap-8 pr-8;
   animation: marquee 48s linear infinite;
 }
-.marquee:hover .marquee__track { animation-play-state: paused; }
+.marquee:hover .marquee__track {
+  animation-play-state: paused;
+}
 @keyframes marquee {
-  to { transform: translateX(-100%); }
+  to {
+    transform: translateX(-100%);
+  }
 }
 
 /* ── Equalizzatore ──
@@ -501,8 +586,12 @@
   animation: eq 1.4s ease-in-out infinite alternate;
 }
 @keyframes eq {
-  from { transform: scaleY(0.35); }
-  to { transform: scaleY(1); }
+  from {
+    transform: scaleY(0.35);
+  }
+  to {
+    transform: scaleY(1);
+  }
 }
 
 /* ── Riflettore che segue il cursore ──
@@ -518,7 +607,9 @@
     transparent 65%
   );
 }
-.spotlight:hover::after { @apply opacity-100; }
+.spotlight:hover::after {
+  @apply opacity-100;
+}
 
 /* ── Griglia bento ──
    Celle di dimensioni diverse su una griglia regolare: rompe la
@@ -538,9 +629,15 @@
   @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4;
   grid-auto-rows: minmax(120px, auto);
 }
-.bento__wide { @apply sm:col-span-2; }
-.bento__tall { @apply row-span-2; }
-.bento__hero { @apply sm:col-span-2 lg:col-span-2; }
+.bento__wide {
+  @apply sm:col-span-2;
+}
+.bento__tall {
+  @apply row-span-2;
+}
+.bento__hero {
+  @apply sm:col-span-2 lg:col-span-2;
+}
 
 /* Bordo che si accende all'hover, disegnato con un gradiente su una
    maschera: un bordo sfumato non si può fare con border-color. */
@@ -551,12 +648,21 @@
   content: "";
   @apply pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-400;
   padding: 1px;
-  background: linear-gradient(135deg, rgb(139 92 246 / 0.6), rgb(34 211 238 / 0.35), transparent 60%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  background: linear-gradient(
+    135deg,
+    rgb(139 92 246 / 0.6),
+    rgb(34 211 238 / 0.35),
+    transparent 60%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
-.border-glow:hover::before { @apply opacity-100; }
+.border-glow:hover::before {
+  @apply opacity-100;
+}
 /* ════════════════════════════════════════════════════════════
    IL MARCHIO GRANDE DELL'HERO NON C'È PIÙ
 
@@ -571,7 +677,6 @@
 
    Il logotipo resta dov'è il posto di un logotipo: piccolo, in barra.
    ════════════════════════════════════════════════════════════ */
-
 
 /**
  * Il volo dell'XP riscosso, dal pulsante della quest alla barra del livello.
@@ -665,7 +770,7 @@
 .scena-marchio {
   grid-area: 1 / 1;
   transform: translateY(calc(var(--avanzamento) * -14svh))
-             scale(calc(1 - var(--avanzamento) * 0.22));
+    scale(calc(1 - var(--avanzamento) * 0.22));
   filter: blur(calc(var(--avanzamento) * var(--avanzamento) * 3px));
 }
 
@@ -765,8 +870,15 @@
 }
 
 @keyframes scena-scendi {
-  0%, 100% { transform: translateY(-30%); opacity: 0.3; }
-  50%      { transform: translateY(0);    opacity: 1; }
+  0%,
+  100% {
+    transform: translateY(-30%);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Senza movimento la scena smette di essere una scena: la pista si
@@ -774,18 +886,40 @@
    sotto l'altra come in una pagina qualunque. Stessa informazione,
    nessuno spostamento. */
 @media (prefers-reduced-motion: reduce) {
-  .scena-pista { height: auto; }
+  .scena-pista {
+    height: auto;
+  }
   .scena-palco {
     position: static;
     height: auto;
     display: block;
     padding: 6rem 0 4rem;
   }
-  .scena-marchio { transform: none; filter: none; display: flex; justify-content: center; }
-  .scena-testi { align-self: auto; padding-bottom: 0; margin-top: 3rem; }
-  .scena-battuta { position: static; opacity: 1; transform: none; margin-bottom: 3.5rem; }
-  .scena-uscita { opacity: 1; transform: none; padding-bottom: 0; }
-  .scena-invito { display: none; }
+  .scena-marchio {
+    transform: none;
+    filter: none;
+    display: flex;
+    justify-content: center;
+  }
+  .scena-testi {
+    align-self: auto;
+    padding-bottom: 0;
+    margin-top: 3rem;
+  }
+  .scena-battuta {
+    position: static;
+    opacity: 1;
+    transform: none;
+    margin-bottom: 3.5rem;
+  }
+  .scena-uscita {
+    opacity: 1;
+    transform: none;
+    padding-bottom: 0;
+  }
+  .scena-invito {
+    display: none;
+  }
 }
 
 /* ── Le due porte in fondo alla scena ──
@@ -818,7 +952,9 @@
   text-transform: uppercase;
   color: rgb(var(--fg));
   isolation: isolate;
-  transition: color var(--dur) var(--ease), transform var(--dur) var(--ease);
+  transition:
+    color var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
 }
 
 /* Il filo: un gradiente ritagliato a bordo con due maschere sovrapposte.
@@ -836,7 +972,9 @@
     rgb(34 211 238 / 0.8),
     rgb(139 92 246 / 0.3)
   );
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0.5;
@@ -889,5 +1027,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .scena-porta:hover,
-  .scena-porta:focus-visible { transform: none; }
+  .scena-porta:focus-visible {
+    transform: none;
+  }
 }

@@ -30,14 +30,24 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const [{ citta }, sp] = await Promise.all([params, searchParams]);
   const city = await prisma.city.findUnique({ where: { slug: citta } });
-  if (!city) return buildMetadata({ title: "Città non trovata", path: `/citta/${citta}/artisti`, noindex: true });
+  if (!city)
+    return buildMetadata({
+      title: "Città non trovata",
+      path: `/citta/${citta}/artisti`,
+      noindex: true,
+    });
   const page = Number(sp.page ?? 1);
 
   return buildMetadata({
     title: `Artisti a ${city.name}${page > 1 ? ` — pagina ${page}` : ""}`,
     description: `Elenco degli artisti disponibili a ${city.name}: musicisti, DJ, band, ballerini e performer con portfolio pubblico. Contatta chi ti serve senza intermediari.`,
     path: `/citta/${city.slug}/artisti`,
-    keywords: [`artisti ${city.name}`, `musicisti ${city.name}`, `band ${city.name}`, `dj ${city.name}`],
+    keywords: [
+      `artisti ${city.name}`,
+      `musicisti ${city.name}`,
+      `band ${city.name}`,
+      `dj ${city.name}`,
+    ],
     noindex: page > 1,
   });
 }
@@ -63,8 +73,14 @@ export default async function CityArtistsPage({
       skip: (page - 1) * PER_PAGE,
       take: PER_PAGE,
       select: {
-        slug: true, name: true, headline: true, image: true, city: true,
-        disciplines: true, reputation: true, isVerified: true,
+        slug: true,
+        name: true,
+        headline: true,
+        image: true,
+        city: true,
+        disciplines: true,
+        reputation: true,
+        isVerified: true,
       },
     }),
     prisma.user.count({ where }),
@@ -81,11 +97,12 @@ export default async function CityArtistsPage({
       />
 
       <h1 className="text-3xl font-bold sm:text-4xl">Artisti a {city.name}</h1>
-      <p className="mt-3 max-w-2xl muted">
+      <p className="muted mt-3 max-w-2xl">
         {total} profili attivi a {city.name} e provincia. Vedi anche gli{" "}
         <Link href={`/citta/${city.slug}/eventi`} className="text-brand-600 hover:underline">
           ingaggi aperti in città
-        </Link>.
+        </Link>
+        .
       </p>
 
       <nav aria-label="Filtra per disciplina" className="mt-6 flex flex-wrap gap-2">
@@ -115,10 +132,18 @@ export default async function CityArtistsPage({
           />
           <div className="stagger mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {artists.map((a, i) => (
-              <ArtistCard key={a.slug} priority={i < 3} artist={{ ...a, disciplines: fromCsv(a.disciplines) }} />
+              <ArtistCard
+                key={a.slug}
+                priority={i < 3}
+                artist={{ ...a, disciplines: fromCsv(a.disciplines) }}
+              />
             ))}
           </div>
-          <Pagination page={page} totalPages={Math.ceil(total / PER_PAGE)} basePath={`/citta/${city.slug}/artisti`} />
+          <Pagination
+            page={page}
+            totalPages={Math.ceil(total / PER_PAGE)}
+            basePath={`/citta/${city.slug}/artisti`}
+          />
         </>
       )}
     </div>

@@ -43,7 +43,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
   return (
     <form onSubmit={submit} className="space-y-4" noValidate>
       <div>
-        <label htmlFor="new-password" className="mb-1 block text-sm font-medium">Nuova password</label>
+        <label htmlFor="new-password" className="mb-1 block text-sm font-medium">
+          Nuova password
+        </label>
         <input
           id="new-password"
           type="password"
@@ -53,13 +55,15 @@ export function ResetPasswordForm({ token }: { token: string }) {
           onChange={(e) => setPassword(e.target.value)}
           aria-describedby="pw-rules"
         />
-        <p id="pw-rules" className="mt-1 text-xs muted">
+        <p id="pw-rules" className="muted mt-1 text-xs">
           Almeno 10 caratteri, con maiuscola, minuscola e numero.
         </p>
       </div>
 
       <div>
-        <label htmlFor="confirm-password" className="mb-1 block text-sm font-medium">Ripeti la password</label>
+        <label htmlFor="confirm-password" className="mb-1 block text-sm font-medium">
+          Ripeti la password
+        </label>
         <input
           id="confirm-password"
           type="password"
@@ -70,7 +74,11 @@ export function ResetPasswordForm({ token }: { token: string }) {
         />
       </div>
 
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      )}
 
       <button type="submit" className="btn-primary w-full" disabled={pending}>
         {pending ? "Salvataggio…" : "Salva la nuova password"}

@@ -21,7 +21,9 @@ export function FileUpload({
   onUploaded: (file: UploadedFile) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [status, setStatus] = useState<"idle" | "compressing" | "uploading" | "done" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "compressing" | "uploading" | "done" | "error">(
+    "idle"
+  );
   const [message, setMessage] = useState<string | null>(null);
 
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -69,7 +71,11 @@ export function FileUpload({
   return (
     <div>
       <label className={`btn-ghost ${busy ? "cursor-wait opacity-70" : "cursor-pointer"}`}>
-        {status === "compressing" ? "Ottimizzazione…" : status === "uploading" ? "Caricamento…" : label}
+        {status === "compressing"
+          ? "Ottimizzazione…"
+          : status === "uploading"
+            ? "Caricamento…"
+            : label}
         <input
           ref={inputRef}
           type="file"

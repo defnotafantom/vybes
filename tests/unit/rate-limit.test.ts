@@ -89,7 +89,12 @@ describe("rateLimit — backend Redis", () => {
   it("ricade sulla memoria se Redis non risponde, invece di bloccare", async () => {
     process.env.UPSTASH_REDIS_REST_URL = "https://finto.upstash.io";
     process.env.UPSTASH_REDIS_REST_TOKEN = "token";
-    vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("rete giù"); }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("rete giù");
+      })
+    );
 
     const { rateLimit: limiter } = await import("@/lib/rate-limit");
     const result = await limiter(`f-${Math.random()}`, 5);

@@ -20,9 +20,9 @@ export default async function DashboardPortfolioPage() {
         titolo="Portfolio"
         sottotitolo={
           <>
-            Ogni lavoro diventa una pagina pubblica indicizzata: chi cerca trova
-            prima il lavoro della persona — «cover jazz Bologna», non un nome —
-            e da lì arriva al tuo profilo. È la porta d&apos;ingresso più probabile.
+            Ogni lavoro diventa una pagina pubblica indicizzata: chi cerca trova prima il lavoro
+            della persona — «cover jazz Bologna», non un nome — e da lì arriva al tuo profilo. È la
+            porta d&apos;ingresso più probabile.
           </>
         }
         numeri={[

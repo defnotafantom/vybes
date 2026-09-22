@@ -129,10 +129,9 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
      * si esclude esplicitamente l'area personale, che è l'unica cosa che
      * distingue le due pagine.
      */
-    await org.page.waitForURL(
-      (u) => /^\/eventi\/[^/]+$/.test(new URL(u).pathname),
-      { timeout: 30_000 }
-    );
+    await org.page.waitForURL((u) => /^\/eventi\/[^/]+$/.test(new URL(u).pathname), {
+      timeout: 30_000,
+    });
     const urlIngaggio = org.page.url();
     await expect(org.page.getByRole("heading", { name: titolo })).toBeVisible();
 
@@ -150,9 +149,9 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
 
     // Il pulsante cambia stato: è il riscontro immediato che l'invio è
     // andato. Senza, chi si candida non sa se ha cliccato davvero.
-    await expect(
-      art.page.getByRole("button", { name: /ritira la candidatura/i })
-    ).toBeVisible({ timeout: 20_000 });
+    await expect(art.page.getByRole("button", { name: /ritira la candidatura/i })).toBeVisible({
+      timeout: 20_000,
+    });
 
     // ── 3. L'organizzatore la vede e accetta ───────────────────────────────
     await org.page.goto("/dashboard/eventi");
@@ -206,7 +205,11 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
     // E soprattutto: lo vede l'altro. È l'unica asserzione che distingue «il
     // messaggio è stato scritto» da «il messaggio è arrivato».
     await art.page.goto("/dashboard/messaggi");
-    await art.page.getByRole("link").filter({ hasText: /prova organizzatore/i }).first().click();
+    await art.page
+      .getByRole("link")
+      .filter({ hasText: /prova organizzatore/i })
+      .first()
+      .click();
     await expect(
       art.page.getByText(messaggioAccordo),
       "il messaggio non è arrivato dall'altra parte"

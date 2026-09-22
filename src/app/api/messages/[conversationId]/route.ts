@@ -10,7 +10,10 @@ async function assertMember(conversationId: string, userId: string) {
   });
 }
 
-export async function GET(req: Request, { params }: { params: Promise<{ conversationId: string }> }) {
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ conversationId: string }> }
+) {
   return handle(async () => {
     const g = await guard(req, { scope: "messages-read", limit: 200 });
     if (g.error) return g.error;
@@ -36,7 +39,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ conversa
   });
 }
 
-export async function POST(req: Request, { params }: { params: Promise<{ conversationId: string }> }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ conversationId: string }> }
+) {
   return handle(async () => {
     const g = await guard(req, { scope: "messages-write", limit: 60 });
     if (g.error) return g.error;
@@ -58,7 +64,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ convers
       include: { sender: { select: { slug: true, name: true, image: true } } },
     });
 
-    await prisma.conversation.update({ where: { id: conversationId }, data: { updatedAt: new Date() } });
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
 
     // Push immediato ai client connessi via SSE.
     publish(conversationChannel(conversationId), { type: "message", message });

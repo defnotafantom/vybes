@@ -72,8 +72,7 @@ export default async function BenvenutoPage() {
         Ciao {me.name.split(" ")[0]}, tre cose e sei dentro.
       </h1>
       <p className="mt-3 max-w-xl text-fluid-base text-ink-muted">
-        Sono le uniche che il sistema non può indovinare da solo — e da cui
-        dipende tutto il resto.
+        Sono le uniche che il sistema non può indovinare da solo — e da cui dipende tutto il resto.
       </p>
 
       <div className="mt-10">

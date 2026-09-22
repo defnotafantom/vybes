@@ -26,7 +26,6 @@ import { cerca } from "@/lib/ruolo";
 import { SfondoLavoro } from "@/components/AnteprimaLavoro";
 import { Distintivi } from "@/components/Distintivi";
 
-
 export const revalidate = 3600;
 export const dynamicParams = true; // i profili nuovi vengono generati on-demand
 
@@ -74,10 +73,28 @@ async function getArtist(slug: string) {
     where: { slug, isPublic: true },
     select: {
       emailVerified: true,
-      id: true, slug: true, name: true, headline: true, bio: true, image: true, cover: true,
-      city: true, citySlug: true, region: true, disciplines: true, website: true,
-      instagram: true, spotify: true, youtube: true, level: true, experience: true,
-      reputation: true, isVerified: true, role: true, createdAt: true, updatedAt: true,
+      id: true,
+      slug: true,
+      name: true,
+      headline: true,
+      bio: true,
+      image: true,
+      cover: true,
+      city: true,
+      citySlug: true,
+      region: true,
+      disciplines: true,
+      website: true,
+      instagram: true,
+      spotify: true,
+      youtube: true,
+      level: true,
+      experience: true,
+      reputation: true,
+      isVerified: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
       portfolioItems: {
         where: { isPublic: true },
         orderBy: { position: "asc" },
@@ -89,8 +106,17 @@ async function getArtist(slug: string) {
         orderBy: { startsAt: "asc" },
         take: 3,
         select: {
-          slug: true, title: true, description: true, coverImage: true, category: true,
-          startsAt: true, city: true, venueName: true, isPaid: true, feeMin: true, feeMax: true,
+          slug: true,
+          title: true,
+          description: true,
+          coverImage: true,
+          category: true,
+          startsAt: true,
+          city: true,
+          venueName: true,
+          isPaid: true,
+          feeMin: true,
+          feeMax: true,
         },
       },
       // I conteggi dei distintivi sono filtrati come in `reputazione-server`:
@@ -117,7 +143,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const artist = await getArtist(slug);
-  if (!artist) return buildMetadata({ title: "Profilo non trovato", path: `/artisti/${slug}`, noindex: true });
+  if (!artist)
+    return buildMetadata({ title: "Profilo non trovato", path: `/artisti/${slug}`, noindex: true });
 
   const disciplines = fromCsv(artist.disciplines)
     .map((d) => disciplineBySlug(d)?.label ?? d)
@@ -127,9 +154,7 @@ export async function generateMetadata({
   return buildMetadata({
     title: `${artist.name} — ${disciplines || "Artista"}${place}`,
     description:
-      artist.headline ||
-      artist.bio ||
-      artist.role === "RECRUITER"
+      artist.headline || artist.bio || artist.role === "RECRUITER"
         ? `${artist.name}${place}: gli ingaggi aperti e come candidarsi. Su Vybes.`
         : `${artist.name}: profilo, portfolio e disponibilità per ingaggi${place}. Contatta direttamente l'artista su Vybes.`,
     path: `/artisti/${artist.slug}`,
@@ -447,12 +472,10 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                 <section className="card">
                   <h2 className="text-fluid-lg font-bold">Profilo appena aperto</h2>
                   <p className="mt-3 max-w-xl text-fluid-sm text-ink-muted">
-                    {artist.name.split(" ")[0]} non ha ancora aggiunto una
-                    presentazione né caricato lavori. Quello che sappiamo è qui
-                    sopra
+                    {artist.name.split(" ")[0]} non ha ancora aggiunto una presentazione né caricato
+                    lavori. Quello che sappiamo è qui sopra
                     {artist.city ? `: ${disciplineLeggibili || "artista"} a ${artist.city}` : ""}.
-                    Se è la persona che cerchi, scriverle è il modo più veloce
-                    per sapere il resto.
+                    Se è la persona che cerchi, scriverle è il modo più veloce per sapere il resto.
                   </p>
                   <Link
                     href={`/dashboard/messaggi/nuovo?a=${artist.slug}`}
@@ -599,7 +622,11 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
             {/* In fondo e in piccolo: trovabile da chi lo cerca, non
                 proposto a chi non lo cerca. */}
             <div className="pt-2">
-              <Segnala targetType="USER" targetId={artist.slug} etichetta="Segnala questo profilo" />
+              <Segnala
+                targetType="USER"
+                targetId={artist.slug}
+                etichetta="Segnala questo profilo"
+              />
             </div>
           </aside>
         </div>

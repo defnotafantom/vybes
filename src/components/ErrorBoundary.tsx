@@ -20,7 +20,11 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: { componentStack?: string | null }) {
-    console.error(`[error-boundary${this.props.label ? `:${this.props.label}` : ""}]`, error, info.componentStack);
+    console.error(
+      `[error-boundary${this.props.label ? `:${this.props.label}` : ""}]`,
+      error,
+      info.componentStack
+    );
   }
 
   render() {

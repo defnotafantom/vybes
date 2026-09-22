@@ -35,13 +35,20 @@ describe("registerSchema", () => {
   });
 
   it("assegna ARTIST come ruolo di default", () => {
-    const out = registerSchema.parse({ name: "Mario", email: "m@e.it", password: "PasswordSicura1" });
+    const out = registerSchema.parse({
+      name: "Mario",
+      email: "m@e.it",
+      password: "PasswordSicura1",
+    });
     expect(out.role).toBe("ARTIST");
   });
 
   it("rifiuta i ruoli non previsti", () => {
     const res = registerSchema.safeParse({
-      name: "Mario", email: "m@e.it", password: "PasswordSicura1", role: "ADMIN",
+      name: "Mario",
+      email: "m@e.it",
+      password: "PasswordSicura1",
+      role: "ADMIN",
     });
     expect(res.success).toBe(false);
   });
@@ -175,6 +182,6 @@ describe("stripHtml", () => {
   });
 
   it("neutralizza uno script iniettato", () => {
-    expect(stripHtml('<script>alert(1)</script>')).not.toContain("<script");
+    expect(stripHtml("<script>alert(1)</script>")).not.toContain("<script");
   });
 });

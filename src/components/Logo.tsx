@@ -18,13 +18,7 @@ import { cn } from "@/lib/cn";
  * Il gradiente sulle prime due lettere è lo stesso della spirale: il legame
  * fra i due si tiene sul colore, non sulla ripetizione della forma.
  */
-export function Logo({
-  href = "/",
-  className,
-}: {
-  href?: string | null;
-  className?: string;
-}) {
+export function Logo({ href = "/", className }: { href?: string | null; className?: string }) {
   const content = (
     <span
       className={cn(

@@ -18,7 +18,9 @@ import {
 import { EVENT_CATEGORIES, type EventCategory } from "@/lib/constants";
 
 // Leaflet tocca window: caricato solo lato client, fuori dal bundle iniziale.
-const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
+const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), {
+  ssr: false,
+});
 const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
 const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
@@ -318,7 +320,8 @@ export function MapExplorer({
     [mappa]
   );
 
-  const filtriAttivi = Boolean(categoria) || soloPagati || testo.trim().length > 0 || filtraPerRaggio;
+  const filtriAttivi =
+    Boolean(categoria) || soloPagati || testo.trim().length > 0 || filtraPerRaggio;
 
   function azzera() {
     setCategoria(null);
@@ -519,7 +522,12 @@ export function MapExplorer({
             Solo con compenso
           </label>
 
-          <button type="button" className="btn-ghost min-h-11 w-full" disabled={inCorso} onClick={locate}>
+          <button
+            type="button"
+            className="btn-ghost min-h-11 w-full"
+            disabled={inCorso}
+            onClick={locate}
+          >
             <MapPin className="h-4 w-4" aria-hidden="true" />
             {inCorso ? "Ti sto cercando…" : "Usa la mia posizione"}
           </button>
@@ -585,7 +593,7 @@ export function MapExplorer({
               <Link href={`/eventi/${p.slug}`} className="font-medium hover:text-brand-600">
                 {p.title}
               </Link>
-              <p className="text-sm muted">
+              <p className="muted text-sm">
                 {p.city} · {dataBreve(p.startsAt)} · {p.fee}
               </p>
             </li>

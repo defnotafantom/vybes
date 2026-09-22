@@ -84,10 +84,7 @@ export async function POST(req: Request) {
     // soluzioni. Serve solo a scoprire chi ha la pagina aperta da ieri sera.
     const giorno = giornoDi();
     if (data.giorno !== giorno) {
-      return fail(
-        "Il turno è cambiato mentre giocavi: ricarica per avere quello di oggi.",
-        409
-      );
+      return fail("Il turno è cambiato mentre giocavi: ricarica per avere quello di oggi.", 409);
     }
 
     const esito = await registraPartita(g.user!.id, giorno, data.scelte);

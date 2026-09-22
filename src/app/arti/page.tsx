@@ -34,8 +34,8 @@ export default function ArtiPage() {
       <header className="max-w-2xl">
         <h1 className="text-fluid-2xl font-bold">Le arti</h1>
         <p className="mt-3 text-fluid-lg text-ink-muted">
-          Di ognuna si ha un&apos;idea, e quasi sempre è più stretta della cosa. Qui
-          c&apos;è cosa sono davvero, in quante forme esistono, e chi le pratica adesso.
+          Di ognuna si ha un&apos;idea, e quasi sempre è più stretta della cosa. Qui c&apos;è cosa
+          sono davvero, in quante forme esistono, e chi le pratica adesso.
         </p>
       </header>
 
@@ -44,13 +44,13 @@ export default function ArtiPage() {
           <li key={d.slug}>
             <Link
               href={`/arti/${d.slug}`}
-              className="block h-full rounded-2xl border p-5 transition-colors hover:border-border-strong"
+              className="hover:border-border-strong block h-full rounded-2xl border p-5 transition-colors"
             >
               <h2 className="font-semibold">{d.plural}</h2>
               {/* Si dichiara quali sono scritte: un elenco in cui alcune voci
                   portano a una scheda e altre a un guscio, senza dirlo, fa
                   sembrare rotto il sito invece che in costruzione. */}
-              <p className="mt-1.5 text-fluid-sm muted">
+              <p className="muted mt-1.5 text-fluid-sm">
                 {SCHEDE[d.slug]?.stato === "rivista"
                   ? "Scheda rivista"
                   : SCHEDE[d.slug]

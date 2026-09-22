@@ -25,10 +25,15 @@ async function getCity(slug: string) {
   return prisma.city.findUnique({ where: { slug } });
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ citta: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ citta: string }>;
+}): Promise<Metadata> {
   const { citta } = await params;
   const city = await getCity(citta);
-  if (!city) return buildMetadata({ title: "Città non trovata", path: `/citta/${citta}`, noindex: true });
+  if (!city)
+    return buildMetadata({ title: "Città non trovata", path: `/citta/${citta}`, noindex: true });
 
   return buildMetadata({
     title: `Artisti e ingaggi a ${city.name}`,
@@ -55,22 +60,47 @@ export default async function CityHubPage({ params }: { params: Promise<{ citta:
       orderBy: { reputation: "desc" },
       take: 6,
       select: {
-        slug: true, name: true, headline: true, image: true, city: true,
-        disciplines: true, reputation: true, isVerified: true,
+        slug: true,
+        name: true,
+        headline: true,
+        image: true,
+        city: true,
+        disciplines: true,
+        reputation: true,
+        isVerified: true,
       },
     }),
     prisma.event.findMany({
-      where: { isPublic: true, status: "PUBLISHED", citySlug: city.slug, startsAt: { gte: new Date() } },
+      where: {
+        isPublic: true,
+        status: "PUBLISHED",
+        citySlug: city.slug,
+        startsAt: { gte: new Date() },
+      },
       orderBy: { startsAt: "asc" },
       take: 6,
       select: {
-        slug: true, title: true, description: true, coverImage: true, category: true,
-        startsAt: true, city: true, venueName: true, isPaid: true, feeMin: true, feeMax: true,
+        slug: true,
+        title: true,
+        description: true,
+        coverImage: true,
+        category: true,
+        startsAt: true,
+        city: true,
+        venueName: true,
+        isPaid: true,
+        feeMin: true,
+        feeMax: true,
       },
     }),
     prisma.user.count({ where: { ...ARTISTA_PUBBLICO, citySlug: city.slug } }),
     prisma.event.count({
-      where: { isPublic: true, status: "PUBLISHED", citySlug: city.slug, startsAt: { gte: new Date() } },
+      where: {
+        isPublic: true,
+        status: "PUBLISHED",
+        citySlug: city.slug,
+        startsAt: { gte: new Date() },
+      },
     }),
   ]);
 

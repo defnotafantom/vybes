@@ -26,8 +26,16 @@ export function ImageCarousel({
   if (images.length === 0) return null;
   if (images.length === 1) {
     return (
-      <div className={cn("relative overflow-hidden rounded-xl bg-brand-50 dark:bg-white/5", aspect)}>
-        <OptimizedImage src={images[0].url} alt={images[0].alt} fill sizes="100vw" className="object-cover" />
+      <div
+        className={cn("relative overflow-hidden rounded-xl bg-brand-50 dark:bg-white/5", aspect)}
+      >
+        <OptimizedImage
+          src={images[0].url}
+          alt={images[0].alt}
+          fill
+          sizes="100vw"
+          className="object-cover"
+        />
       </div>
     );
   }
@@ -51,7 +59,13 @@ export function ImageCarousel({
         className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth rounded-xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {images.map((img, i) => (
-          <div key={i} className={cn("relative w-full flex-none snap-center bg-brand-50 dark:bg-white/5", aspect)}>
+          <div
+            key={i}
+            className={cn(
+              "relative w-full flex-none snap-center bg-brand-50 dark:bg-white/5",
+              aspect
+            )}
+          >
             <OptimizedImage
               src={img.url}
               alt={img.alt}

@@ -19,7 +19,9 @@ export async function POST(req: Request) {
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
     if (existing) return fail("Esiste già un account con questa email", 409);
 
-    const slug = await uniqueSlug(data.name, async (s) => Boolean(await prisma.user.findUnique({ where: { slug: s } })));
+    const slug = await uniqueSlug(data.name, async (s) =>
+      Boolean(await prisma.user.findUnique({ where: { slug: s } }))
+    );
     const hashed = await bcrypt.hash(data.password, 12);
 
     const user = await prisma.user.create({

@@ -13,7 +13,8 @@ async function owned(id: string, userId: string) {
     select: { id: true, userId: true, mediaUrl: true },
   });
   if (!item) return { item: null, error: fail("Elemento non trovato", 404) };
-  if (item.userId !== userId) return { item: null, error: fail("Non sei l'autore di questo elemento", 403) };
+  if (item.userId !== userId)
+    return { item: null, error: fail("Non sei l'autore di questo elemento", 403) };
   return { item, error: null };
 }
 

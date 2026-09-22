@@ -70,7 +70,11 @@ export function Feed() {
     setPosts((prev) =>
       prev.map((p) =>
         p.id === id
-          ? { ...p, likedByMe: !p.likedByMe, _count: { ...p._count, likes: p._count.likes + (p.likedByMe ? -1 : 1) } }
+          ? {
+              ...p,
+              likedByMe: !p.likedByMe,
+              _count: { ...p._count, likes: p._count.likes + (p.likedByMe ? -1 : 1) },
+            }
           : p
       )
     );
@@ -83,11 +87,16 @@ export function Feed() {
       <NewPostForm onCreated={() => load()} />
 
       {error && (
-        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-200">
+        <p
+          role="alert"
+          className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-200"
+        >
           <span className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
             {error}
-            <button type="button" className="underline" onClick={() => load()}>Riprova</button>
+            <button type="button" className="underline" onClick={() => load()}>
+              Riprova
+            </button>
           </span>
         </p>
       )}
@@ -95,15 +104,18 @@ export function Feed() {
       {posts.map((post) => (
         <article key={post.id} className="card">
           <header className="flex items-center gap-3">
-<Avatar name={post.author.name} src={post.author.image} size="sm" />
+            <Avatar name={post.author.name} src={post.author.image} size="sm" />
             <div>
               <span className="flex items-center gap-1">
-                <Link href={`/artisti/${post.author.slug}`} className="font-medium hover:text-brand-600">
+                <Link
+                  href={`/artisti/${post.author.slug}`}
+                  className="font-medium hover:text-brand-600"
+                >
                   {post.author.name}
                 </Link>
                 {post.author.isVerified && <VerifiedBadge />}
               </span>
-              <p className="text-xs muted">
+              <p className="muted text-xs">
                 Lv. {post.author.level} ·{" "}
                 <time dateTime={post.createdAt}>{quandoRelativo(post.createdAt)}</time>
               </p>
@@ -129,7 +141,9 @@ export function Feed() {
           {post.tags.length > 0 && (
             <ul className="mt-4 flex flex-wrap gap-2">
               {post.tags.map(({ tag }) => (
-  <li key={tag.slug} className="chip">#{tag.label}</li>
+                <li key={tag.slug} className="chip">
+                  #{tag.label}
+                </li>
               ))}
             </ul>
           )}
@@ -180,9 +194,8 @@ export function Feed() {
         <div className="card text-center">
           <p className="text-fluid-base font-semibold">Ancora nessun post</p>
           <p className="mx-auto mt-2 max-w-md text-fluid-sm text-ink-muted">
-            Il feed si riempie con quello che pubblicano gli artisti che segui.
-            Nel frattempo la parte utile del sito è di là: gli ingaggi aperti e
-            i profili da seguire.
+            Il feed si riempie con quello che pubblicano gli artisti che segui. Nel frattempo la
+            parte utile del sito è di là: gli ingaggi aperti e i profili da seguire.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Link href="/eventi" className="btn-primary">
@@ -196,12 +209,19 @@ export function Feed() {
       )}
 
       {hasMore && (
-        <button type="button" className="btn-ghost w-full" disabled={loading} onClick={() => load(cursor)}>
+        <button
+          type="button"
+          className="btn-ghost w-full"
+          disabled={loading}
+          onClick={() => load(cursor)}
+        >
           {loading ? "Caricamento…" : "Carica altri post"}
         </button>
       )}
 
-      {!hasMore && posts.length > 0 && <p className="text-center text-sm muted">Hai visto tutto.</p>}
+      {!hasMore && posts.length > 0 && (
+        <p className="muted text-center text-sm">Hai visto tutto.</p>
+      )}
     </div>
   );
 }

@@ -30,8 +30,7 @@ import { cosmeticoDi, prezzoDi, type Cosmetico, type Slot } from "@/lib/cosmetic
  */
 
 export type EsitoAcquisto =
-  | { ok: true; cosmetico: Cosmetico; saldo: number }
-  | { ok: false; motivo: string };
+  { ok: true; cosmetico: Cosmetico; saldo: number } | { ok: false; motivo: string };
 
 export async function acquista(userId: string, cosmeticoId: string): Promise<EsitoAcquisto> {
   const cosmetico = cosmeticoDi(cosmeticoId);

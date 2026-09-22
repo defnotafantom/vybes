@@ -112,7 +112,12 @@ describe("raggruppa", () => {
     const punti = [p(45.4, 9.1, "a"), p(45.9, 9.9, "b"), p(41.9, 12.5, "c"), p(45.45, 9.15, "d")];
     const conta = (l: typeof punti) =>
       raggruppa(l, 8)
-        .map((g) => g.elementi.map((e) => e.id).sort().join("+"))
+        .map((g) =>
+          g.elementi
+            .map((e) => e.id)
+            .sort()
+            .join("+")
+        )
         .sort();
     expect(conta([...punti].reverse())).toEqual(conta(punti));
   });

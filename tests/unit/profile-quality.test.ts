@@ -6,9 +6,9 @@ const bioCorta = "Cantante.";
 
 describe("isProfileIndexable", () => {
   it("accetta un profilo con disciplina e biografia sostanziosa", () => {
-    expect(
-      isProfileIndexable({ bio: bioLunga, disciplines: "cantante", portfolioCount: 0 })
-    ).toBe(true);
+    expect(isProfileIndexable({ bio: bioLunga, disciplines: "cantante", portfolioCount: 0 })).toBe(
+      true
+    );
   });
 
   it("accetta un profilo con disciplina e almeno un lavoro, anche senza biografia", () => {
@@ -20,9 +20,7 @@ describe("isProfileIndexable", () => {
   it("rifiuta un profilo senza disciplina, per quanto scritto bene", () => {
     // Senza disciplina la pagina non risponde a nessuna ricerca reale:
     // nessuno cerca "un artista", si cerca "un chitarrista a Bologna".
-    expect(
-      isProfileIndexable({ bio: bioLunga, disciplines: "", portfolioCount: 5 })
-    ).toBe(false);
+    expect(isProfileIndexable({ bio: bioLunga, disciplines: "", portfolioCount: 5 })).toBe(false);
   });
 
   it("rifiuta un profilo vuoto — il caso 'kkkk' visto in produzione", () => {
@@ -30,22 +28,26 @@ describe("isProfileIndexable", () => {
   });
 
   it("rifiuta una biografia troppo corta senza portfolio", () => {
-    expect(
-      isProfileIndexable({ bio: bioCorta, disciplines: "cantante", portfolioCount: 0 })
-    ).toBe(false);
+    expect(isProfileIndexable({ bio: bioCorta, disciplines: "cantante", portfolioCount: 0 })).toBe(
+      false
+    );
   });
 
   it("non lascia passare una biografia fatta di soli spazi", () => {
     expect(
-      isProfileIndexable({ bio: " ".repeat(MIN_BIO + 50), disciplines: "cantante", portfolioCount: 0 })
+      isProfileIndexable({
+        bio: " ".repeat(MIN_BIO + 50),
+        disciplines: "cantante",
+        portfolioCount: 0,
+      })
     ).toBe(false);
   });
 
   it("tratta la soglia della biografia come inclusiva", () => {
     const esatta = "x".repeat(MIN_BIO);
-    expect(
-      isProfileIndexable({ bio: esatta, disciplines: "cantante", portfolioCount: 0 })
-    ).toBe(true);
+    expect(isProfileIndexable({ bio: esatta, disciplines: "cantante", portfolioCount: 0 })).toBe(
+      true
+    );
     expect(
       isProfileIndexable({ bio: esatta.slice(0, -1), disciplines: "cantante", portfolioCount: 0 })
     ).toBe(false);
@@ -54,9 +56,9 @@ describe("isProfileIndexable", () => {
 
 describe("missingForIndex", () => {
   it("non segnala nulla se il profilo è a posto", () => {
-    expect(
-      missingForIndex({ bio: bioLunga, disciplines: "cantante", portfolioCount: 0 })
-    ).toEqual([]);
+    expect(missingForIndex({ bio: bioLunga, disciplines: "cantante", portfolioCount: 0 })).toEqual(
+      []
+    );
   });
 
   it("elenca entrambe le mancanze di un profilo vuoto", () => {

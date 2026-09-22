@@ -257,7 +257,10 @@ describe("ciò che non si è ancora potuto misurare non si conta come fallimento
 
 describe("rispondere a chi si candida", () => {
   const con = (ricevute: number, risposte: number) =>
-    calcolaReputazione({ ...vuoto, candidatureRicevute: ricevute, candidatureRisposte: risposte }, "RECRUITER");
+    calcolaReputazione(
+      { ...vuoto, candidatureRicevute: ricevute, candidatureRisposte: risposte },
+      "RECRUITER"
+    );
 
   it("chi risponde a tutti prende più di chi risponde a metà", () => {
     expect(con(10, 10)).toBeGreaterThan(con(10, 5));

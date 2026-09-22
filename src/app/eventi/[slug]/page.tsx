@@ -174,10 +174,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 <span className="inline-flex items-center gap-2 text-ink-muted">
                   <MapPin className="h-4 w-4 text-brand-400" aria-hidden="true" />
                   {event.venueName ? `${event.venueName}, ` : ""}
-                  <Link
-                    href={`/citta/${event.citySlug}`}
-                    className="link-underline text-ink-muted"
-                  >
+                  <Link href={`/citta/${event.citySlug}`} className="link-underline text-ink-muted">
                     {event.city}
                   </Link>
                 </span>
@@ -389,7 +386,11 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             />
 
             <div className="pt-2">
-              <Segnala targetType="EVENT" targetId={event.slug} etichetta="Segnala questo ingaggio" />
+              <Segnala
+                targetType="EVENT"
+                targetId={event.slug}
+                etichetta="Segnala questo ingaggio"
+              />
             </div>
 
             {isPast && (

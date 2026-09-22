@@ -206,7 +206,9 @@ function distintiviOrganizzatore(f: FattiDistintivi, anno: number): Distintivo[]
       // passato.
       significato: `Ha risposto a quasi tutte le candidature ricevute (almeno ${SOGLIA_RISPOSTE}).`,
       come: "Rispondi a chi si candida: anche un no vale, purché arrivi.",
-      ottenuto: abbastanzaCandidature && quota(f.candidatureRisposte, f.candidatureRicevute) >= QUOTA_RISPOSTE,
+      ottenuto:
+        abbastanzaCandidature &&
+        quota(f.candidatureRisposte, f.candidatureRicevute) >= QUOTA_RISPOSTE,
     },
     {
       chiave: "paga",
@@ -216,7 +218,8 @@ function distintiviOrganizzatore(f: FattiDistintivi, anno: number): Distintivo[]
       // sempre da chi non paga mai.
       significato: `Quasi tutti i suoi annunci dichiarano un compenso (su almeno ${SOGLIA_ANNUNCI} pubblicati).`,
       come: "Indica il compenso negli annunci: quelli senza ricevono molte meno candidature.",
-      ottenuto: abbastanzaAnnunci && quota(f.annunciRetribuiti, f.annunciPubblicati) >= QUOTA_RETRIBUITI,
+      ottenuto:
+        abbastanzaAnnunci && quota(f.annunciRetribuiti, f.annunciPubblicati) >= QUOTA_RETRIBUITI,
     },
     {
       chiave: "organizzatore",
@@ -253,9 +256,7 @@ export function distintiviDi(f: FattiDistintivi, role: string = "ARTIST"): Disti
 
   // Un lato solo: l'elenco è quello del suo lato.
   if (lati.length === 1) {
-    return lati[0] === "RECRUITER"
-      ? distintiviOrganizzatore(f, anno)
-      : distintiviArtista(f, anno);
+    return lati[0] === "RECRUITER" ? distintiviOrganizzatore(f, anno) : distintiviArtista(f, anno);
   }
 
   /*

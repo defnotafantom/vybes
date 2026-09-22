@@ -24,7 +24,14 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
         orderBy: { createdAt: "desc" },
         include: {
           user: {
-            select: { slug: true, name: true, image: true, headline: true, city: true, reputation: true },
+            select: {
+              slug: true,
+              name: true,
+              image: true,
+              headline: true,
+              city: true,
+              reputation: true,
+            },
           },
         },
       },
@@ -69,14 +76,19 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
       />
 
       {event.status === "CANCELLED" && (
-        <p role="status" className="mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200">
-          Questo ingaggio è annullato. La pagina pubblica resta visibile ma è esclusa dai motori di ricerca.
+        <p
+          role="status"
+          className="mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200"
+        >
+          Questo ingaggio è annullato. La pagina pubblica resta visibile ma è esclusa dai motori di
+          ricerca.
         </p>
       )}
 
       <section className="mt-10">
         <h2 className="text-fluid-lg font-bold">
-          Da valutare {pending.length > 0 && <span className="text-brand-600">({pending.length})</span>}
+          Da valutare{" "}
+          {pending.length > 0 && <span className="text-brand-600">({pending.length})</span>}
         </h2>
         {pending.length === 0 ? (
           <div className="mt-5">
@@ -90,7 +102,11 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
         ) : (
           <ul className="mt-4 space-y-3">
             {pending.map((p) => (
-              <ParticipationRow key={p.id} participation={{ ...p, createdAt: p.createdAt.toISOString() }} actionable />
+              <ParticipationRow
+                key={p.id}
+                participation={{ ...p, createdAt: p.createdAt.toISOString() }}
+                actionable
+              />
             ))}
           </ul>
         )}
@@ -101,7 +117,11 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
           <h2 className="text-fluid-lg font-bold">Confermati ({accepted.length})</h2>
           <ul className="mt-4 space-y-3">
             {accepted.map((p) => (
-              <ParticipationRow key={p.id} participation={{ ...p, createdAt: p.createdAt.toISOString() }} actionable={false} />
+              <ParticipationRow
+                key={p.id}
+                participation={{ ...p, createdAt: p.createdAt.toISOString() }}
+                actionable={false}
+              />
             ))}
           </ul>
         </section>
@@ -112,7 +132,11 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
           <h2 className="text-fluid-lg font-bold">Non selezionati ({rejected.length})</h2>
           <ul className="mt-4 space-y-3">
             {rejected.map((p) => (
-              <ParticipationRow key={p.id} participation={{ ...p, createdAt: p.createdAt.toISOString() }} actionable={false} />
+              <ParticipationRow
+                key={p.id}
+                participation={{ ...p, createdAt: p.createdAt.toISOString() }}
+                actionable={false}
+              />
             ))}
           </ul>
         </section>

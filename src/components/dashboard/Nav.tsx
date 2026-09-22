@@ -398,7 +398,9 @@ export function DashboardMobileNav({
                       aria-current={active ? "page" : undefined}
                       className={cn(
                         "flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium",
-                        active ? "bg-brand-50 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300" : "text-ink"
+                        active
+                          ? "bg-brand-50 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300"
+                          : "text-ink"
                       )}
                     >
                       <Icon className="h-4 w-4" aria-hidden="true" />

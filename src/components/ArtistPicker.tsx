@@ -91,10 +91,13 @@ export function ArtistPicker({
         aria-controls="collab-results"
       />
 
-      {loading && <p className="mt-1 text-xs muted">Ricerca…</p>}
+      {loading && <p className="muted mt-1 text-xs">Ricerca…</p>}
 
       {results.length > 0 && (
-        <ul id="collab-results" className="mt-2 max-h-48 origin-top animate-scale-in overflow-y-auto rounded-xl border shadow-subtle">
+        <ul
+          id="collab-results"
+          className="mt-2 max-h-48 origin-top animate-scale-in overflow-y-auto rounded-xl border shadow-subtle"
+        >
           {results.map((a) => (
             <li key={a.id}>
               <button

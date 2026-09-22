@@ -16,12 +16,12 @@ export default function ChiSiamoPage() {
       <Breadcrumbs items={[{ name: "Chi siamo", path: "/chi-siamo" }]} />
       <article className="prose-vybes max-w-3xl">
         <h1 className="text-3xl font-bold sm:text-4xl">Chi siamo</h1>
-        <p className="mt-6 muted">
+        <p className="muted mt-6">
           Vybes nasce da una constatazione semplice: in Italia ci sono migliaia di artisti bravi che
           non trovano date, e migliaia di locali che non trovano artisti. In mezzo, un mercato opaco
           fatto di passaparola, gruppi WhatsApp e agenzie che trattengono percentuali.
         </p>
-        <p className="mt-4 muted">
+        <p className="muted mt-4">
           {/* Prima persona singolare, e non è modestia: RECLUTAMENTO.md dice
               testualmente «non dire *siamo un team*: sei tu, e si vede». La
               pagina pubblica faceva esattamente quello che il documento con cui
@@ -32,7 +32,7 @@ export default function ChiSiamoPage() {
           si apra una conversazione.
         </p>
         <h2 className="mt-10 text-2xl font-bold">Come si sostiene</h2>
-        <p className="mt-4 muted">
+        <p className="muted mt-4">
           Non prendiamo commissioni sul cachet. Il modello si regge su strumenti opzionali per
           organizzatori professionali e su una futura sottoscrizione per profili business.
         </p>

@@ -32,7 +32,9 @@ export default async function DashboardEventiPage() {
     prisma.participation.findMany({
       where: { userId },
       orderBy: { event: { startsAt: "desc" } },
-      include: { event: { select: { slug: true, title: true, startsAt: true, city: true, status: true } } },
+      include: {
+        event: { select: { slug: true, title: true, startsAt: true, city: true, status: true } },
+      },
     }),
   ]);
 
@@ -64,9 +66,7 @@ export default async function DashboardEventiPage() {
   // Recap richiesto: in corso / futuri / conclusi / archivio.
   const upcoming = myApplications.filter((p) => p.event.startsAt >= now && p.status !== "REJECTED");
   const completed = myApplications.filter((p) => p.event.startsAt < now && p.status === "ACCEPTED");
-  const archived = myApplications.filter(
-    (p) => p.event.startsAt < now && p.status !== "ACCEPTED"
-  );
+  const archived = myApplications.filter((p) => p.event.startsAt < now && p.status !== "ACCEPTED");
 
   // Le candidature che aspettano una risposta sono l'unico numero che fa agire:
   // ogni giorno che passa un artista aspetta senza sapere.
@@ -126,9 +126,8 @@ export default async function DashboardEventiPage() {
           <section>
             <h2 className="text-fluid-lg font-bold">Ingaggi conclusi che hai organizzato</h2>
             <p className="mt-1 text-fluid-sm text-ink-muted">
-              La data è passata. Restano qui perché le candidature ricevute sono
-              la base della tua reputazione, e perché un annuncio riuscito è il
-              più facile da riscrivere.
+              La data è passata. Restano qui perché le candidature ricevute sono la base della tua
+              reputazione, e perché un annuncio riuscito è il più facile da riscrivere.
             </p>
             <ul className="mt-6 space-y-3">
               {organizzatiConclusi.map((e) => (
@@ -185,7 +184,10 @@ export default async function DashboardEventiPage() {
           cercaArtisti
             ? [
                 { label: ["Aperto ora", "Aperti ora"], valore: organizzatiAperti.length },
-                { label: ["Candidatura da decidere", "Candidature da decidere"], valore: daDecidere },
+                {
+                  label: ["Candidatura da decidere", "Candidature da decidere"],
+                  valore: daDecidere,
+                },
                 { label: ["Artista in attesa", "Artisti in attesa"], valore: daDecidere },
               ]
             : [
@@ -285,9 +287,13 @@ function RigaOrganizzata({ e, concluso = false }: { e: Organizzato; concluso?: b
         </Link>
         <p className="mt-1 flex flex-wrap items-center gap-x-2 text-fluid-xs text-ink-muted">
           <span>{e.city}</span>
-          <span aria-hidden="true" className="text-ink-faint">·</span>
+          <span aria-hidden="true" className="text-ink-faint">
+            ·
+          </span>
           <span>{dataBreve(e.startsAt)}</span>
-          <span aria-hidden="true" className="text-ink-faint">·</span>
+          <span aria-hidden="true" className="text-ink-faint">
+            ·
+          </span>
           {/* Su un annuncio aperto «0 candidature» dice qualcosa che
               «candidature: 0» non dice: che è vivo e nessuno ha risposto. Su
               uno concluso quella lettura non regge più. */}

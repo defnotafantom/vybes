@@ -42,9 +42,7 @@ describe("operaDelGiorno", () => {
      * opere diverse.
      */
     const viste = new Set(
-      Array.from({ length: CATALOGO.length }, (_, g) =>
-        operaDelGiorno(CATALOGO, g, "utente-1")
-      )
+      Array.from({ length: CATALOGO.length }, (_, g) => operaDelGiorno(CATALOGO, g, "utente-1"))
     );
     expect(viste.size).toBe(CATALOGO.length);
   });

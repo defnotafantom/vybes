@@ -121,8 +121,16 @@ describe("i distintivi di chi ingaggia", () => {
     // Con due candidature entrambe risposte la quota è 100%, e il distintivo
     // direbbe a un artista «fidati» sulla base di due eventi. Se poi non
     // riceve risposta, il danno l'ha fatto il distintivo.
-    const poche = { ...nudo, candidatureRicevute: SOGLIA_RISPOSTE - 1, candidatureRisposte: SOGLIA_RISPOSTE - 1 };
-    const abbastanza = { ...nudo, candidatureRicevute: SOGLIA_RISPOSTE, candidatureRisposte: SOGLIA_RISPOSTE };
+    const poche = {
+      ...nudo,
+      candidatureRicevute: SOGLIA_RISPOSTE - 1,
+      candidatureRisposte: SOGLIA_RISPOSTE - 1,
+    };
+    const abbastanza = {
+      ...nudo,
+      candidatureRicevute: SOGLIA_RISPOSTE,
+      candidatureRisposte: SOGLIA_RISPOSTE,
+    };
     const trova = (f: typeof nudo) =>
       distintiviDi(f, "RECRUITER").find((d) => d.chiave === "risponde")!.ottenuto;
 
@@ -138,7 +146,9 @@ describe("i distintivi di chi ingaggia", () => {
       candidatureRicevute: 20,
       candidatureRisposte: Math.floor(20 * QUOTA_RISPOSTE) - 1,
     };
-    expect(distintiviDi(sotto, "RECRUITER").find((d) => d.chiave === "risponde")!.ottenuto).toBe(false);
+    expect(distintiviDi(sotto, "RECRUITER").find((d) => d.chiave === "risponde")!.ottenuto).toBe(
+      false
+    );
   });
 
   it("«annunci retribuiti» tollera qualche annuncio senza compenso", () => {
@@ -154,7 +164,11 @@ describe("i distintivi di chi ingaggia", () => {
   });
 
   it("«annunci retribuiti» non si ottiene con un annuncio solo", () => {
-    const uno = { ...nudo, annunciPubblicati: SOGLIA_ANNUNCI - 1, annunciRetribuiti: SOGLIA_ANNUNCI - 1 };
+    const uno = {
+      ...nudo,
+      annunciPubblicati: SOGLIA_ANNUNCI - 1,
+      annunciRetribuiti: SOGLIA_ANNUNCI - 1,
+    };
     expect(distintiviDi(uno, "RECRUITER").find((d) => d.chiave === "paga")!.ottenuto).toBe(false);
   });
 

@@ -10,7 +10,10 @@ export const passwordSchema = z
 
 export const registerSchema = z.object({
   name: z.string().min(2, "Nome troppo corto").max(60),
-  email: z.string().email("Email non valida").transform((v) => v.toLowerCase()),
+  email: z
+    .string()
+    .email("Email non valida")
+    .transform((v) => v.toLowerCase()),
   password: passwordSchema,
   role: z.enum(["ARTIST", "RECRUITER"]).default("ARTIST"),
 });
@@ -199,10 +202,7 @@ export const completaProfiloSchema = z.object({
     .toLowerCase()
     .min(3, "Almeno tre caratteri")
     .max(30, "Al massimo trenta caratteri")
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "Solo lettere minuscole, numeri e trattini singoli"
-    ),
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Solo lettere minuscole, numeri e trattini singoli"),
   ruolo: z.enum(RUOLI as unknown as [string, ...string[]]),
 });
 
@@ -214,7 +214,10 @@ export const participationDecisionSchema = z.object({
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email("Email non valida").transform((v) => v.toLowerCase()),
+  email: z
+    .string()
+    .email("Email non valida")
+    .transform((v) => v.toLowerCase()),
 });
 
 export const resetPasswordSchema = z.object({
@@ -223,7 +226,10 @@ export const resetPasswordSchema = z.object({
 });
 
 export const resendVerificationSchema = z.object({
-  email: z.string().email().transform((v) => v.toLowerCase()),
+  email: z
+    .string()
+    .email()
+    .transform((v) => v.toLowerCase()),
 });
 
 export const commentSchema = z.object({ content: z.string().min(1).max(1000) });

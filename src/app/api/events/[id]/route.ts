@@ -43,7 +43,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (error) return error;
 
     const city = await prisma.city.findUnique({ where: { slug: data.citySlug } });
-    if (!city) return fail("Città non riconosciuta", 422, { citySlug: "Seleziona una città dall'elenco" });
+    if (!city)
+      return fail("Città non riconosciuta", 422, { citySlug: "Seleziona una città dall'elenco" });
 
     const updated = await prisma.event.update({
       where: { id },
@@ -71,7 +72,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     // Lo slug NON cambia: e' l'URL indicizzato, cambiarlo significherebbe
     // buttare via il posizionamento acquisito e generare un 404.
-    await notifyParticipants(id, g.user!.id, `L'ingaggio "${updated.title}" è stato aggiornato`, `/eventi/${updated.slug}`);
+    await notifyParticipants(
+      id,
+      g.user!.id,
+      `L'ingaggio "${updated.title}" è stato aggiornato`,
+      `/eventi/${updated.slug}`
+    );
 
     revalidateEvent(updated.slug, city.slug, check.event!.citySlug);
     return ok(updated);

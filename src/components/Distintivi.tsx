@@ -61,8 +61,7 @@ export function Distintivi({ distintivi }: { distintivi: Distintivo[] }) {
             key={d.chiave}
             title={d.significato}
             aria-label={`${d.etichetta}. ${d.significato}`}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-brand-400/25 bg-brand-500/[0.07]
-                       px-2.5 py-1 text-fluid-xs font-semibold text-brand-700 dark:text-brand-300"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-brand-400/25 bg-brand-500/[0.07] px-2.5 py-1 text-fluid-xs font-semibold text-brand-700 dark:text-brand-300"
           >
             <Icona className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             {d.etichetta}

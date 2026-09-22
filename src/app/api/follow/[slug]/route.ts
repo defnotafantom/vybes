@@ -41,7 +41,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     if (g.error) return g.error;
     const { slug } = await params;
 
-    const target = await prisma.user.findUnique({ where: { slug }, select: { id: true, name: true } });
+    const target = await prisma.user.findUnique({
+      where: { slug },
+      select: { id: true, name: true },
+    });
     if (!target) return fail("Utente non trovato", 404);
     if (target.id === g.user!.id) return fail("Non puoi seguire te stesso", 400);
 

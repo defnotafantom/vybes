@@ -216,8 +216,7 @@ export function TitoloOnda({
 
       const stile = getComputedStyle(h1);
       const corpo = parseFloat(stile.fontSize);
-      const interlinea =
-        stile.lineHeight === "normal" ? corpo * 1.2 : parseFloat(stile.lineHeight);
+      const interlinea = stile.lineHeight === "normal" ? corpo * 1.2 : parseFloat(stile.lineHeight);
 
       ctx.scale(densita, densita);
       ctx.font = `${stile.fontStyle} ${stile.fontWeight} ${corpo}px ${stile.fontFamily}`;

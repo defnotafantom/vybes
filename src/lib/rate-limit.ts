@@ -56,9 +56,7 @@ export type RateLimitResult = {
  * sbagliato non è una scorciatoia, è una vulnerabilità con un nome amichevole.
  */
 function limitatoreSpento(): boolean {
-  return (
-    process.env.RATE_LIMIT_DISABILITATO === "1" && process.env.NODE_ENV !== "production"
-  );
+  return process.env.RATE_LIMIT_DISABILITATO === "1" && process.env.NODE_ENV !== "production";
 }
 
 export async function rateLimit(

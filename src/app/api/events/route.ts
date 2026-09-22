@@ -17,10 +17,13 @@ export async function POST(req: Request) {
     if (error) return error;
 
     const city = await prisma.city.findUnique({ where: { slug: data.citySlug } });
-    if (!city) return fail("Città non riconosciuta", 422, { citySlug: "Seleziona una città dall'elenco" });
+    if (!city)
+      return fail("Città non riconosciuta", 422, { citySlug: "Seleziona una città dall'elenco" });
 
     // Lo slug include città e mese: URL leggibile e ricco di keyword.
-    const monthYear = new Intl.DateTimeFormat("it-IT", { month: "long", year: "numeric" }).format(data.startsAt);
+    const monthYear = new Intl.DateTimeFormat("it-IT", { month: "long", year: "numeric" }).format(
+      data.startsAt
+    );
     const slug = await uniqueSlug(`${data.title} ${city.name} ${monthYear}`, async (s) =>
       Boolean(await prisma.event.findUnique({ where: { slug: s } }))
     );

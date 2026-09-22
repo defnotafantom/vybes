@@ -92,8 +92,7 @@ async function Elenco() {
                 la sua sezione: con venti regioni, senza questo si perde la
                 cognizione di dove ci si trova nell'elenco. */}
             <h2
-              className="sticky top-16 z-10 -mx-4 px-4 py-3 text-fluid-lg font-bold backdrop-blur-md
-                         sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+              className="sticky top-16 z-10 -mx-4 px-4 py-3 text-fluid-lg font-bold backdrop-blur-md sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
               // I margini negativi replicano esattamente il padding di
               // .container-page, così lo sfondo sfocato arriva ai bordi e le
               // schede non spuntano ai lati mentre scorrono sotto.
@@ -121,7 +120,7 @@ async function Elenco() {
                           {c.name}
                         </span>
                         <ArrowUpRight
-                          className="h-4 w-4 shrink-0 translate-y-0.5 text-ink-faint opacity-0 transition-all duration-250 group-hover:translate-y-0 group-hover:text-brand-600 dark:group-hover:text-brand-400 group-hover:opacity-100"
+                          className="h-4 w-4 shrink-0 translate-y-0.5 text-ink-faint opacity-0 transition-all duration-250 group-hover:translate-y-0 group-hover:text-brand-600 group-hover:opacity-100 dark:group-hover:text-brand-400"
                           aria-hidden="true"
                         />
                       </div>

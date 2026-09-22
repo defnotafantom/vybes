@@ -333,7 +333,8 @@ export const SCHEDE: Partial<Record<string, SchedaArte>> = {
 
   illustratori: {
     stato: "bozza",
-    siCrede: "Che sia «un bel disegno», e che il valore stia nella somiglianza o nella bravura di mano.",
+    siCrede:
+      "Che sia «un bel disegno», e che il valore stia nella somiglianza o nella bravura di mano.",
     invece:
       "Un'illustrazione risolve un problema: far capire una cosa, sostenere un testo, fissare un'immagine che non esiste. Somigliare non c'entra — molte delle illustrazioni più efficaci sono volutamente approssimative, perché la precisione avrebbe distratto.",
     forme: [

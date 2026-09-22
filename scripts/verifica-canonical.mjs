@@ -57,9 +57,7 @@ for await (const file of glob(`${RADICE}/**/page.tsx`)) {
   const sorgente = readFileSync(file, "utf8");
 
   // Tutti i `path:` che finiscono in buildMetadata, sia stringhe che template.
-  const dichiarati = [...sorgente.matchAll(/path:\s*[`"']([^`"']*)/g)].map((m) =>
-    normalizza(m[1])
-  );
+  const dichiarati = [...sorgente.matchAll(/path:\s*[`"']([^`"']*)/g)].map((m) => normalizza(m[1]));
 
   // Una pagina senza metadata propri eredita quelli del layout: legittimo.
   if (dichiarati.length === 0) continue;

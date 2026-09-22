@@ -52,7 +52,10 @@ export default async function ModerazionePage() {
         sottotitolo="Ordinate per urgenza e poi per data di arrivo. Ogni decisione richiede una motivazione: viene comunicata a chi ha segnalato e a chi subisce la rimozione, che può contestarla."
         numeri={[
           { label: "In attesa", valore: coda.length },
-          { label: ["Urgente", "Urgenti"], valore: coda.filter((r) => eUrgente(r.reason as Motivo)).length },
+          {
+            label: ["Urgente", "Urgenti"],
+            valore: coda.filter((r) => eUrgente(r.reason as Motivo)).length,
+          },
           { label: ["Decisa di recente", "Decise di recente"], valore: chiuse.length },
         ]}
       />
@@ -69,10 +72,7 @@ export default async function ModerazionePage() {
             const urgente = eUrgente(r.reason as Motivo);
 
             return (
-              <li
-                key={r.id}
-                className={`card ${urgente ? "border-red-400/40" : ""}`}
-              >
+              <li key={r.id} className={`card ${urgente ? "border-red-400/40" : ""}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="flex flex-wrap items-center gap-2">
@@ -140,8 +140,8 @@ export default async function ModerazionePage() {
         <section className="mt-14">
           <h2 className="text-fluid-lg font-bold">Decise di recente</h2>
           <p className="mt-2 text-fluid-sm text-ink-muted">
-            Restano visibili perché una decisione si possa rivedere, e perché
-            chi modera dopo veda con che criterio si è deciso prima.
+            Restano visibili perché una decisione si possa rivedere, e perché chi modera dopo veda
+            con che criterio si è deciso prima.
           </p>
           <ul className="mt-5 space-y-3">
             {chiuse.map((r) => (
@@ -158,9 +158,7 @@ export default async function ModerazionePage() {
                     {r.decisaDa && ` · ${r.decisaDa.name}`}
                   </span>
                 </p>
-                {r.decisione && (
-                  <p className="mt-2 text-fluid-sm text-ink-muted">{r.decisione}</p>
-                )}
+                {r.decisione && <p className="mt-2 text-fluid-sm text-ink-muted">{r.decisione}</p>}
               </li>
             ))}
           </ul>

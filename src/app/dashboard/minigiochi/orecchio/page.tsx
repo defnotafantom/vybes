@@ -67,7 +67,9 @@ export default async function OrecchioPage() {
           />
         ) : gia ? (
           <div className="card text-center">
-            <p className="text-fluid-xs uppercase tracking-wider text-ink-faint">Hai già giocato oggi</p>
+            <p className="text-fluid-xs uppercase tracking-wider text-ink-faint">
+              Hai già giocato oggi
+            </p>
             <p className="mt-3">
               <span className="text-fluid-3xl font-bold tabular-nums">{gia.punteggio}</span>
               <span className="text-fluid-base text-ink-faint">/{turno.massimo}</span>
@@ -78,9 +80,8 @@ export default async function OrecchioPage() {
             {/* Perché una sola partita al giorno, detto invece che subìto: un
                 divieto senza motivo si legge come un difetto. */}
             <p className="mx-auto mt-5 max-w-md text-fluid-xs text-ink-faint">
-              Il turno di oggi è lo stesso per tutti, quindi rigiocarlo
-              significherebbe rispondere a domande di cui conosci già la
-              soluzione. Domani ce n&apos;è uno nuovo.
+              Il turno di oggi è lo stesso per tutti, quindi rigiocarlo significherebbe rispondere a
+              domande di cui conosci già la soluzione. Domani ce n&apos;è uno nuovo.
             </p>
             <Link href="/artisti" className="btn-ghost mt-6 inline-flex">
               Intanto sfoglia gli artisti
@@ -99,9 +100,8 @@ export default async function OrecchioPage() {
           </h2>
           <p className="mt-3 text-fluid-2xl font-bold tabular-nums">{me?.monete ?? 0}</p>
           <p className="mt-2 text-fluid-xs text-ink-muted">
-            Si spendono in cornici, temi ed emblemi. Non comprano visibilità:
-            la posizione negli elenchi si guadagna in un modo solo, ed è
-            lavorare.
+            Si spendono in cornici, temi ed emblemi. Non comprano visibilità: la posizione negli
+            elenchi si guadagna in un modo solo, ed è lavorare.
           </p>
         </div>
 
@@ -121,8 +121,7 @@ export default async function OrecchioPage() {
 
           {classifica.righe.length === 0 ? (
             <p className="mt-4 text-fluid-sm text-ink-muted">
-              Questa settimana non ha ancora giocato nessuno. Il primo punto
-              vale un primo posto.
+              Questa settimana non ha ancora giocato nessuno. Il primo punto vale un primo posto.
             </p>
           ) : (
             <ol className="mt-4 space-y-3">
@@ -157,8 +156,8 @@ export default async function OrecchioPage() {
           )}
 
           <p className="mt-5 border-t pt-4 text-fluid-xs text-ink-muted">
-            Si azzera ogni lunedì. Una classifica che non riparte la vince chi
-            è arrivato per primo, e dopo un mese nessun altro prova più.
+            Si azzera ogni lunedì. Una classifica che non riparte la vince chi è arrivato per primo,
+            e dopo un mese nessun altro prova più.
           </p>
         </section>
       </aside>

@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { artistJsonLd, eventJsonLd, breadcrumbJsonLd, faqJsonLd, organizationJsonLd } from "@/lib/jsonld";
+import {
+  artistJsonLd,
+  eventJsonLd,
+  breadcrumbJsonLd,
+  faqJsonLd,
+  organizationJsonLd,
+} from "@/lib/jsonld";
 
 beforeEach(() => {
   process.env.NEXT_PUBLIC_SITE_URL = "https://vybeshub.art";

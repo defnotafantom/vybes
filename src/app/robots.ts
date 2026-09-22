@@ -3,7 +3,8 @@ import { siteUrl } from "@/lib/constants";
 
 export default function robots(): MetadataRoute.Robots {
   const base = siteUrl();
-  const isProduction = process.env.VERCEL_ENV === "production" || process.env.SITE_ENV === "production";
+  const isProduction =
+    process.env.VERCEL_ENV === "production" || process.env.SITE_ENV === "production";
 
   // Ambienti di staging non devono finire nell'indice.
   if (!isProduction && process.env.NODE_ENV === "production" && !process.env.NEXT_PUBLIC_SITE_URL) {

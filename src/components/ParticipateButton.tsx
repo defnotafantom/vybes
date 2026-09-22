@@ -49,7 +49,7 @@ export function ParticipateButton({
         {status === "PENDING" && (
           <button
             type="button"
-            className="mt-2 text-xs muted underline"
+            className="muted mt-2 text-xs underline"
             disabled={pending}
             onClick={() =>
               startTransition(async () => {
@@ -86,7 +86,12 @@ export function ParticipateButton({
   return (
     <div>
       {!open ? (
-        <button type="button" className="btn-primary w-full" disabled={disabled} onClick={() => setOpen(true)}>
+        <button
+          type="button"
+          className="btn-primary w-full"
+          disabled={disabled}
+          onClick={() => setOpen(true)}
+        >
           {disabled ? "Candidature chiuse" : "Candidati"}
         </button>
       ) : (
@@ -102,9 +107,18 @@ export function ParticipateButton({
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Racconta perché sei la persona giusta per questo ingaggio."
           />
-          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p role="alert" className="text-sm text-red-600">
+              {error}
+            </p>
+          )}
           <div className="flex gap-2">
-            <button type="button" className="btn-primary flex-1" disabled={pending} onClick={() => startTransition(submit)}>
+            <button
+              type="button"
+              className="btn-primary flex-1"
+              disabled={pending}
+              onClick={() => startTransition(submit)}
+            >
               {pending ? "Invio…" : "Invia candidatura"}
             </button>
             <button type="button" className="btn-ghost" onClick={() => setOpen(false)}>

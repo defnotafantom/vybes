@@ -105,8 +105,17 @@ async function Elenco({ sp }: { sp: Search }) {
       skip: (page - 1) * PER_PAGE,
       take: PER_PAGE,
       select: {
-        slug: true, title: true, description: true, coverImage: true, category: true,
-        startsAt: true, city: true, venueName: true, isPaid: true, feeMin: true, feeMax: true,
+        slug: true,
+        title: true,
+        description: true,
+        coverImage: true,
+        category: true,
+        startsAt: true,
+        city: true,
+        venueName: true,
+        isPaid: true,
+        feeMin: true,
+        feeMax: true,
         durataOre: true,
       },
     }),
@@ -118,7 +127,9 @@ async function Elenco({ sp }: { sp: Search }) {
   ]);
 
   const heading = cat ? EVENT_CATEGORIES[cat].plural : "Ingaggi aperti";
-  const listName = cat ? `${EVENT_CATEGORIES[cat].plural} per artisti` : "Ingaggi aperti per artisti";
+  const listName = cat
+    ? `${EVENT_CATEGORIES[cat].plural} per artisti`
+    : "Ingaggi aperti per artisti";
   const basePath = cat ? `/eventi?categoria=${EVENT_CATEGORIES[cat].slug}` : "/eventi";
 
   return (
@@ -130,9 +141,8 @@ async function Elenco({ sp }: { sp: Search }) {
         highlight="per artisti"
         lead={
           <>
-            Concerti, casting, workshop e contest con compenso dichiarato in
-            chiaro. Ci si candida direttamente all&apos;organizzatore, senza
-            passaggi intermedi.
+            Concerti, casting, workshop e contest con compenso dichiarato in chiaro. Ci si candida
+            direttamente all&apos;organizzatore, senza passaggi intermedi.
           </>
         }
         stats={[
@@ -158,9 +168,7 @@ async function Elenco({ sp }: { sp: Search }) {
                 brevi» è una domanda sensata e le due cose non si escludono. */}
             <Link
               href={
-                cat
-                  ? `/eventi?categoria=${EVENT_CATEGORIES[cat].slug}&brevi=1`
-                  : "/eventi?brevi=1"
+                cat ? `/eventi?categoria=${EVENT_CATEGORIES[cat].slug}&brevi=1` : "/eventi?brevi=1"
               }
               className="filter"
               aria-current={soloBrevi}
@@ -212,9 +220,8 @@ async function Elenco({ sp }: { sp: Search }) {
           <p className="eyebrow">Un altro modo di cercare</p>
           <h2 className="mt-2 text-fluid-xl">Gli ingaggi sulla mappa</h2>
           <p className="mt-3 max-w-2xl text-fluid-sm text-ink-muted">
-            Per un musicista la distanza è un criterio di selezione quanto il
-            compenso. La mappa mostra dove sono le opportunità prima di dire cosa
-            sono.
+            Per un musicista la distanza è un criterio di selezione quanto il compenso. La mappa
+            mostra dove sono le opportunità prima di dire cosa sono.
           </p>
           <Link href="/mappa" className="btn-ghost mt-6 inline-flex">
             <MapIcon className="h-4 w-4" aria-hidden="true" />

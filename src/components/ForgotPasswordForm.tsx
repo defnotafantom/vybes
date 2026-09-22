@@ -11,7 +11,10 @@ export function ForgotPasswordForm() {
   // permettere di scoprire quali indirizzi sono registrati.
   if (sent) {
     return (
-      <p role="status" className="rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700 dark:bg-white/5 dark:text-brand-300">
+      <p
+        role="status"
+        className="rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700 dark:bg-white/5 dark:text-brand-300"
+      >
         Se esiste un account con questo indirizzo, riceverai un&apos;email con il link per
         reimpostare la password. Il link scade tra un&apos;ora. Controlla anche lo spam.
       </p>
@@ -34,7 +37,9 @@ export function ForgotPasswordForm() {
       }}
     >
       <div>
-        <label htmlFor="forgot-email" className="mb-1 block text-sm font-medium">Email</label>
+        <label htmlFor="forgot-email" className="mb-1 block text-sm font-medium">
+          Email
+        </label>
         <input
           id="forgot-email"
           type="email"

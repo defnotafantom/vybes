@@ -25,8 +25,16 @@ export default async function MappaPage() {
     orderBy: { startsAt: "asc" },
     take: 500,
     select: {
-      slug: true, title: true, city: true, latitude: true, longitude: true,
-      startsAt: true, category: true, isPaid: true, feeMin: true, feeMax: true,
+      slug: true,
+      title: true,
+      city: true,
+      latitude: true,
+      longitude: true,
+      startsAt: true,
+      category: true,
+      isPaid: true,
+      feeMin: true,
+      feeMax: true,
     },
   });
 
@@ -55,11 +63,14 @@ export default async function MappaPage() {
     <div className="container-page py-10">
       <Breadcrumbs items={[{ name: "Mappa", path: "/mappa" }]} />
       <h1 className="text-3xl font-bold sm:text-4xl">Mappa degli ingaggi</h1>
-      <p className="mt-3 max-w-2xl muted">
-        {points.length} opportunità aperte in Italia. Filtra per tipo, compenso
-        e distanza direttamente qui: la mappa e la ricerca sono la stessa cosa.
-        Se preferisci scorrere un elenco, c&apos;è l&apos;{" "}
-        <Link href="/eventi" className="text-brand-600 hover:underline">elenco completo degli ingaggi</Link>.
+      <p className="muted mt-3 max-w-2xl">
+        {points.length} opportunità aperte in Italia. Filtra per tipo, compenso e distanza
+        direttamente qui: la mappa e la ricerca sono la stessa cosa. Se preferisci scorrere un
+        elenco, c&apos;è l&apos;{" "}
+        <Link href="/eventi" className="text-brand-600 hover:underline">
+          elenco completo degli ingaggi
+        </Link>
+        .
       </p>
 
       <div className="mt-8">
@@ -70,7 +81,9 @@ export default async function MappaPage() {
           fallback={
             <div className="card">
               <p className="font-medium">La mappa non si è caricata.</p>
-              <p className="mt-1 text-sm muted">Trovi tutti gli ingaggi nell&apos;elenco qui sotto.</p>
+              <p className="muted mt-1 text-sm">
+                Trovi tutti gli ingaggi nell&apos;elenco qui sotto.
+              </p>
             </div>
           }
         >

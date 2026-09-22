@@ -43,10 +43,7 @@ export type Oscurato = {
  * pubblico — e l'identificativo per post e commenti, che non ce l'hanno. È la
  * stessa convenzione usata da `percorsoOggetto`.
  */
-export async function oscura(
-  tipo: TipoSegnalabile,
-  targetId: string
-): Promise<Oscurato | null> {
+export async function oscura(tipo: TipoSegnalabile, targetId: string): Promise<Oscurato | null> {
   switch (tipo) {
     case "USER": {
       const u = await prisma.user.update({

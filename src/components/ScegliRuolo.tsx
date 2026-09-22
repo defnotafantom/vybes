@@ -103,9 +103,7 @@ export function ScegliRuolo({
                   </span>
                   <span className="min-w-0">
                     <span className="block font-semibold">{s.titolo}</span>
-                    <span className="mt-1 block text-fluid-sm text-ink-muted">
-                      {s.descrizione}
-                    </span>
+                    <span className="mt-1 block text-fluid-sm text-ink-muted">{s.descrizione}</span>
                   </span>
                 </button>
               </li>
@@ -115,7 +113,7 @@ export function ScegliRuolo({
       </fieldset>
 
       {errore && (
-        <p role="alert" className="mt-4 text-fluid-sm text-esito-no">
+        <p role="alert" className="text-esito-no mt-4 text-fluid-sm">
           {errore}
         </p>
       )}
@@ -134,7 +132,7 @@ export function ScegliRuolo({
       </button>
 
       {salvato && !onFatto && (
-        <p role="status" className="mt-3 text-fluid-sm text-esito-si">
+        <p role="status" className="text-esito-si mt-3 text-fluid-sm">
           Fatto. Il menu e la tua scheda reputazione si sono già aggiornati.
         </p>
       )}

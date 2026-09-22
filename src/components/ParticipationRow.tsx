@@ -98,10 +98,20 @@ export function ParticipationRow({
 
         {actionable && status === "PENDING" ? (
           <div className="flex gap-2">
-            <button type="button" className="btn-primary" disabled={pending} onClick={() => decide("ACCEPTED")}>
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={pending}
+              onClick={() => decide("ACCEPTED")}
+            >
               Accetta
             </button>
-            <button type="button" className="btn-ghost" disabled={pending} onClick={() => decide("REJECTED")}>
+            <button
+              type="button"
+              className="btn-ghost"
+              disabled={pending}
+              onClick={() => decide("REJECTED")}
+            >
               Rifiuta
             </button>
           </div>
@@ -126,7 +136,11 @@ export function ParticipationRow({
           </div>
         )}
       </div>
-      {error && <p role="alert" className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-2 text-sm text-red-600">
+          {error}
+        </p>
+      )}
     </li>
   );
 }

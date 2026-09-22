@@ -13,9 +13,7 @@
   "typescript.preferences.importModuleSpecifier": "non-relative",
 
   // Tailwind: completamento anche dentro cn() e nelle stringhe di classe
-  "tailwindCSS.experimental.classRegex": [
-    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"]
-  ],
+  "tailwindCSS.experimental.classRegex": [["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"]],
   "files.associations": { "*.css": "tailwindcss" },
   "css.validate": false,
 

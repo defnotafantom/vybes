@@ -8,17 +8,33 @@ export default {
       colors: {
         // Identità: viola. Resta la tinta principale del marchio.
         brand: {
-          50: "#f5f3ff", 100: "#ede9fe", 200: "#ddd6fe", 300: "#c4b5fd",
-          400: "#a78bfa", 500: "#8b5cf6", 600: "#7c3aed", 700: "#6d28d9",
-          800: "#5b21b6", 900: "#4c1d95", 950: "#2e1065",
+          50: "#f5f3ff",
+          100: "#ede9fe",
+          200: "#ddd6fe",
+          300: "#c4b5fd",
+          400: "#a78bfa",
+          500: "#8b5cf6",
+          600: "#7c3aed",
+          700: "#6d28d9",
+          800: "#5b21b6",
+          900: "#4c1d95",
+          950: "#2e1065",
         },
         // Accento: ciano elettrico. Serve al contrasto — su fondo scuro il
         // viola da solo si appiattisce, e senza una seconda tinta ogni
         // elemento interattivo sembra uguale agli altri.
         accent: {
-          50: "#ecfeff", 100: "#cffafe", 200: "#a5f3fc", 300: "#67e8f9",
-          400: "#22d3ee", 500: "#06b6d4", 600: "#0891b2", 700: "#0e7490",
-          800: "#155e75", 900: "#164e63", 950: "#083344",
+          50: "#ecfeff",
+          100: "#cffafe",
+          200: "#a5f3fc",
+          300: "#67e8f9",
+          400: "#22d3ee",
+          500: "#06b6d4",
+          600: "#0891b2",
+          700: "#0e7490",
+          800: "#155e75",
+          900: "#164e63",
+          950: "#083344",
         },
         // Oro: riservato al compenso. Un colore che significa una cosa sola
         // si legge senza doverlo spiegare.
@@ -72,10 +88,22 @@ export default {
         "fluid-base": ["clamp(1rem, 0.96rem + 0.2vw, 1.0625rem)", { lineHeight: "1.65" }],
         "fluid-lg": ["clamp(1.125rem, 1.05rem + 0.4vw, 1.375rem)", { lineHeight: "1.5" }],
         "fluid-xl": ["clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem)", { lineHeight: "1.35" }],
-        "fluid-2xl": ["clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem)", { lineHeight: "1.2", letterSpacing: "-0.02em" }],
-        "fluid-3xl": ["clamp(2.25rem, 1.6rem + 2.8vw, 3.5rem)", { lineHeight: "1.1", letterSpacing: "-0.03em" }],
-        "fluid-4xl": ["clamp(2.75rem, 1.8rem + 4.5vw, 5rem)", { lineHeight: "1.02", letterSpacing: "-0.04em" }],
-        "fluid-hero": ["clamp(3rem, 1.5rem + 6.5vw, 6.5rem)", { lineHeight: "0.98", letterSpacing: "-0.045em" }],
+        "fluid-2xl": [
+          "clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem)",
+          { lineHeight: "1.2", letterSpacing: "-0.02em" },
+        ],
+        "fluid-3xl": [
+          "clamp(2.25rem, 1.6rem + 2.8vw, 3.5rem)",
+          { lineHeight: "1.1", letterSpacing: "-0.03em" },
+        ],
+        "fluid-4xl": [
+          "clamp(2.75rem, 1.8rem + 4.5vw, 5rem)",
+          { lineHeight: "1.02", letterSpacing: "-0.04em" },
+        ],
+        "fluid-hero": [
+          "clamp(3rem, 1.5rem + 6.5vw, 6.5rem)",
+          { lineHeight: "0.98", letterSpacing: "-0.045em" },
+        ],
       },
 
       borderRadius: { xl: "0.875rem", "2xl": "1.125rem", "3xl": "1.5rem", "4xl": "2rem" },

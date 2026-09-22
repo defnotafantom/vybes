@@ -46,9 +46,7 @@ export function Iscrizione({
       </div>
 
       <aside className="border-t pt-10 lg:border-0 lg:pt-2">
-        <p className="mb-6 text-fluid-xs uppercase tracking-wider text-ink-faint">
-          Cosa ottieni
-        </p>
+        <p className="mb-6 text-fluid-xs uppercase tracking-wider text-ink-faint">Cosa ottieni</p>
         <RagioniIscrizione ruolo={role} />
       </aside>
     </div>

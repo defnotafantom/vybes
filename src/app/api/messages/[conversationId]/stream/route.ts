@@ -30,7 +30,10 @@ const HEARTBEAT_MS = 25_000;
  * Il dedup è per id, quindi un messaggio che arriva da entrambe le sorgenti
  * viene inviato una volta sola.
  */
-export async function GET(req: Request, { params }: { params: Promise<{ conversationId: string }> }) {
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ conversationId: string }> }
+) {
   const session = await auth();
   if (!session?.user?.id) return new Response("Non autenticato", { status: 401 });
 

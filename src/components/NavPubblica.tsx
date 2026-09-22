@@ -3,7 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, X, Search, Users, CalendarDays, MapPin, Map as MapIcon, Sparkles, Palette } from "lucide-react";
+import {
+  Menu,
+  X,
+  Search,
+  Users,
+  CalendarDays,
+  MapPin,
+  Map as MapIcon,
+  Sparkles,
+  Palette,
+} from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -89,7 +99,12 @@ export function NavPubblica() {
       </button>
 
       {aperto && (
-        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+        <div
+          className="fixed inset-0 z-50 md:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu"
+        >
           <button
             type="button"
             aria-label="Chiudi il menu"
@@ -135,7 +150,6 @@ export function NavPubblica() {
                 );
               })}
             </ul>
-
           </div>
         </div>
       )}

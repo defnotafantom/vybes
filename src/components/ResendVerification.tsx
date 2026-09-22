@@ -12,7 +12,10 @@ export function ResendVerification({ emailIniziale = "" }: { emailIniziale?: str
 
   if (sent) {
     return (
-      <p role="status" className="mt-6 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700 dark:bg-white/5 dark:text-brand-300">
+      <p
+        role="status"
+        className="mt-6 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700 dark:bg-white/5 dark:text-brand-300"
+      >
         Se l&apos;indirizzo corrisponde a un account non ancora verificato, ti abbiamo inviato un
         nuovo link. Controlla anche lo spam.
       </p>

@@ -106,9 +106,14 @@ export function inVetrina<T>(candidati: T[], posti: number, giorno: number): T[]
  *
  * Zero significa: sei in vetrina adesso.
  */
-export function fraQuantiGiorni(indice: number, totale: number, posti: number, giorno: number): number {
+export function fraQuantiGiorni(
+  indice: number,
+  totale: number,
+  posti: number,
+  giorno: number
+): number {
   if (totale <= posti) return 0;
   const inizio = ((giorno % totale) + totale) % totale;
-  const distanza = ((indice - inizio) % totale + totale) % totale;
+  const distanza = (((indice - inizio) % totale) + totale) % totale;
   return distanza < posti ? 0 : distanza;
 }

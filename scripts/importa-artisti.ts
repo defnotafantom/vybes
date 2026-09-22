@@ -113,7 +113,9 @@ async function main() {
 
   // Le città devono esistere: uno slug sbagliato produce un profilo senza
   // luogo, che è il campo su cui poggia metà della strategia di ricerca.
-  const citta = new Set((await prisma.city.findMany({ select: { slug: true } })).map((c) => c.slug));
+  const citta = new Set(
+    (await prisma.city.findMany({ select: { slug: true } })).map((c) => c.slug)
+  );
 
   let creati = 0;
   let aggiornati = 0;

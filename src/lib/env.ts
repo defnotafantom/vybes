@@ -65,8 +65,7 @@ export type Env = z.infer<typeof schema>;
 function crossChecks(env: Env): { fatal: string[]; warnings: string[] } {
   const fatal: string[] = [];
   const warnings: string[] = [];
-  const isProduction =
-    env.SITE_ENV === "production" || process.env.VERCEL_ENV === "production";
+  const isProduction = env.SITE_ENV === "production" || process.env.VERCEL_ENV === "production";
 
   // FATALE: senza, canonical e sitemap puntano all'URL del deployment e
   // Google indicizza il dominio sbagliato. Nessun errore visibile, danno
@@ -110,13 +109,17 @@ function crossChecks(env: Env): { fatal: string[]; warnings: string[] } {
     );
   }
   if (env.RESEND_API_KEY && !env.EMAIL_FROM) {
-    warnings.push('RESEND_API_KEY è impostata ma manca EMAIL_FROM (es. "Vybes <no-reply@dominio>")');
+    warnings.push(
+      'RESEND_API_KEY è impostata ma manca EMAIL_FROM (es. "Vybes <no-reply@dominio>")'
+    );
   }
   if (Boolean(env.SIGHTENGINE_USER) !== Boolean(env.SIGHTENGINE_SECRET)) {
     warnings.push("SIGHTENGINE_USER e SIGHTENGINE_SECRET vanno impostate entrambe o nessuna");
   }
   if (Boolean(env.UPSTASH_REDIS_REST_URL) !== Boolean(env.UPSTASH_REDIS_REST_TOKEN)) {
-    warnings.push("UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN vanno impostate entrambe o nessuna");
+    warnings.push(
+      "UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN vanno impostate entrambe o nessuna"
+    );
   }
   if (Boolean(env.AUTH_GOOGLE_ID) !== Boolean(env.AUTH_GOOGLE_SECRET)) {
     warnings.push("AUTH_GOOGLE_ID e AUTH_GOOGLE_SECRET vanno impostate entrambe o nessuna");
@@ -172,7 +175,9 @@ export function envReport() {
   const checks = parsed.success ? crossChecks(parsed.data) : { fatal: [], warnings: [] };
   return {
     valid: parsed.success && checks.fatal.length === 0,
-    errors: parsed.success ? [] : parsed.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`),
+    errors: parsed.success
+      ? []
+      : parsed.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`),
     fatal: checks.fatal,
     warnings: checks.warnings,
     features: {

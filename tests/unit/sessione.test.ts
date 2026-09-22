@@ -34,9 +34,9 @@ describe("riconoscimento del cookie di sessione", () => {
   });
 
   it("lo riconosce anche in mezzo agli altri cookie del sito", () => {
-    expect(
-      haSessione(["vybes-theme", `${SICURO}.0`, `${SICURO}.1`, "authjs.csrf-token"])
-    ).toBe(true);
+    expect(haSessione(["vybes-theme", `${SICURO}.0`, `${SICURO}.1`, "authjs.csrf-token"])).toBe(
+      true
+    );
   });
 
   it("non vede una sessione dove non c'è", () => {

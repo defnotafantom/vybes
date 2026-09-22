@@ -40,9 +40,16 @@ export async function generateMetadata({
   params: Promise<{ citta: string; disciplina: string }>;
 }): Promise<Metadata> {
   const { citta, disciplina } = await params;
-  const [city, d] = [await prisma.city.findUnique({ where: { slug: citta } }), disciplineBySlug(disciplina)];
+  const [city, d] = [
+    await prisma.city.findUnique({ where: { slug: citta } }),
+    disciplineBySlug(disciplina),
+  ];
   if (!city || !d) {
-    return buildMetadata({ title: "Pagina non trovata", path: `/citta/${citta}/artisti/${disciplina}`, noindex: true });
+    return buildMetadata({
+      title: "Pagina non trovata",
+      path: `/citta/${citta}/artisti/${disciplina}`,
+      noindex: true,
+    });
   }
 
   // Una pagina senza profili resta raggiungibile ma non va nell'indice:
@@ -87,8 +94,14 @@ export default async function CityDisciplinePage({
     orderBy: [{ reputation: "desc" }, { updatedAt: "desc" }],
     take: 48,
     select: {
-      slug: true, name: true, headline: true, image: true, city: true,
-      disciplines: true, reputation: true, isVerified: true,
+      slug: true,
+      name: true,
+      headline: true,
+      image: true,
+      city: true,
+      disciplines: true,
+      reputation: true,
+      isVerified: true,
     },
   });
 
@@ -108,7 +121,7 @@ export default async function CityDisciplinePage({
       <h1 className="text-3xl font-bold sm:text-4xl">
         {d.plural} a {city.name}
       </h1>
-      <p className="mt-4 max-w-3xl leading-relaxed muted">
+      <p className="muted mt-4 max-w-3xl leading-relaxed">
         {artists.length > 0
           ? `${artists.length} ${d.plural.toLowerCase()} con profilo pubblico a ${city.name} e dintorni. `
           : `Stiamo costruendo l'elenco dei ${d.plural.toLowerCase()} di ${city.name}. `}
@@ -135,7 +148,11 @@ export default async function CityDisciplinePage({
           />
           <div className="stagger mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {artists.map((a, i) => (
-              <ArtistCard key={a.slug} priority={i < 3} artist={{ ...a, disciplines: fromCsv(a.disciplines) }} />
+              <ArtistCard
+                key={a.slug}
+                priority={i < 3}
+                artist={{ ...a, disciplines: fromCsv(a.disciplines) }}
+              />
             ))}
           </div>
         </>

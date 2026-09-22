@@ -45,7 +45,9 @@ export async function attenzioneDi(userId: string, moderatore: boolean): Promise
       select: {
         lastReadAt: true,
         conversation: {
-          select: { messages: { select: { createdAt: true }, orderBy: { createdAt: "desc" }, take: 1 } },
+          select: {
+            messages: { select: { createdAt: true }, orderBy: { createdAt: "desc" }, take: 1 },
+          },
         },
       },
     }),

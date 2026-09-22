@@ -37,13 +37,17 @@ export function DeleteEventButton({
           ? `Ci sono ${activeParticipations} candidature attive.`
           : "Nessuna candidatura ricevuta."}
       </p>
-      <p className="mt-2 text-sm muted">
+      <p className="muted mt-2 text-sm">
         {willCancel
           ? "L'ingaggio verrà marcato come annullato e tutti i candidati riceveranno una notifica. La pagina resterà raggiungibile ma uscirà dai risultati di ricerca."
           : "L'ingaggio verrà eliminato definitivamente. L'operazione non è reversibile."}
       </p>
 
-      {error && <p role="alert" className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-2 text-sm text-red-600">
+          {error}
+        </p>
+      )}
 
       <div className="mt-4 flex gap-2">
         <button

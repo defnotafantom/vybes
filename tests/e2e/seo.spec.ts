@@ -51,7 +51,9 @@ test.describe("infrastruttura SEO", () => {
     expect(description!.length).toBeLessThanOrEqual(160);
 
     const blocks = await page.locator('script[type="application/ld+json"]').allTextContents();
-    const types = blocks.flatMap((b) => JSON.stringify(JSON.parse(b)).match(/"@type":"[^"]+"/g) ?? []);
+    const types = blocks.flatMap(
+      (b) => JSON.stringify(JSON.parse(b)).match(/"@type":"[^"]+"/g) ?? []
+    );
     expect(types.join()).toContain("Organization");
     expect(types.join()).toContain("FAQPage");
 

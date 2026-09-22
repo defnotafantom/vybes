@@ -110,11 +110,6 @@ export function OndeWebGL({ className }: { className?: string }) {
   }, []);
 
   return (
-    <canvas
-      ref={tela}
-      aria-hidden="true"
-      className={className}
-      style={{ pointerEvents: "none" }}
-    />
+    <canvas ref={tela} aria-hidden="true" className={className} style={{ pointerEvents: "none" }} />
   );
 }

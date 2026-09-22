@@ -73,7 +73,10 @@ describe("ogni domanda si può vincere", () => {
     // Il difetto classico: memorizzare l'indice della risposta e poi mescolare
     // le opzioni. Nessun tipo se ne accorge, e la partita diventa invincibile.
     for (const d of turno) {
-      expect(d.opzioni.map((o) => o.slug), d.lavoro.slug).toContain(d.risposta);
+      expect(
+        d.opzioni.map((o) => o.slug),
+        d.lavoro.slug
+      ).toContain(d.risposta);
     }
   });
 
@@ -154,7 +157,7 @@ describe("mescola", () => {
   it("non perde né duplica elementi", () => {
     const dentro = Array.from({ length: 30 }, (_, i) => i);
     let s = 1;
-    const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+    const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
     const fuori = mescola(dentro, rnd);
     expect(fuori.slice().sort((a, b) => a - b)).toEqual(dentro);
   });
@@ -202,7 +205,10 @@ describe("punteggio", () => {
   it("il massimo dichiarato è raggiungibile e non superabile", () => {
     const max = punteggioMassimo();
     expect(punteggio(Array.from({ length: DOMANDE_PER_TURNO }, () => true))).toBe(max);
-    for (const esiti of [[true, false, true, true, true], [false, true, true, true, true]]) {
+    for (const esiti of [
+      [true, false, true, true, true],
+      [false, true, true, true, true],
+    ]) {
       expect(punteggio(esiti)).toBeLessThan(max);
     }
   });

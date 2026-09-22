@@ -28,9 +28,11 @@ export default async function RegisterPage({
           trovava un modulo che non gli ricordava perché era interessato. */}
       <div className="mx-auto w-full max-w-md lg:max-w-4xl">
         <h1 className="text-2xl font-bold">Crea il tuo account</h1>
-        <p className="mt-2 text-sm muted">
+        <p className="muted mt-2 text-sm">
           Hai già un account?{" "}
-          <Link href="/accedi" className="text-brand-600 hover:underline">Accedi</Link>
+          <Link href="/accedi" className="text-brand-600 hover:underline">
+            Accedi
+          </Link>
         </p>
         <div className="mt-8">
           <Iscrizione defaultRole={role} googleEnabled={googleEnabled} />

@@ -79,8 +79,8 @@ export function Ruota({ stato, premioDiOggi }: { stato: Stato; premioDiOggi: str
             La ruota di oggi
           </h2>
           <p className="mt-1 text-fluid-sm text-ink-muted">
-            Un giro al giorno. Nessuno spicchio è vuoto: il minimo è dieci
-            monete, il massimo duecento.
+            Un giro al giorno. Nessuno spicchio è vuoto: il minimo è dieci monete, il massimo
+            duecento.
           </p>
         </div>
       </div>
@@ -114,9 +114,7 @@ export function Ruota({ stato, premioDiOggi }: { stato: Stato; premioDiOggi: str
             </div>
           ) : stato === "pronta" ? (
             <div>
-              <p className="text-fluid-sm text-ink-muted">
-                La ruota è carica. Un giro, e vediamo.
-              </p>
+              <p className="text-fluid-sm text-ink-muted">La ruota è carica. Un giro, e vediamo.</p>
               <button
                 type="button"
                 onClick={tira}
@@ -137,8 +135,8 @@ export function Ruota({ stato, premioDiOggi }: { stato: Stato; premioDiOggi: str
                 Si apre dopo che hai fatto qualcosa, oggi
               </p>
               <p className="mt-2 text-fluid-xs text-ink-muted">
-                Non è un capriccio: una ruota che gira solo per essere entrati
-                premia chi ha tempo. Basta una di queste.
+                Non è un capriccio: una ruota che gira solo per essere entrati premia chi ha tempo.
+                Basta una di queste.
               </p>
               <ul className="mt-4 space-y-2">
                 {COME_SI_APRE.map((v) => (
@@ -156,7 +154,7 @@ export function Ruota({ stato, premioDiOggi }: { stato: Stato; premioDiOggi: str
           )}
 
           {errore && (
-            <p role="alert" className="mt-4 text-fluid-sm text-esito-no">
+            <p role="alert" className="text-esito-no mt-4 text-fluid-sm">
               {errore}
             </p>
           )}

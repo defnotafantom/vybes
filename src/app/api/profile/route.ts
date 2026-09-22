@@ -22,7 +22,8 @@ export async function PATCH(req: Request) {
         where: { slug: data.citySlug },
         select: { name: true, region: true, latitude: true, longitude: true },
       });
-      if (!city) return fail("Città non riconosciuta", 422, { citySlug: "Scegli una città dall'elenco" });
+      if (!city)
+        return fail("Città non riconosciuta", 422, { citySlug: "Scegli una città dall'elenco" });
     }
 
     const user = await prisma.user.update({
@@ -117,11 +118,9 @@ export async function DELETE(req: Request) {
       : data.conferma.trim().toLowerCase() === me.name.trim().toLowerCase();
 
     if (!valida) {
-      return fail(
-        me.password ? "Password errata" : "Il nome digitato non corrisponde",
-        403,
-        { conferma: "Non corrisponde" }
-      );
+      return fail(me.password ? "Password errata" : "Il nome digitato non corrisponde", 403, {
+        conferma: "Non corrisponde",
+      });
     }
 
     await prisma.user.delete({ where: { id: me.id } });

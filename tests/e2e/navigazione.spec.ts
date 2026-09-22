@@ -19,7 +19,10 @@ test.describe("navigazione pubblica", () => {
     test.skip(!daComputer(viewport?.width), "sotto i 768px la navigazione sta nel menu");
 
     await page.goto("/");
-    await page.getByRole("navigation", { name: /principale/i }).getByRole("link", { name: "Artisti" }).click();
+    await page
+      .getByRole("navigation", { name: /principale/i })
+      .getByRole("link", { name: "Artisti" })
+      .click();
     await expect(page).toHaveURL(/\/artisti/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
@@ -39,7 +42,9 @@ test.describe("navigazione pubblica", () => {
 
   test("la mappa mostra comunque l'elenco testuale", async ({ page }) => {
     await page.goto("/mappa");
-    await expect(page.getByRole("heading", { name: /tutti gli ingaggi sulla mappa/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /tutti gli ingaggi sulla mappa/i })
+    ).toBeVisible();
   });
 
   test("la pagina è utilizzabile da tastiera", async ({ page, browserName }) => {
@@ -47,7 +52,10 @@ test.describe("navigazione pubblica", () => {
     // non abbia attivato «Usa Tab per evidenziare gli elementi» — è una
     // preferenza di sistema, non un comportamento della pagina. Verificare lì
     // il salto al contenuto misura l'impostazione del browser, non il sito.
-    test.skip(browserName === "webkit", "su WebKit il Tab sui link dipende da una preferenza di sistema");
+    test.skip(
+      browserName === "webkit",
+      "su WebKit il Tab sui link dipende da una preferenza di sistema"
+    );
 
     await page.goto("/");
     await page.keyboard.press("Tab");

@@ -4,7 +4,14 @@ import { useRef, useState, useTransition } from "react";
 import { FileUpload } from "@/components/FileUpload";
 import { ArtistPicker, type PickedArtist } from "@/components/ArtistPicker";
 
-const SUGGESTED_TAGS = ["live", "studio", "collaborazione", "nuovo-brano", "cerco-band", "backstage"];
+const SUGGESTED_TAGS = [
+  "live",
+  "studio",
+  "collaborazione",
+  "nuovo-brano",
+  "cerco-band",
+  "backstage",
+];
 
 export function NewPostForm({ onCreated }: { onCreated: () => void }) {
   const [content, setContent] = useState("");
@@ -78,7 +85,9 @@ export function NewPostForm({ onCreated }: { onCreated: () => void }) {
                 aria-pressed={active}
                 className={active ? "btn-primary px-3 py-1 text-xs" : "btn-ghost px-3 py-1 text-xs"}
                 onClick={() =>
-                  setTags((prev) => (active ? prev.filter((x) => x !== t) : prev.length < 6 ? [...prev, t] : prev))
+                  setTags((prev) =>
+                    active ? prev.filter((x) => x !== t) : prev.length < 6 ? [...prev, t] : prev
+                  )
                 }
               >
                 #{t}
@@ -91,9 +100,13 @@ export function NewPostForm({ onCreated }: { onCreated: () => void }) {
       <ArtistPicker selected={collaborators} onChange={setCollaborators} />
 
       <FileUpload folder="post" onUploaded={(r) => setMedia({ url: r.url, kind: r.kind })} />
-      {media && <p className="text-sm muted">Allegato pronto: {media.url.split("/").pop()}</p>}
+      {media && <p className="muted text-sm">Allegato pronto: {media.url.split("/").pop()}</p>}
 
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      )}
 
       <button type="submit" className="btn-primary" disabled={pending || !content.trim()}>
         {pending ? "Pubblicazione…" : "Pubblica"}

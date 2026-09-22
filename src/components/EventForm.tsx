@@ -12,9 +12,21 @@ type City = { slug: string; name: string; latitude: number; longitude: number };
 
 /** I campi che hanno un posto in pagina dove mostrare il proprio errore. */
 const CAMPI_CON_ERRORE = [
-  "title", "category", "description", "startsAt", "endsAt", "citySlug",
-  "latitude", "longitude", "venueName", "address", "feeMin", "feeMax",
-  "capacity", "coverImage", "durataOre",
+  "title",
+  "category",
+  "description",
+  "startsAt",
+  "endsAt",
+  "citySlug",
+  "latitude",
+  "longitude",
+  "venueName",
+  "address",
+  "feeMin",
+  "feeMax",
+  "capacity",
+  "coverImage",
+  "durataOre",
 ] as const;
 
 /**
@@ -138,23 +150,36 @@ export function EventForm({ cities, initial }: { cities: City[]; initial?: Event
   return (
     <form onSubmit={submit} className="space-y-5" noValidate>
       <div>
-        <label htmlFor="title" className="mb-1 block text-sm font-medium">Titolo</label>
+        <label htmlFor="title" className="mb-1 block text-sm font-medium">
+          Titolo
+        </label>
         <input id="title" name="title" className="input" required defaultValue={initial?.title} />
         <Errore msg={errors.title} />
       </div>
 
       <div>
-        <label htmlFor="category" className="mb-1 block text-sm font-medium">Categoria</label>
-        <select id="category" name="category" className="input" defaultValue={initial?.category ?? "LIVE"}>
+        <label htmlFor="category" className="mb-1 block text-sm font-medium">
+          Categoria
+        </label>
+        <select
+          id="category"
+          name="category"
+          className="input"
+          defaultValue={initial?.category ?? "LIVE"}
+        >
           {Object.entries(EVENT_CATEGORIES).map(([key, v]) => (
-            <option key={key} value={key}>{v.label}</option>
+            <option key={key} value={key}>
+              {v.label}
+            </option>
           ))}
         </select>
         <Errore msg={errors.category} />
       </div>
 
       <div>
-        <label htmlFor="description" className="mb-1 block text-sm font-medium">Descrizione</label>
+        <label htmlFor="description" className="mb-1 block text-sm font-medium">
+          Descrizione
+        </label>
         <textarea
           id="description"
           name="description"
@@ -166,7 +191,7 @@ export function EventForm({ cities, initial }: { cities: City[]; initial?: Event
         />
         {/* Il minimo era dichiarato e non contato, come per la biografia: si
             scopriva di non averlo raggiunto solo premendo «Pubblica». */}
-        <p id="desc-help" aria-live="polite" className="mt-1 text-xs muted">
+        <p id="desc-help" aria-live="polite" className="muted mt-1 text-xs">
           {mancanti > 0
             ? `Ancora ${mancanti} caratteri: sotto i ${MIN_DESCRIZIONE_INGAGGIO} l'annuncio non si pubblica. Questo testo diventa la descrizione nei risultati di ricerca.`
             : "Questo testo diventa la descrizione nei risultati di ricerca: le prime due righe sono quelle che si leggono su Google."}
@@ -176,7 +201,9 @@ export function EventForm({ cities, initial }: { cities: City[]; initial?: Event
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="startsAt" className="mb-1 block text-sm font-medium">Inizio</label>
+          <label htmlFor="startsAt" className="mb-1 block text-sm font-medium">
+            Inizio
+          </label>
           <input
             id="startsAt"
             name="startsAt"
@@ -192,18 +219,36 @@ export function EventForm({ cities, initial }: { cities: City[]; initial?: Event
           <Errore msg={errors.startsAt} />
         </div>
         <div>
-          <label htmlFor="endsAt" className="mb-1 block text-sm font-medium">Fine <span className="muted">(facoltativa)</span></label>
-          <input id="endsAt" name="endsAt" type="datetime-local" className="input" defaultValue={initial?.endsAt} />
+          <label htmlFor="endsAt" className="mb-1 block text-sm font-medium">
+            Fine <span className="muted">(facoltativa)</span>
+          </label>
+          <input
+            id="endsAt"
+            name="endsAt"
+            type="datetime-local"
+            className="input"
+            defaultValue={initial?.endsAt}
+          />
           <Errore msg={errors.endsAt} />
         </div>
       </div>
 
       <div>
-        <label htmlFor="citySlug" className="mb-1 block text-sm font-medium">Città</label>
-        <select id="citySlug" className="input" value={citySlug} onChange={(e) => onCityChange(e.target.value)} required>
+        <label htmlFor="citySlug" className="mb-1 block text-sm font-medium">
+          Città
+        </label>
+        <select
+          id="citySlug"
+          className="input"
+          value={citySlug}
+          onChange={(e) => onCityChange(e.target.value)}
+          required
+        >
           <option value="">Seleziona…</option>
           {cities.map((c) => (
-            <option key={c.slug} value={c.slug}>{c.name}</option>
+            <option key={c.slug} value={c.slug}>
+              {c.name}
+            </option>
           ))}
         </select>
         <Errore msg={errors.citySlug} />
@@ -224,7 +269,9 @@ export function EventForm({ cities, initial }: { cities: City[]; initial?: Event
       {coords && (
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="lat" className="mb-1 block text-xs muted">Latitudine</label>
+            <label htmlFor="lat" className="muted mb-1 block text-xs">
+              Latitudine
+            </label>
             <input
               id="lat"
               type="number"
@@ -236,7 +283,9 @@ export function EventForm({ cities, initial }: { cities: City[]; initial?: Event
             <Errore msg={errors.latitude} />
           </div>
           <div>
-            <label htmlFor="lng" className="mb-1 block text-xs muted">Longitudine</label>
+            <label htmlFor="lng" className="muted mb-1 block text-xs">
+              Longitudine
+            </label>
             <input
               id="lng"
               type="number"
@@ -252,13 +301,28 @@ export function EventForm({ cities, initial }: { cities: City[]; initial?: Event
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="venueName" className="mb-1 block text-sm font-medium">Locale</label>
-          <input id="venueName" name="venueName" className="input" defaultValue={initial?.venueName} />
+          <label htmlFor="venueName" className="mb-1 block text-sm font-medium">
+            Locale
+          </label>
+          <input
+            id="venueName"
+            name="venueName"
+            className="input"
+            defaultValue={initial?.venueName}
+          />
           <Errore msg={errors.venueName} />
         </div>
         <div>
-          <label htmlFor="address" className="mb-1 block text-sm font-medium">Indirizzo</label>
-          <input id="address" name="address" className="input" value={address} onChange={(e) => setAddress(e.target.value)} />
+          <label htmlFor="address" className="mb-1 block text-sm font-medium">
+            Indirizzo
+          </label>
+          <input
+            id="address"
+            name="address"
+            className="input"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+          />
           <Errore msg={errors.address} />
         </div>
       </div>
@@ -276,13 +340,31 @@ export function EventForm({ cities, initial }: { cities: City[]; initial?: Event
         {isPaid && (
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="feeMin" className="mb-1 block text-xs muted">Compenso minimo (€)</label>
-              <input id="feeMin" name="feeMin" type="number" min={0} className="input" defaultValue={initial?.feeMin ?? ""} />
+              <label htmlFor="feeMin" className="muted mb-1 block text-xs">
+                Compenso minimo (€)
+              </label>
+              <input
+                id="feeMin"
+                name="feeMin"
+                type="number"
+                min={0}
+                className="input"
+                defaultValue={initial?.feeMin ?? ""}
+              />
               <Errore msg={errors.feeMin} />
             </div>
             <div>
-              <label htmlFor="feeMax" className="mb-1 block text-xs muted">Compenso massimo (€)</label>
-              <input id="feeMax" name="feeMax" type="number" min={0} className="input" defaultValue={initial?.feeMax ?? ""} />
+              <label htmlFor="feeMax" className="muted mb-1 block text-xs">
+                Compenso massimo (€)
+              </label>
+              <input
+                id="feeMax"
+                name="feeMax"
+                type="number"
+                min={0}
+                className="input"
+                defaultValue={initial?.feeMax ?? ""}
+              />
               <Errore msg={errors.feeMax} />
             </div>
           </div>
@@ -316,27 +398,41 @@ export function EventForm({ cities, initial }: { cities: City[]; initial?: Event
           defaultValue={initial?.durataOre ?? ""}
           aria-describedby="durata-aiuto"
         />
-        <p id="durata-aiuto" className="mt-1.5 text-xs muted">
-          Dichiararla fa comparire l&apos;annuncio fra gli ingaggi brevi, dove
-          cerca chi ha due ore libere e sta vicino.
+        <p id="durata-aiuto" className="muted mt-1.5 text-xs">
+          Dichiararla fa comparire l&apos;annuncio fra gli ingaggi brevi, dove cerca chi ha due ore
+          libere e sta vicino.
         </p>
         <Errore msg={errors.durataOre} />
       </div>
 
       <div>
-        <label htmlFor="capacity" className="mb-1 block text-sm font-medium">Posti disponibili</label>
-        <input id="capacity" name="capacity" type="number" min={1} className="input" defaultValue={initial?.capacity ?? ""} />
+        <label htmlFor="capacity" className="mb-1 block text-sm font-medium">
+          Posti disponibili
+        </label>
+        <input
+          id="capacity"
+          name="capacity"
+          type="number"
+          min={1}
+          className="input"
+          defaultValue={initial?.capacity ?? ""}
+        />
         {/* Il campo si chiamava «Posti disponibili» e basta, che su un
             annuncio di lavoro si legge come «quanti spettatori entrano».
             Sono gli artisti che si cercano. */}
-        <p className="mt-1 text-xs muted">
+        <p className="muted mt-1 text-xs">
           Quanti artisti cerchi. Lascialo vuoto se non hai un numero fisso.
         </p>
         <Errore msg={errors.capacity} />
       </div>
 
-      <FileUpload folder="evento" accept="image/*" label="Carica immagine di copertina" onUploaded={(f) => setCover(f.url)} />
-      {cover && <p className="text-sm muted">Copertina pronta.</p>}
+      <FileUpload
+        folder="evento"
+        accept="image/*"
+        label="Carica immagine di copertina"
+        onUploaded={(f) => setCover(f.url)}
+      />
+      {cover && <p className="muted text-sm">Copertina pronta.</p>}
       <Errore msg={errors.coverImage} />
 
       <ErroriOrfani errori={errors} mostrati={CAMPI_CON_ERRORE} />

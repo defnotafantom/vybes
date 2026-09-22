@@ -59,7 +59,9 @@ function templateDi(sorgente, nome) {
 /** Le uniform dichiarate in un pezzo di GLSL, commenti esclusi. */
 function dichiarate(glsl) {
   const pulito = glsl.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
-  return new Set([...pulito.matchAll(/\buniform\s+\w+\s+(\w+)\s*(?:\[[^\]]*\])?\s*;/g)].map((m) => m[1]));
+  return new Set(
+    [...pulito.matchAll(/\buniform\s+\w+\s+(\w+)\s*(?:\[[^\]]*\])?\s*;/g)].map((m) => m[1])
+  );
 }
 
 /** L'elenco di stringhe di un array letterale in TypeScript. */

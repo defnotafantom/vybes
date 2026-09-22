@@ -113,12 +113,47 @@ export type Cosmetico = {
  * cui qualcuno tornerà a guardarlo.
  */
 export const COSMETICI: readonly Cosmetico[] = [
-  { id: "cornice-brace", nome: "Brace", slot: "cornice", rarita: "comune", prezzo: 120, reso: "#f59e0b" },
-  { id: "cornice-onda", nome: "Onda", slot: "cornice", rarita: "comune", prezzo: 120, reso: "#06b6d4" },
-  { id: "cornice-vetro", nome: "Vetro", slot: "cornice", rarita: "raro", prezzo: 400, reso: "#a78bfa" },
-  { id: "tema-notturno", nome: "Notturno", slot: "tema", rarita: "raro", prezzo: 450, reso: "#1e1b4b" },
+  {
+    id: "cornice-brace",
+    nome: "Brace",
+    slot: "cornice",
+    rarita: "comune",
+    prezzo: 120,
+    reso: "#f59e0b",
+  },
+  {
+    id: "cornice-onda",
+    nome: "Onda",
+    slot: "cornice",
+    rarita: "comune",
+    prezzo: 120,
+    reso: "#06b6d4",
+  },
+  {
+    id: "cornice-vetro",
+    nome: "Vetro",
+    slot: "cornice",
+    rarita: "raro",
+    prezzo: 400,
+    reso: "#a78bfa",
+  },
+  {
+    id: "tema-notturno",
+    nome: "Notturno",
+    slot: "tema",
+    rarita: "raro",
+    prezzo: 450,
+    reso: "#1e1b4b",
+  },
   { id: "tema-neon", nome: "Neon", slot: "tema", rarita: "epico", prezzo: 900, reso: "#ec4899" },
-  { id: "sfondo-anfiteatro", nome: "Anfiteatro", slot: "sfondo", rarita: "epico", prezzo: 1100, reso: "anfiteatro" },
+  {
+    id: "sfondo-anfiteatro",
+    nome: "Anfiteatro",
+    slot: "sfondo",
+    rarita: "epico",
+    prezzo: 1100,
+    reso: "anfiteatro",
+  },
   {
     id: "titolo-prima-ora",
     nome: "Della prima ora",
@@ -165,7 +200,10 @@ export function prezzoDi(id: string): { ok: true; prezzo: number } | { ok: false
   const c = PER_ID.get(id);
   if (!c) return { ok: false, motivo: "Questo oggetto non esiste." };
   if (c.prezzo === null) {
-    return { ok: false, motivo: c.sblocco ? `Non è in vendita. ${c.sblocco}` : "Non è in vendita." };
+    return {
+      ok: false,
+      motivo: c.sblocco ? `Non è in vendita. ${c.sblocco}` : "Non è in vendita.",
+    };
   }
   return { ok: true, prezzo: c.prezzo };
 }

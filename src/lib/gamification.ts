@@ -20,7 +20,10 @@ export { xpForLevel, levelFromXp, levelProgress } from "@/lib/levels";
  * nell'area privata e non decide niente per gli altri.
  */
 export async function grantXp(userId: string, amount: number) {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { experience: true, level: true } });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { experience: true, level: true },
+  });
   if (!user) return;
 
   const experience = user.experience + amount;
@@ -250,7 +253,14 @@ export async function riscuotiQuest(userId: string, questKey: string): Promise<E
 export async function syncProfileQuest(userId: string) {
   const u = await prisma.user.findUnique({
     where: { id: userId },
-    select: { role: true, bio: true, headline: true, image: true, citySlug: true, disciplines: true },
+    select: {
+      role: true,
+      bio: true,
+      headline: true,
+      image: true,
+      citySlug: true,
+      disciplines: true,
+    },
   });
   if (!u) return;
 

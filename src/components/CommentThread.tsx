@@ -70,7 +70,7 @@ export function CommentThread({
     <div className="w-full">
       <button
         type="button"
-        className="inline-flex items-center gap-1.5 muted transition-colors hover:text-brand-600"
+        className="muted inline-flex items-center gap-1.5 transition-colors hover:text-brand-600"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
@@ -80,19 +80,22 @@ export function CommentThread({
 
       {open && (
         <div className="mt-4 space-y-4 border-t pt-4" style={{ borderColor: "rgb(var(--border))" }}>
-          {comments === null && <p className="text-sm muted">Caricamento…</p>}
+          {comments === null && <p className="muted text-sm">Caricamento…</p>}
 
-          {comments?.length === 0 && <p className="text-sm muted">Ancora nessun commento.</p>}
+          {comments?.length === 0 && <p className="muted text-sm">Ancora nessun commento.</p>}
 
           {comments?.map((c) => (
             <article key={c.id} className="flex gap-3">
-<Avatar name={c.author.name} src={c.author.image} size="xs" />
+              <Avatar name={c.author.name} src={c.author.image} size="xs" />
               <div className="min-w-0">
                 <p className="text-sm">
-                  <Link href={`/artisti/${c.author.slug}`} className="font-medium hover:text-brand-600">
+                  <Link
+                    href={`/artisti/${c.author.slug}`}
+                    className="font-medium hover:text-brand-600"
+                  >
                     {c.author.name}
                   </Link>{" "}
-                  <time dateTime={c.createdAt} className="text-xs muted">
+                  <time dateTime={c.createdAt} className="muted text-xs">
                     {quandoRelativo(c.createdAt)}
                   </time>
                 </p>
@@ -104,7 +107,9 @@ export function CommentThread({
           ))}
 
           <form onSubmit={submit} className="flex gap-2">
-            <label htmlFor={`comment-${postId}`} className="sr-only">Scrivi un commento</label>
+            <label htmlFor={`comment-${postId}`} className="sr-only">
+              Scrivi un commento
+            </label>
             <input
               id={`comment-${postId}`}
               className="input"
@@ -118,7 +123,11 @@ export function CommentThread({
             </button>
           </form>
 
-          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p role="alert" className="text-sm text-red-600">
+              {error}
+            </p>
+          )}
         </div>
       )}
     </div>

@@ -91,8 +91,8 @@ export function DecisioneForm({ id, stato }: { id: string; stato: string }) {
         <span>
           Rendi il contenuto non visibile accogliendo la segnalazione
           <span className="block text-ink-faint">
-            Non viene cancellato: resta all&apos;autore, che riceve la
-            motivazione e può contestarla.
+            Non viene cancellato: resta all&apos;autore, che riceve la motivazione e può
+            contestarla.
           </span>
         </span>
       </label>

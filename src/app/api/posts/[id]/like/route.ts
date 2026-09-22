@@ -9,7 +9,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (g.error) return g.error;
     const { id } = await params;
 
-    const post = await prisma.post.findUnique({ where: { id }, select: { id: true, authorId: true } });
+    const post = await prisma.post.findUnique({
+      where: { id },
+      select: { id: true, authorId: true },
+    });
     if (!post) return fail("Post non trovato", 404);
 
     const existing = await prisma.like.findUnique({

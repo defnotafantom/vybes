@@ -31,8 +31,7 @@ export async function issueToken(userId: string, type: TokenType): Promise<strin
 }
 
 export type TokenCheck =
-  | { ok: true; userId: string; tokenId: string }
-  | { ok: false; reason: "invalid" | "expired" };
+  { ok: true; userId: string; tokenId: string } | { ok: false; reason: "invalid" | "expired" };
 
 export async function verifyToken(raw: string, type: TokenType): Promise<TokenCheck> {
   if (!raw || raw.length < 10) return { ok: false, reason: "invalid" };

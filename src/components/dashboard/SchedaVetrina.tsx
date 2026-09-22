@@ -45,10 +45,9 @@ export function SchedaVetrina({
           La vetrina in home
         </h2>
         <p className="mt-2 text-fluid-sm text-ink-muted">
-          Ogni giorno sei profili compaiono in prima pagina, a turno. Per
-          entrare nella rotazione serve il profilo pubblico e l&apos;indirizzo
-          email confermato — le stesse due cose che ti rendono trovabile su
-          Google.
+          Ogni giorno sei profili compaiono in prima pagina, a turno. Per entrare nella rotazione
+          serve il profilo pubblico e l&apos;indirizzo email confermato — le stesse due cose che ti
+          rendono trovabile su Google.
         </p>
         <Link href="/dashboard/profilo" className="btn-ghost mt-4 inline-flex">
           Completa il profilo
@@ -70,8 +69,7 @@ export function SchedaVetrina({
             Oggi ci sei tu.
           </p>
           <p className="mt-1 text-fluid-sm text-ink-muted">
-            Il tuo profilo è in prima pagina. È il giorno giusto per avere il
-            portfolio in ordine.
+            Il tuo profilo è in prima pagina. È il giorno giusto per avere il portfolio in ordine.
           </p>
           <Link href="/" className="btn-ghost mt-4 inline-flex">
             Vedi la home
@@ -85,8 +83,8 @@ export function SchedaVetrina({
           <p className="mt-1 text-fluid-sm text-ink-muted">
             {/* La scala serve: «fra 40 giorni» senza sapere che siete in
                 duecento sembra un rifiuto, e sapendolo diventa una fila. */}
-            Sei in rotazione insieme ad altri {quanti - 1} profili: il turno
-            arriva a tutti, un giorno alla volta.
+            Sei in rotazione insieme ad altri {quanti - 1} profili: il turno arriva a tutti, un
+            giorno alla volta.
           </p>
         </>
       )}

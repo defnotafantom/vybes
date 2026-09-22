@@ -195,7 +195,13 @@ test.describe("la registrazione finisce da qualche parte", () => {
       const guarda = async () => {
         const url = page.url();
         if (/\/dashboard/.test(url)) return risolvi("dentro");
-        if (await page.getByText(/conferma l'email|controlla/i).first().isVisible().catch(() => false))
+        if (
+          await page
+            .getByText(/conferma l'email|controlla/i)
+            .first()
+            .isVisible()
+            .catch(() => false)
+        )
           return risolvi("verifica");
         if (/\/accedi/.test(url)) return risolvi("rimbalzato-al-login");
         // Il limitatore è un esito **osservabile**, e va nominato. Senza
@@ -204,7 +210,13 @@ test.describe("la registrazione finisce da qualche parte", () => {
         // parte»: una diagnosi falsa, che manda a cercare un difetto
         // inesistente nel percorso di iscrizione. Un'attesa che enumera gli
         // esiti deve enumerarli tutti, compresi quelli che non le piacciono.
-        if (await page.getByText(/troppe richieste/i).first().isVisible().catch(() => false))
+        if (
+          await page
+            .getByText(/troppe richieste/i)
+            .first()
+            .isVisible()
+            .catch(() => false)
+        )
           return risolvi("limitato");
         if (Date.now() > scadenza) return risolvi("fermo");
         setTimeout(guarda, 250);

@@ -19,13 +19,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const event = await prisma.event.findUnique({
       where: { id },
       select: {
-        id: true, slug: true, title: true, organizerId: true, status: true,
-        startsAt: true, capacity: true, _count: { select: { participations: true } },
+        id: true,
+        slug: true,
+        title: true,
+        organizerId: true,
+        status: true,
+        startsAt: true,
+        capacity: true,
+        _count: { select: { participations: true } },
       },
     });
     if (!event) return fail("Ingaggio non trovato", 404);
     if (event.organizerId === g.user!.id) return fail("Non puoi candidarti a un tuo ingaggio", 400);
-    if (event.status !== "PUBLISHED") return fail("Le candidature per questo ingaggio sono chiuse", 409);
+    if (event.status !== "PUBLISHED")
+      return fail("Le candidature per questo ingaggio sono chiuse", 409);
     if (event.startsAt < new Date()) return fail("L'ingaggio è già passato", 409);
     if (event.capacity && event._count.participations >= event.capacity) {
       return fail("Posti esauriti", 409);

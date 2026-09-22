@@ -11,8 +11,16 @@ import { Errore, ErroriOrfani } from "@/components/ui/Errore";
 
 /** I campi che hanno un posto in pagina dove mostrare il proprio errore. */
 const CAMPI_CON_ERRORE = [
-  "name", "headline", "bio", "disciplines", "citySlug",
-  "website", "instagram", "spotify", "youtube", "image",
+  "name",
+  "headline",
+  "bio",
+  "disciplines",
+  "citySlug",
+  "website",
+  "instagram",
+  "spotify",
+  "youtube",
+  "image",
 ] as const;
 
 type Initial = {
@@ -96,7 +104,6 @@ export function ProfileForm({
   const prossimo = [...SCAGLIONI_BIO].reverse().find((s) => bioLen < s.da);
   const bioProssimo = prossimo ? { da: prossimo.da, punti: puntiA(prossimo.da) } : undefined;
 
-
   function submit(e: React.FormEvent) {
     e.preventDefault();
     setSaved(false);
@@ -132,14 +139,18 @@ export function ProfileForm({
         <label htmlFor="name" className="mb-1 block text-sm font-medium">
           {cerca ? "Nome del locale o del progetto" : "Nome pubblico"}
         </label>
-        <input id="name" className="input" value={form.name} onChange={(e) => set("name", e.target.value)} />
+        <input
+          id="name"
+          className="input"
+          value={form.name}
+          onChange={(e) => set("name", e.target.value)}
+        />
         <Errore msg={errors.name} />
       </div>
 
       <div>
         <label htmlFor="headline" className="mb-1 block text-sm font-medium">
-          {cerca ? "In una riga" : "Headline"}{" "}
-          <span className="muted">(max 120 caratteri)</span>
+          {cerca ? "In una riga" : "Headline"} <span className="muted">(max 120 caratteri)</span>
         </label>
         <input
           id="headline"
@@ -149,7 +160,7 @@ export function ProfileForm({
           onChange={(e) => set("headline", e.target.value)}
           aria-describedby="headline-help"
         />
-        <p id="headline-help" className="mt-1 text-xs muted">
+        <p id="headline-help" className="muted mt-1 text-xs">
           È la meta description del tuo profilo: {form.headline.length}/120 caratteri usati.
         </p>
         <Errore msg={errors.headline} />
@@ -171,7 +182,7 @@ export function ProfileForm({
             uno screen reader scriverebbe al buio proprio nel campo in cui la
             lunghezza è l'unica cosa che conta. `polite` e non `assertive` —
             non deve interrompere la dettatura a ogni carattere. */}
-        <p id="bio-help" aria-live="polite" className="mt-1 text-xs muted">
+        <p id="bio-help" aria-live="polite" className="muted mt-1 text-xs">
           {bioLen === 0
             ? cerca
               ? `Chi la legge sta decidendo se candidarsi da te: dove si suona, che pubblico, che serate. A ${bioMax.da} caratteri vale ${bioMax.punti} punti di reputazione.`
@@ -200,7 +211,11 @@ export function ProfileForm({
                 className={active ? "btn-primary px-3 py-1 text-xs" : "btn-ghost px-3 py-1 text-xs"}
                 onClick={() =>
                   setDisciplines((prev) =>
-                    active ? prev.filter((x) => x !== d.slug) : prev.length < 5 ? [...prev, d.slug] : prev
+                    active
+                      ? prev.filter((x) => x !== d.slug)
+                      : prev.length < 5
+                        ? [...prev, d.slug]
+                        : prev
                   )
                 }
               >
@@ -213,14 +228,23 @@ export function ProfileForm({
       </fieldset>
 
       <div>
-        <label htmlFor="citySlug" className="mb-1 block text-sm font-medium">Città</label>
-        <select id="citySlug" className="input" value={form.citySlug} onChange={(e) => set("citySlug", e.target.value)}>
+        <label htmlFor="citySlug" className="mb-1 block text-sm font-medium">
+          Città
+        </label>
+        <select
+          id="citySlug"
+          className="input"
+          value={form.citySlug}
+          onChange={(e) => set("citySlug", e.target.value)}
+        >
           <option value="">Nessuna</option>
           {cities.map((c) => (
-            <option key={c.slug} value={c.slug}>{c.name}</option>
+            <option key={c.slug} value={c.slug}>
+              {c.name}
+            </option>
           ))}
         </select>
-        <p className="mt-1 text-xs muted">Determina in quale directory locale compari.</p>
+        <p className="muted mt-1 text-xs">Determina in quale directory locale compari.</p>
         <Errore msg={errors.citySlug} />
       </div>
 
@@ -228,7 +252,9 @@ export function ProfileForm({
         <legend className="text-sm font-medium">Link</legend>
         {(["website", "instagram", "spotify", "youtube"] as const).map((k) => (
           <div key={k}>
-            <label htmlFor={k} className="mb-1 block text-xs capitalize muted">{k}</label>
+            <label htmlFor={k} className="muted mb-1 block text-xs capitalize">
+              {k}
+            </label>
             <input
               id={k}
               type="url"
@@ -247,7 +273,11 @@ export function ProfileForm({
         <div className="flex items-center gap-4">
           {image ? (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={image} alt="Anteprima della foto profilo" className="h-16 w-16 rounded-full object-cover" />
+            <img
+              src={image}
+              alt="Anteprima della foto profilo"
+              className="h-16 w-16 rounded-full object-cover"
+            />
           ) : (
             <span className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-xl font-bold text-brand-700">
               {form.name.charAt(0).toUpperCase() || "?"}
@@ -261,15 +291,17 @@ export function ProfileForm({
               onUploaded={(f) => setImage(f.url)}
             />
             {image && (
-              <button type="button" className="mt-1 text-xs text-red-600 underline" onClick={() => setImage("")}>
+              <button
+                type="button"
+                className="mt-1 text-xs text-red-600 underline"
+                onClick={() => setImage("")}
+              >
                 Rimuovi
               </button>
             )}
           </div>
         </div>
-        <p className="mt-2 text-xs muted">
-          Salva il modulo per rendere effettiva la modifica.
-        </p>
+        <p className="muted mt-2 text-xs">Salva il modulo per rendere effettiva la modifica.</p>
         <Errore msg={errors.image} />
       </div>
 
@@ -287,7 +319,7 @@ export function ProfileForm({
         />
         <span>
           Profilo visibile nella directory pubblica
-          <span className="mt-0.5 block text-xs muted">
+          <span className="muted mt-0.5 block text-xs">
             Togliendo la spunta sparisci dagli elenchi e dai motori di ricerca.
           </span>
         </span>

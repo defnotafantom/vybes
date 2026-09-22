@@ -51,9 +51,7 @@ const SOGLIE = {
   odio: 0.6,
 } as const;
 
-export type EsitoModerazione =
-  | { ammesso: true }
-  | { ammesso: false; motivo: string };
+export type EsitoModerazione = { ammesso: true } | { ammesso: false; motivo: string };
 
 export function moderazioneImmaginiConfigurata(): boolean {
   return Boolean(process.env.SIGHTENGINE_USER && process.env.SIGHTENGINE_SECRET);

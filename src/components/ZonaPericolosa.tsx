@@ -57,10 +57,9 @@ export function ZonaPericolosa({ haPassword, nome }: { haPassword: boolean; nome
       <div className="card mt-5">
         <p className="text-fluid-sm font-semibold">Scarica una copia</p>
         <p className="mt-2 text-fluid-sm text-ink-muted">
-          Un file JSON con profilo, portfolio, post, candidature ed eventi
-          pubblicati. Non contiene la password, salvata solo in forma non
-          reversibile, né i messaggi ricevuti, che appartengono anche a chi te
-          li ha scritti.
+          Un file JSON con profilo, portfolio, post, candidature ed eventi pubblicati. Non contiene
+          la password, salvata solo in forma non reversibile, né i messaggi ricevuti, che
+          appartengono anche a chi te li ha scritti.
         </p>
         <a href="/api/profile/esporta" className="btn-ghost mt-4 inline-flex" download>
           <Download className="h-4 w-4" aria-hidden="true" />
@@ -74,9 +73,9 @@ export function ZonaPericolosa({ haPassword, nome }: { haPassword: boolean; nome
           Elimina l&apos;account
         </p>
         <p className="mt-2 text-fluid-sm text-ink-muted">
-          Spariscono profilo pubblico, portfolio, post, commenti, candidature,
-          eventi che hai pubblicato e messaggi che hai inviato. È definitivo:
-          non c&apos;è un cestino e non possiamo recuperare nulla.
+          Spariscono profilo pubblico, portfolio, post, commenti, candidature, eventi che hai
+          pubblicato e messaggi che hai inviato. È definitivo: non c&apos;è un cestino e non
+          possiamo recuperare nulla.
         </p>
 
         {!aperto ? (

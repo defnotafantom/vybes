@@ -72,6 +72,23 @@ jobs:
   build:
     name: Build di produzione
     runs-on: ubuntu-latest
+    # Alcune pagine leggono il database già in build (generateStaticParams e pagine
+    # statiche con revalidate): serve un Postgres vero, anche vuoto, con le migrazioni.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: vybes
+          POSTGRES_DB: vybes
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:vybes@localhost:5432/vybes
+      DIRECT_URL: postgresql://postgres:vybes@localhost:5432/vybes
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -81,14 +98,11 @@ jobs:
 
       - run: npm ci
       - run: npx prisma generate
+      - run: npx prisma migrate deploy
 
       - name: Build
         run: npx next build
         env:
-          # Valori fittizi: la build non si connette al database, ma la
-          # validazione dell'ambiente pretende che le variabili esistano.
-          DATABASE_URL: postgresql://user:pass@localhost:5432/db
-          DIRECT_URL: postgresql://user:pass@localhost:5432/db
           AUTH_SECRET: secret-di-test-lungo-abbastanza-per-passare
           NEXT_PUBLIC_SITE_URL: https://vybeshub.art
 

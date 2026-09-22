@@ -132,16 +132,16 @@ export function CompletaProfilo({
           />
         </div>
         <p className="mt-1.5 text-fluid-xs text-ink-faint">
-          Sceglilo adesso: è l&apos;indirizzo che condividerai, e cambiarlo dopo
-          rompe i collegamenti già in giro.
+          Sceglilo adesso: è l&apos;indirizzo che condividerai, e cambiarlo dopo rompe i
+          collegamenti già in giro.
         </p>
       </div>
 
       <fieldset>
         <legend className="mb-1 text-fluid-sm font-medium">Da che parte stai</legend>
         <p className="mb-3 text-fluid-xs text-ink-faint">
-          Decide le sezioni che vedi, gli obiettivi che ti vengono proposti e come
-          viene calcolata la tua reputazione. Si cambia dal profilo.
+          Decide le sezioni che vedi, gli obiettivi che ti vengono proposti e come viene calcolata
+          la tua reputazione. Si cambia dal profilo.
         </p>
         <div className="grid gap-3">
           {SCELTE_RUOLO.map((s) => (
@@ -164,7 +164,7 @@ export function CompletaProfilo({
                 />
                 <span>
                   <span className="block font-semibold">{s.titolo}</span>
-                  <span className="mt-0.5 block text-fluid-sm muted">{s.descrizione}</span>
+                  <span className="muted mt-0.5 block text-fluid-sm">{s.descrizione}</span>
                 </span>
               </span>
             </label>
@@ -173,7 +173,7 @@ export function CompletaProfilo({
       </fieldset>
 
       {errore && (
-        <p role="alert" className="text-fluid-sm text-esito-no">
+        <p role="alert" className="text-esito-no text-fluid-sm">
           {errore}
         </p>
       )}

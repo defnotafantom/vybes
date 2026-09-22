@@ -56,7 +56,13 @@ export function ElencoQuest({
   const [uscita, setUscita] = useState<string | null>(null);
   const [errore, setErrore] = useState<string | null>(null);
   /** Il numero in volo: coordinate di partenza e spostamento verso la barra. */
-  const [volo, setVolo] = useState<{ x: number; y: number; dx: number; dy: number; xp: number } | null>(null);
+  const [volo, setVolo] = useState<{
+    x: number;
+    y: number;
+    dx: number;
+    dy: number;
+    xp: number;
+  } | null>(null);
   const [pulsa, setPulsa] = useState(false);
 
   const barra = useRef<HTMLDivElement>(null);
@@ -145,9 +151,8 @@ export function ElencoQuest({
             </p>
           </div>
           <p className="max-w-sm text-fluid-xs text-ink-muted">
-            Il livello è un progresso tuo e resta qui: non decide la tua
-            posizione nella directory. Quella la determina la reputazione, che
-            si calcola da altro.
+            Il livello è un progresso tuo e resta qui: non decide la tua posizione nella directory.
+            Quella la determina la reputazione, che si calcola da altro.
           </p>
         </div>
 
@@ -191,11 +196,7 @@ export function ElencoQuest({
               uscita === q.key ? "-mb-3 max-h-0 scale-95 opacity-0" : "max-h-96 opacity-100"
             }`}
           >
-            <div
-              className={`card ${
-                q.completata ? "border-brand-400/50 shadow-glow-brand" : ""
-              }`}
-            >
+            <div className={`card ${q.completata ? "border-brand-400/50 shadow-glow-brand" : ""}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex min-w-0 gap-3">
                   <span
@@ -251,7 +252,7 @@ export function ElencoQuest({
                       style={{ width: `${Math.min(100, (q.current / q.target) * 100)}%` }}
                     />
                   </div>
-                  <p className="mt-1 text-xs muted">
+                  <p className="muted mt-1 text-xs">
                     {q.current}/{q.target}
                   </p>
                 </>
@@ -265,9 +266,9 @@ export function ElencoQuest({
         <div className="card text-center">
           <p className="text-fluid-base font-semibold">Le hai fatte tutte.</p>
           <p className="mt-2 text-fluid-sm text-ink-muted">
-            Erano il percorso per rendere il profilo facile da trovare, e l&apos;hai
-            finito. Da qui in avanti quello che conta succede fuori di qui:
-            candidature, ingaggi, persone che ti scrivono.
+            Erano il percorso per rendere il profilo facile da trovare, e l&apos;hai finito. Da qui
+            in avanti quello che conta succede fuori di qui: candidature, ingaggi, persone che ti
+            scrivono.
           </p>
         </div>
       )}

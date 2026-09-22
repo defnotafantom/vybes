@@ -41,7 +41,16 @@ export default async function SearchPage({
               ],
             },
             take: 12,
-            select: { slug: true, name: true, headline: true, image: true, city: true, disciplines: true, reputation: true, isVerified: true },
+            select: {
+              slug: true,
+              name: true,
+              headline: true,
+              image: true,
+              city: true,
+              disciplines: true,
+              reputation: true,
+              isVerified: true,
+            },
           }),
           prisma.event.findMany({
             where: {
@@ -146,9 +155,12 @@ export default async function SearchPage({
       )}
 
       {term.length >= 2 && totalResults === 0 && (
-        <p className="mt-10 muted">
+        <p className="muted mt-10">
           Nessun risultato. Prova con un altro termine o esplora la{" "}
-          <Link href="/citta" className="text-brand-600 hover:underline">directory per città</Link>.
+          <Link href="/citta" className="text-brand-600 hover:underline">
+            directory per città
+          </Link>
+          .
         </p>
       )}
     </div>

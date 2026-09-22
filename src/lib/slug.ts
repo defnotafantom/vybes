@@ -25,7 +25,10 @@ export async function uniqueSlug(
 /** Separa una stringa "a,b,c" in array pulito (workaround array su sqlite). */
 export function fromCsv(value: string | null | undefined): string[] {
   if (!value) return [];
-  return value.split(",").map((s) => s.trim()).filter(Boolean);
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 export function toCsv(values: string[]): string {

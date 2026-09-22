@@ -276,7 +276,7 @@ function vociOrganizzatore(f: FattiReputazione): Voce[] {
       // Un «no» vale quanto un «sì»: qui si misura **se** rispondi, non cosa
       // rispondi. Premiare i sì spingerebbe ad accettare per punteggio.
       punti: abbastanzaCandidature
-        ? SCAGLIONI_RISPOSTE.find((s) => tassoRisposta >= s.da)?.punti ?? 0
+        ? (SCAGLIONI_RISPOSTE.find((s) => tassoRisposta >= s.da)?.punti ?? 0)
         : 0,
       max: 25,
       misurabile: abbastanzaCandidature,

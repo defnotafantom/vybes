@@ -67,9 +67,8 @@ export function Vetrinetta({ voci, saldo: saldoIniziale }: { voci: Voce[]; saldo
           </p>
         </div>
         <p className="max-w-sm text-fluid-xs text-ink-muted">
-          Le monete si guadagnano riscuotendo gli obiettivi e giocando
-          a&nbsp;«L&apos;orecchio». Comprano solo estetica: la posizione negli
-          elenchi non è in vendita, e non lo sarà.
+          Le monete si guadagnano riscuotendo gli obiettivi e giocando a&nbsp;«L&apos;orecchio».
+          Comprano solo estetica: la posizione negli elenchi non è in vendita, e non lo sarà.
         </p>
       </div>
 
@@ -109,7 +108,7 @@ export function Vetrinetta({ voci, saldo: saldoIniziale }: { voci: Voce[]; saldo
               {c.sblocco && <p className="mt-3 text-fluid-xs text-ink-muted">{c.sblocco}</p>}
 
               {errore?.id === c.id && (
-                <p role="alert" className="mt-3 text-fluid-xs text-esito-no">
+                <p role="alert" className="text-esito-no mt-3 text-fluid-xs">
                   {errore.testo}
                 </p>
               )}

@@ -70,7 +70,8 @@ export const MOTIVI = {
   },
   ALTRO: {
     label: "Altro",
-    aiuto: "Qualcosa che non rientra nei casi sopra. Spiega cosa, altrimenti non possiamo valutarla.",
+    aiuto:
+      "Qualcosa che non rientra nei casi sopra. Spiega cosa, altrimenti non possiamo valutarla.",
     urgente: false,
   },
 } as const;

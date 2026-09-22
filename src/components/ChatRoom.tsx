@@ -78,7 +78,9 @@ export function ChatRoom({
     });
     if (res.ok) {
       const json = await res.json();
-      setMessages((prev) => (prev.some((m) => m.id === json.data.id) ? prev : [...prev, json.data]));
+      setMessages((prev) =>
+        prev.some((m) => m.id === json.data.id) ? prev : [...prev, json.data]
+      );
     } else {
       setDraft(content); // ripristina la bozza se l'invio fallisce
     }
@@ -87,7 +89,10 @@ export function ChatRoom({
 
   return (
     <div className="card p-0">
-      <div className="flex items-center justify-between border-b px-4 py-2 text-xs muted" style={{ borderColor: "rgb(var(--border))" }}>
+      <div
+        className="muted flex items-center justify-between border-b px-4 py-2 text-xs"
+        style={{ borderColor: "rgb(var(--border))" }}
+      >
         <span>{conta(messages.length, "messaggio", "messaggi")}</span>
         <span aria-live="polite" className="flex items-center gap-1.5">
           <span
@@ -113,7 +118,10 @@ export function ChatRoom({
                 {!mine && <p className="text-xs font-medium opacity-70">{m.sender.name}</p>}
                 <p className="whitespace-pre-line">{m.content}</p>
                 <time dateTime={m.createdAt} className="mt-1 block text-[10px] opacity-60">
-                  {new Date(m.createdAt).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
+                  {new Date(m.createdAt).toLocaleTimeString("it-IT", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </time>
               </div>
             </div>
@@ -122,8 +130,14 @@ export function ChatRoom({
         <div ref={bottomRef} />
       </div>
 
-      <form onSubmit={send} className="flex gap-2 border-t p-3" style={{ borderColor: "rgb(var(--border))" }}>
-        <label htmlFor="chat-input" className="sr-only">Scrivi un messaggio</label>
+      <form
+        onSubmit={send}
+        className="flex gap-2 border-t p-3"
+        style={{ borderColor: "rgb(var(--border))" }}
+      >
+        <label htmlFor="chat-input" className="sr-only">
+          Scrivi un messaggio
+        </label>
         <input
           id="chat-input"
           className="input"

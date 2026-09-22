@@ -66,9 +66,7 @@ for (const f of file) {
   }
 }
 
-const orfane = usate.filter(
-  (u) => !definite.has(u.nome) && !A_TEMPO_DI_ESECUZIONE.has(u.nome)
-);
+const orfane = usate.filter((u) => !definite.has(u.nome) && !A_TEMPO_DI_ESECUZIONE.has(u.nome));
 
 if (orfane.length > 0) {
   console.error("\n✗ Variabili CSS usate e mai definite:\n");

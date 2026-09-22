@@ -62,7 +62,9 @@ export function MenuUtente() {
 
   // Segnaposto: occupa lo spazio senza affermare niente.
   if (status === "loading") {
-    return <div className="h-10 w-10 animate-pulse rounded-full bg-surface-sunken" aria-hidden="true" />;
+    return (
+      <div className="h-10 w-10 animate-pulse rounded-full bg-surface-sunken" aria-hidden="true" />
+    );
   }
 
   if (!session?.user) {

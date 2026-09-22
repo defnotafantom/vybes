@@ -25,12 +25,22 @@ export async function GET(req: Request) {
         ? prisma.user.findMany({
             where: {
               ...PROFILO_PUBBLICO,
-              OR: [{ name: { contains: q, mode: "insensitive" } },
+              OR: [
+                { name: { contains: q, mode: "insensitive" } },
                 { headline: { contains: q, mode: "insensitive" } },
-                { city: { contains: q, mode: "insensitive" } },],
+                { city: { contains: q, mode: "insensitive" } },
+              ],
             },
             take: 8,
-            select: { id: true, slug: true, name: true, headline: true, image: true, city: true, disciplines: true },
+            select: {
+              id: true,
+              slug: true,
+              name: true,
+              headline: true,
+              image: true,
+              city: true,
+              disciplines: true,
+            },
           })
         : [],
       want("events")
@@ -38,13 +48,22 @@ export async function GET(req: Request) {
             where: {
               isPublic: true,
               status: "PUBLISHED",
-              OR: [{ title: { contains: q, mode: "insensitive" } },
+              OR: [
+                { title: { contains: q, mode: "insensitive" } },
                 { description: { contains: q, mode: "insensitive" } },
-                { city: { contains: q, mode: "insensitive" } },],
+                { city: { contains: q, mode: "insensitive" } },
+              ],
             },
             orderBy: { startsAt: "asc" },
             take: 8,
-            select: { slug: true, title: true, city: true, startsAt: true, isPaid: true, feeMin: true },
+            select: {
+              slug: true,
+              title: true,
+              city: true,
+              startsAt: true,
+              isPaid: true,
+              feeMin: true,
+            },
           })
         : [],
       want("posts")
@@ -59,7 +78,12 @@ export async function GET(req: Request) {
         ? prisma.portfolioItem.findMany({
             where: { isPublic: true, title: { contains: q, mode: "insensitive" } },
             take: 8,
-            select: { slug: true, title: true, mediaType: true, user: { select: { slug: true, name: true } } },
+            select: {
+              slug: true,
+              title: true,
+              mediaType: true,
+              user: { select: { slug: true, name: true } },
+            },
           })
         : [],
     ]);

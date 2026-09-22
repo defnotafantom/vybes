@@ -110,11 +110,7 @@ export const MINIMO_OPERE = 3;
  * Con un passo pseudocasuale scelto dal seme, l'ordine di ognuno resta il
  * proprio e il catalogo può crescere sotto senza rimescolare il mondo.
  */
-export function operaDelGiorno<T>(
-  opere: readonly T[],
-  giorno: number,
-  chi = ""
-): T | null {
+export function operaDelGiorno<T>(opere: readonly T[], giorno: number, chi = ""): T | null {
   if (opere.length === 0) return null;
   const rnd = generatore(semeDa(`${chi}|incontro`));
   // Un punto di partenza e un passo, entrambi dal seme della persona. Il passo

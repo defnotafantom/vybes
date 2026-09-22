@@ -26,9 +26,12 @@ export function useDebouncedCallback<A extends unknown[]>(
   const latest = useRef(fn);
   latest.current = fn;
 
-  useEffect(() => () => {
-    if (timer.current) clearTimeout(timer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    []
+  );
 
   return useCallback(
     (...args: A) => {

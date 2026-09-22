@@ -24,8 +24,18 @@ export default async function ProfiloPage() {
       where: { id: session!.user.id },
       select: {
         role: true,
-        name: true, slug: true, headline: true, bio: true, disciplines: true, citySlug: true, image: true,
-        website: true, instagram: true, spotify: true, youtube: true, isPublic: true,
+        name: true,
+        slug: true,
+        headline: true,
+        bio: true,
+        disciplines: true,
+        citySlug: true,
+        image: true,
+        website: true,
+        instagram: true,
+        spotify: true,
+        youtube: true,
+        isPublic: true,
         // Serve solo a sapere *come* chiedere la riconferma per la
         // cancellazione: chi è entrato con Google non ha una password da
         // riscrivere. L'hash non esce da qui.
@@ -60,17 +70,15 @@ export default async function ProfiloPage() {
         sottotitolo={
           cercaArtisti ? (
             <>
-              È la pagina che un artista apre prima di decidere se candidarsi a
-              un tuo annuncio: <code className="text-ink">/artisti/{me.slug}</code>.
-              Un profilo vuoto riceve molte meno candidature di uno che dice
-              dove si suona e che serate fate.
+              È la pagina che un artista apre prima di decidere se candidarsi a un tuo annuncio:{" "}
+              <code className="text-ink">/artisti/{me.slug}</code>. Un profilo vuoto riceve molte
+              meno candidature di uno che dice dove si suona e che serate fate.
             </>
           ) : (
             <>
               Questi dati alimentano la tua pagina pubblica{" "}
-              <code className="text-ink">/artisti/{me.slug}</code>: sono il titolo
-              e la descrizione che compaiono su Google, non solo quello che si
-              vede sul sito.
+              <code className="text-ink">/artisti/{me.slug}</code>: sono il titolo e la descrizione
+              che compaiono su Google, non solo quello che si vede sul sito.
             </>
           )
         }
@@ -110,9 +118,9 @@ export default async function ProfiloPage() {
       <section className="mt-14 border-t pt-10">
         <h2 className="text-fluid-lg font-bold">Che cosa fai qui</h2>
         <p className="mt-2 max-w-xl text-fluid-sm text-ink-muted">
-          Le due cose possono coesistere: un locale con una band residente, un
-          collettivo che organizza la propria rassegna. Cambiando, il menu e la
-          scheda reputazione si aggiornano subito.
+          Le due cose possono coesistere: un locale con una band residente, un collettivo che
+          organizza la propria rassegna. Cambiando, il menu e la scheda reputazione si aggiornano
+          subito.
         </p>
         <div className="mt-6">
           <ScegliRuolo attuale={ruoloDi(role)} etichettaConferma="Salva il ruolo" />

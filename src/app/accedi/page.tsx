@@ -28,12 +28,17 @@ export default async function LoginPage({
     <div className="container-page flex justify-center py-16">
       <div className="w-full max-w-md">
         <h1 className="text-2xl font-bold">Accedi a Vybes</h1>
-        <p className="mt-2 text-sm muted">
+        <p className="muted mt-2 text-sm">
           Non hai un account?{" "}
-          <Link href="/registrati" className="text-brand-600 hover:underline">Iscriviti gratis</Link>
+          <Link href="/registrati" className="text-brand-600 hover:underline">
+            Iscriviti gratis
+          </Link>
         </p>
         {sp.reset && (
-          <p role="status" className="mt-6 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800 dark:bg-green-950/40 dark:text-green-200">
+          <p
+            role="status"
+            className="mt-6 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800 dark:bg-green-950/40 dark:text-green-200"
+          >
             Password aggiornata. Accedi con quella nuova.
           </p>
         )}

@@ -9,7 +9,13 @@ import { conta } from "@/lib/testo";
 
 type Opzione = { slug: string; nome: string };
 type Domanda = {
-  lavoro: { slug: string; titolo: string; descrizione: string | null; tipo: string; mediaUrl: string };
+  lavoro: {
+    slug: string;
+    titolo: string;
+    descrizione: string | null;
+    tipo: string;
+    mediaUrl: string;
+  };
   opzioni: Opzione[];
 };
 type Esito = {
@@ -41,7 +47,15 @@ type Esito = {
  * sarebbe una finta pressione, e su un gioco che dura due minuti l'unico
  * effetto sarebbe far chiudere la pagina a chi ha premuto per sbaglio.
  */
-export function Gioco({ giorno, domande, massimo }: { giorno: number; domande: Domanda[]; massimo: number }) {
+export function Gioco({
+  giorno,
+  domande,
+  massimo,
+}: {
+  giorno: number;
+  domande: Domanda[];
+  massimo: number;
+}) {
   const [indice, setIndice] = useState(0);
   const [scelte, setScelte] = useState<(string | null)[]>(() => domande.map(() => null));
   const [esito, setEsito] = useState<Esito | null>(null);
@@ -156,7 +170,7 @@ export function Gioco({ giorno, domande, massimo }: { giorno: number; domande: D
                 aria-pressed={scelta}
                 className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border px-4 text-left text-fluid-sm font-medium transition-colors ${
                   scelta
-                    ? "border-brand-500 bg-brand-500/12 text-ink"
+                    ? "bg-brand-500/12 border-brand-500 text-ink"
                     : "border-line text-ink-muted hover:border-brand-400/50 hover:text-ink"
                 }`}
               >
@@ -169,7 +183,7 @@ export function Gioco({ giorno, domande, massimo }: { giorno: number; domande: D
       </ul>
 
       {errore && (
-        <p role="alert" className="mt-4 text-fluid-sm text-esito-no">
+        <p role="alert" className="text-esito-no mt-4 text-fluid-sm">
           {errore}
         </p>
       )}
@@ -185,7 +199,12 @@ export function Gioco({ giorno, domande, massimo }: { giorno: number; domande: D
         </button>
 
         {ultima ? (
-          <button type="button" onClick={consegna} disabled={invio} className="btn-primary min-h-11">
+          <button
+            type="button"
+            onClick={consegna}
+            disabled={invio}
+            className="btn-primary min-h-11"
+          >
             {invio ? "Correggo…" : "Consegna"}
           </button>
         ) : (
@@ -247,7 +266,7 @@ function Risultato({
         </p>
 
         {esito.monete > 0 && (
-          <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-gold-500/12 px-4 py-2 text-fluid-sm font-semibold text-gold-400">
+          <p className="bg-gold-500/12 mt-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-fluid-sm font-semibold text-gold-400">
             <Coins className="h-4 w-4" aria-hidden="true" />+{esito.monete} monete
           </p>
         )}
@@ -264,8 +283,8 @@ function Risultato({
           Chi erano
         </h2>
         <p className="mt-1 text-fluid-sm text-ink-muted">
-          Cinque persone che in questo momento cercano un ingaggio. Se qualcosa
-          ti è piaciuto, il profilo è a un clic.
+          Cinque persone che in questo momento cercano un ingaggio. Se qualcosa ti è piaciuto, il
+          profilo è a un clic.
         </p>
 
         <ul className="mt-5 space-y-3">
@@ -276,7 +295,9 @@ function Risultato({
               <li key={d.lavoro.slug} className="flex flex-wrap items-center gap-3 border-t pt-3">
                 <span
                   className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                    indovinata ? "bg-esito-si-tinta/15 text-esito-si" : "bg-esito-no-tinta/15 text-esito-no"
+                    indovinata
+                      ? "bg-esito-si-tinta/15 text-esito-si"
+                      : "bg-esito-no-tinta/15 text-esito-no"
                   }`}
                   aria-label={indovinata ? "indovinata" : "sbagliata"}
                 >

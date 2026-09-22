@@ -101,12 +101,7 @@ export type Opzioni = {
   densitaFissa?: number;
 };
 
-function compila(
-  gl: WebGL2RenderingContext,
-  tipo: number,
-  sorgente: string,
-  nome: string
-) {
+function compila(gl: WebGL2RenderingContext, tipo: number, sorgente: string, nome: string) {
   const s = gl.createShader(tipo);
   if (!s) return null;
   gl.shaderSource(s, sorgente);
@@ -160,7 +155,9 @@ ${opzioni.frammento}`;
   gl.linkProgram(programma);
   if (!gl.getProgramParameter(programma, gl.LINK_STATUS)) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn(`[${opzioni.nome}] programma non collegato:\n${gl.getProgramInfoLog(programma)}`);
+      console.warn(
+        `[${opzioni.nome}] programma non collegato:\n${gl.getProgramInfoLog(programma)}`
+      );
     }
     return niente;
   }

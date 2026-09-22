@@ -19,7 +19,9 @@ export function SearchForm({ initialQuery = "" }: { initialQuery?: string }) {
       }}
       className="flex gap-2"
     >
-      <label htmlFor="q" className="sr-only">Cerca artisti, ingaggi o portfolio</label>
+      <label htmlFor="q" className="sr-only">
+        Cerca artisti, ingaggi o portfolio
+      </label>
       <input
         id="q"
         name="q"
@@ -30,7 +32,9 @@ export function SearchForm({ initialQuery = "" }: { initialQuery?: string }) {
         minLength={2}
         onChange={(e) => setQ(e.target.value)}
       />
-      <button type="submit" className="btn-primary">Cerca</button>
+      <button type="submit" className="btn-primary">
+        Cerca
+      </button>
     </form>
   );
 }

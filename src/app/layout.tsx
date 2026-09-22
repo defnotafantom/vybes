@@ -162,37 +162,85 @@ function SiteFooter() {
       <div className="container-page grid gap-8 text-sm sm:grid-cols-2 md:grid-cols-4">
         <div>
           <Logo href={null} />
-          <p className="mt-3 muted">{SITE.tagline}</p>
+          <p className="muted mt-3">{SITE.tagline}</p>
         </div>
         <nav aria-label="Scopri">
           <p className="mb-3 font-semibold">Scopri</p>
-          <ul className="space-y-2 muted">
-            <li><Link href="/artisti" className="hover:text-brand-600">Tutti gli artisti</Link></li>
-            <li><Link href="/eventi" className="hover:text-brand-600">Ingaggi aperti</Link></li>
-            <li><Link href="/mappa" className="hover:text-brand-600">Mappa degli ingaggi</Link></li>
-            <li><Link href="/cerca" className="hover:text-brand-600">Ricerca</Link></li>
+          <ul className="muted space-y-2">
+            <li>
+              <Link href="/artisti" className="hover:text-brand-600">
+                Tutti gli artisti
+              </Link>
+            </li>
+            <li>
+              <Link href="/eventi" className="hover:text-brand-600">
+                Ingaggi aperti
+              </Link>
+            </li>
+            <li>
+              <Link href="/mappa" className="hover:text-brand-600">
+                Mappa degli ingaggi
+              </Link>
+            </li>
+            <li>
+              <Link href="/cerca" className="hover:text-brand-600">
+                Ricerca
+              </Link>
+            </li>
           </ul>
         </nav>
         <nav aria-label="Città principali">
           <p className="mb-3 font-semibold">Città</p>
-          <ul className="space-y-2 muted">
-            <li><Link href="/citta/milano" className="hover:text-brand-600">Artisti a Milano</Link></li>
-            <li><Link href="/citta/roma" className="hover:text-brand-600">Artisti a Roma</Link></li>
-            <li><Link href="/citta/napoli" className="hover:text-brand-600">Artisti a Napoli</Link></li>
-            <li><Link href="/citta" className="hover:text-brand-600">Tutte le città</Link></li>
+          <ul className="muted space-y-2">
+            <li>
+              <Link href="/citta/milano" className="hover:text-brand-600">
+                Artisti a Milano
+              </Link>
+            </li>
+            <li>
+              <Link href="/citta/roma" className="hover:text-brand-600">
+                Artisti a Roma
+              </Link>
+            </li>
+            <li>
+              <Link href="/citta/napoli" className="hover:text-brand-600">
+                Artisti a Napoli
+              </Link>
+            </li>
+            <li>
+              <Link href="/citta" className="hover:text-brand-600">
+                Tutte le città
+              </Link>
+            </li>
           </ul>
         </nav>
         <nav aria-label="Informazioni">
           <p className="mb-3 font-semibold">Vybes</p>
-          <ul className="space-y-2 muted">
-            <li><Link href="/chi-siamo" className="hover:text-brand-600">Chi siamo</Link></li>
-            <li><Link href="/come-funziona" className="hover:text-brand-600">Come funziona</Link></li>
-            <li><Link href="/privacy" className="hover:text-brand-600">Privacy</Link></li>
-            <li><Link href="/termini" className="hover:text-brand-600">Termini</Link></li>
+          <ul className="muted space-y-2">
+            <li>
+              <Link href="/chi-siamo" className="hover:text-brand-600">
+                Chi siamo
+              </Link>
+            </li>
+            <li>
+              <Link href="/come-funziona" className="hover:text-brand-600">
+                Come funziona
+              </Link>
+            </li>
+            <li>
+              <Link href="/privacy" className="hover:text-brand-600">
+                Privacy
+              </Link>
+            </li>
+            <li>
+              <Link href="/termini" className="hover:text-brand-600">
+                Termini
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>
-      <p className="container-page mt-10 text-xs muted">
+      <p className="container-page muted mt-10 text-xs">
         © {new Date().getFullYear()} Vybes. Tutti i diritti riservati.
       </p>
     </footer>

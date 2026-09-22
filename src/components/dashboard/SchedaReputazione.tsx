@@ -44,13 +44,15 @@ export function SchedaReputazione({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="flex items-center gap-2 text-fluid-lg font-bold">
-            <TrendingUp className="h-5 w-5 text-accent-600 dark:text-accent-400" aria-hidden="true" />
+            <TrendingUp
+              className="h-5 w-5 text-accent-600 dark:text-accent-400"
+              aria-hidden="true"
+            />
             Reputazione
           </h2>
           <p className="mt-2 max-w-xl text-fluid-sm text-ink-muted">
-            Decide in che ordine compari nella directory pubblica. Non si guadagna
-            usando il sito: si calcola da quello che rende un profilo una scelta
-            sicura per chi cerca.
+            Decide in che ordine compari nella directory pubblica. Non si guadagna usando il sito:
+            si calcola da quello che rende un profilo una scelta sicura per chi cerca.
           </p>
         </div>
 
@@ -76,9 +78,7 @@ export function SchedaReputazione({
 
       {mancanti.length > 0 && (
         <div className="mt-6">
-          <p className="text-fluid-xs uppercase tracking-wider text-ink-faint">
-            Cosa la fa salire
-          </p>
+          <p className="text-fluid-xs uppercase tracking-wider text-ink-faint">Cosa la fa salire</p>
           <ul className="mt-3 space-y-3">
             {mancanti.map((v) => (
               <li key={v.label} className="flex items-start gap-3">

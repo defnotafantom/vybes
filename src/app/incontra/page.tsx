@@ -93,9 +93,9 @@ export default async function IncontraPage() {
            torna domani lo scopre da solo — meglio dirlo subito. */
         <div className="mt-6 rounded-2xl border border-dashed p-8 text-center">
           <h1 className="text-fluid-xl font-bold">Non ancora.</h1>
-          <p className="mx-auto mt-3 max-w-md muted">
-            Perché ci sia qualcosa da incontrare servono opere in cui l&apos;autore ha
-            scritto <em>cosa la gente crede della sua arte</em>. Sono ancora troppo poche.
+          <p className="muted mx-auto mt-3 max-w-md">
+            Perché ci sia qualcosa da incontrare servono opere in cui l&apos;autore ha scritto{" "}
+            <em>cosa la gente crede della sua arte</em>. Sono ancora troppo poche.
           </p>
           <Link href="/dashboard/portfolio" className="btn-primary mt-6 inline-flex">
             Aggiungine una tua
@@ -117,8 +117,7 @@ export default async function IncontraPage() {
               </>
             ) : null}
             :
-            <br />
-            «{opera.credenza}»
+            <br />«{opera.credenza}»
           </h1>
 
           {/* L'opera. Nessuna cornice, nessuna ombra: è la cosa da guardare,
@@ -139,7 +138,12 @@ export default async function IncontraPage() {
                 <source src={opera.mediaUrl} />
               </audio>
             ) : (
-              <video controls preload="metadata" className="h-auto w-full" aria-label={opera.titolo}>
+              <video
+                controls
+                preload="metadata"
+                className="h-auto w-full"
+                aria-label={opera.titolo}
+              >
                 <source src={opera.mediaUrl} />
               </video>
             )}
@@ -160,7 +164,7 @@ export default async function IncontraPage() {
             </span>
           </p>
 
-          <p className="mt-8 text-fluid-sm muted">
+          <p className="muted mt-8 text-fluid-sm">
             Domani ce n&apos;è un&apos;altra.{" "}
             <Link href="/artisti" className="underline underline-offset-4">
               Oppure guarda chi c&apos;è

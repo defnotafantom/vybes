@@ -18,18 +18,27 @@ export const revalidate = 3600;
 async function getItem(slug: string) {
   return prisma.portfolioItem.findFirst({
     where: { slug, isPublic: true, user: PROFILO_PUBBLICO },
-    include: { user: { select: { slug: true, name: true, image: true, city: true, headline: true } } },
+    include: {
+      user: { select: { slug: true, name: true, image: true, city: true, headline: true } },
+    },
   });
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const { slug } = await params;
   const item = await getItem(slug);
-  if (!item) return buildMetadata({ title: "Opera non trovata", path: `/portfolio/${slug}`, noindex: true });
+  if (!item)
+    return buildMetadata({ title: "Opera non trovata", path: `/portfolio/${slug}`, noindex: true });
 
   return buildMetadata({
     title: `${item.title} — portfolio di ${item.user.name}`,
-    description: item.description || `${item.title}, lavoro di ${item.user.name} nel portfolio pubblico su Vybes.`,
+    description:
+      item.description ||
+      `${item.title}, lavoro di ${item.user.name} nel portfolio pubblico su Vybes.`,
     path: `/portfolio/${item.slug}`,
     type: "article",
     publishedTime: item.createdAt,
@@ -78,7 +87,7 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
 
       <article className="mx-auto max-w-3xl">
         <h1 className="text-3xl font-bold sm:text-4xl">{item.title}</h1>
-        <p className="mt-3 muted">
+        <p className="muted mt-3">
           di{" "}
           <Link href={`/artisti/${item.user.slug}`} className="text-brand-600 hover:underline">
             {item.user.name}
@@ -116,7 +125,12 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
             </video>
           )}
           {item.mediaType === "audio" && (
-            <audio controls preload="metadata" className="relative w-full p-6" aria-label={item.title}>
+            <audio
+              controls
+              preload="metadata"
+              className="relative w-full p-6"
+              aria-label={item.title}
+            >
               <source src={item.mediaUrl} />
             </audio>
           )}
@@ -137,9 +151,7 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
             parole di una persona, non una scheda. */}
         {item.credenza && (
           <figure className="mt-8 border-l-2 border-brand-500/60 pl-5">
-            <blockquote className="text-fluid-lg italic text-ink">
-              «{item.credenza}»
-            </blockquote>
+            <blockquote className="text-fluid-lg italic text-ink">«{item.credenza}»</blockquote>
             <figcaption className="mt-2 text-fluid-xs uppercase tracking-[0.14em] text-ink-faint">
               Quello che si crede di quest&apos;arte
             </figcaption>
@@ -147,12 +159,17 @@ export default async function PortfolioItemPage({ params }: { params: Promise<{ 
         )}
 
         {item.description && (
-          <div className="prose-vybes mt-8 whitespace-pre-line muted">{item.description}</div>
+          <div className="prose-vybes muted mt-8 whitespace-pre-line">{item.description}</div>
         )}
 
         {item.externalUrl && (
           <p className="mt-6">
-            <a href={item.externalUrl} target="_blank" rel="noopener nofollow" className="btn-ghost">
+            <a
+              href={item.externalUrl}
+              target="_blank"
+              rel="noopener nofollow"
+              className="btn-ghost"
+            >
               Vedi il progetto completo
             </a>
           </p>

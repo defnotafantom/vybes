@@ -56,7 +56,10 @@ export default async function MinigiochiPage() {
         sottotitolo="Un contorno, non il piatto: quello che si vince è estetica e non sposta di un centimetro la tua posizione negli elenchi. Ma le monete si guadagnano qui."
         numeri={[
           { label: "Monete", valore: me?.monete ?? 0 },
-          { label: ["Punto questa settimana", "Punti questa settimana"], valore: mioPosto?.punti ?? 0 },
+          {
+            label: ["Punto questa settimana", "Punti questa settimana"],
+            valore: mioPosto?.punti ?? 0,
+          },
         ]}
       />
 
@@ -103,8 +106,7 @@ export default async function MinigiochiPage() {
 
         {classifica.righe.length === 0 ? (
           <p className="mt-4 text-fluid-sm text-ink-muted">
-            Questa settimana non ha ancora giocato nessuno. Il primo punto vale
-            un primo posto.
+            Questa settimana non ha ancora giocato nessuno. Il primo punto vale un primo posto.
           </p>
         ) : (
           <ol className="mt-4 space-y-2">
@@ -135,8 +137,8 @@ export default async function MinigiochiPage() {
         )}
 
         <p className="mt-5 border-t pt-4 text-fluid-xs text-ink-muted">
-          Si azzera ogni lunedì. Una classifica che non riparte la vince chi è
-          arrivato per primo, e dopo un mese nessun altro prova più.
+          Si azzera ogni lunedì. Una classifica che non riparte la vince chi è arrivato per primo, e
+          dopo un mese nessun altro prova più.
         </p>
       </section>
     </div>

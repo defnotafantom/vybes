@@ -32,13 +32,7 @@ import type { Cosmetico, Slot } from "@/lib/cosmetici";
  * di quattro pixel per lato, e una foto ritagliata è un prezzo che chi non ha
  * comprato niente non paga.
  */
-export function ConCornice({
-  cornice,
-  children,
-}: {
-  cornice?: Cosmetico;
-  children: ReactNode;
-}) {
+export function ConCornice({ cornice, children }: { cornice?: Cosmetico; children: ReactNode }) {
   if (!cornice) return <>{children}</>;
 
   return (

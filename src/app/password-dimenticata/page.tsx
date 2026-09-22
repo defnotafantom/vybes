@@ -15,13 +15,13 @@ export default function PasswordDimenticataPage() {
     <div className="container-page flex justify-center py-16">
       <div className="w-full max-w-md">
         <h1 className="text-2xl font-bold">Password dimenticata</h1>
-        <p className="mt-2 text-sm muted">
+        <p className="muted mt-2 text-sm">
           Inserisci la tua email: ti mandiamo un link per sceglierne una nuova.
         </p>
         <div className="mt-8">
           <ForgotPasswordForm />
         </div>
-        <p className="mt-6 text-sm muted">
+        <p className="muted mt-6 text-sm">
           Te la sei ricordata?{" "}
           <Link href="/accedi" className="text-brand-600 hover:underline">
             Torna all&apos;accesso

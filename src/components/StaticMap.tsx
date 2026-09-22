@@ -37,7 +37,7 @@ export function StaticMap({
         referrerPolicy="no-referrer-when-downgrade"
         className="mappa-incorporata h-64 w-full border-0"
       />
-      <figcaption className="p-3 text-xs muted">
+      <figcaption className="muted p-3 text-xs">
         {label} —{" "}
         <a
           href={`https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=16/${latitude}/${longitude}`}

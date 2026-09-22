@@ -15,9 +15,7 @@ export async function POST(req: Request) {
     const check = await verifyToken(data.token, "PASSWORD_RESET");
     if (!check.ok) {
       return fail(
-        check.reason === "expired"
-          ? "Il link è scaduto: richiedine uno nuovo"
-          : "Link non valido",
+        check.reason === "expired" ? "Il link è scaduto: richiedine uno nuovo" : "Link non valido",
         410
       );
     }

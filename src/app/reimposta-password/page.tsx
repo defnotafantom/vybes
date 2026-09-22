@@ -35,7 +35,7 @@ export default async function ReimpostaPasswordPage({
           </div>
         ) : (
           <>
-            <p className="mt-4 muted">
+            <p className="muted mt-4">
               {check?.reason === "expired"
                 ? "Questo link è scaduto: i link di reset durano un'ora."
                 : "Link mancante o non valido. Potrebbe essere già stato usato."}

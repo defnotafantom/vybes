@@ -35,11 +35,7 @@ export function LoadingButton({
       aria-busy={pending}
       className={cn(base, className)}
     >
-      {pending ? (
-        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-      ) : (
-        icon
-      )}
+      {pending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : icon}
       {pending && pendingLabel ? pendingLabel : children}
     </button>
   );

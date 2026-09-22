@@ -62,7 +62,10 @@ export default async function ArtistiPage({ searchParams }: { searchParams: Prom
   const sp = await searchParams;
 
   return (
-    <Suspense key={`${sp.disciplina ?? ""}-${sp.citta ?? ""}-${sp.page ?? "1"}`} fallback={<SkeletonArtisti />}>
+    <Suspense
+      key={`${sp.disciplina ?? ""}-${sp.citta ?? ""}-${sp.page ?? "1"}`}
+      fallback={<SkeletonArtisti />}
+    >
       <Elenco sp={sp} />
     </Suspense>
   );
@@ -85,8 +88,14 @@ async function Elenco({ sp }: { sp: Search }) {
       skip: (page - 1) * PER_PAGE,
       take: PER_PAGE,
       select: {
-        slug: true, name: true, headline: true, image: true, city: true,
-        disciplines: true, reputation: true, isVerified: true,
+        slug: true,
+        name: true,
+        headline: true,
+        image: true,
+        city: true,
+        disciplines: true,
+        reputation: true,
+        isVerified: true,
       },
     }),
     prisma.user.count({ where }),
@@ -105,7 +114,10 @@ async function Elenco({ sp }: { sp: Search }) {
       <PageHero
         breadcrumbs={
           discipline
-            ? [{ name: "Artisti", path: "/artisti" }, { name: discipline.plural, path: basePath }]
+            ? [
+                { name: "Artisti", path: "/artisti" },
+                { name: discipline.plural, path: basePath },
+              ]
             : [{ name: "Artisti", path: "/artisti" }]
         }
         eyebrow="Directory"
@@ -113,9 +125,8 @@ async function Elenco({ sp }: { sp: Search }) {
         highlight="in Italia"
         lead={
           <>
-            Profili pubblici con portfolio, città e disponibilità. Si contattano
-            direttamente: nessuna agenzia in mezzo, nessuna commissione. Se cerchi
-            nella tua zona parti dalla{" "}
+            Profili pubblici con portfolio, città e disponibilità. Si contattano direttamente:
+            nessuna agenzia in mezzo, nessuna commissione. Se cerchi nella tua zona parti dalla{" "}
             <Link href="/citta" className="link-underline">
               directory per città
             </Link>
@@ -186,8 +197,8 @@ async function Elenco({ sp }: { sp: Search }) {
           <p className="eyebrow">Cerchi vicino a te?</p>
           <h2 className="mt-2 text-fluid-xl">Sfoglia per città</h2>
           <p className="mt-3 max-w-2xl text-fluid-sm text-ink-muted">
-            Ogni città ha la sua pagina, con gli artisti attivi in zona e gli
-            ingaggi aperti nei dintorni.
+            Ogni città ha la sua pagina, con gli artisti attivi in zona e gli ingaggi aperti nei
+            dintorni.
           </p>
           <Link href="/citta" className="btn-ghost mt-6 inline-flex">
             <MapPin className="h-4 w-4" aria-hidden="true" />

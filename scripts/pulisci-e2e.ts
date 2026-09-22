@@ -79,9 +79,7 @@ function bersaglio(): { url: string | undefined; dove: string } {
 
 const { url, dove } = bersaglio();
 // Senza `url` si lascia decidere a Prisma, che legge `DATABASE_URL` da sé.
-const prisma = url
-  ? new PrismaClient({ datasources: { db: { url } } })
-  : new PrismaClient();
+const prisma = url ? new PrismaClient({ datasources: { db: { url } } }) : new PrismaClient();
 
 async function main() {
   console.log(`Database: ${dove}\n`);
@@ -137,7 +135,9 @@ async function main() {
   // mano.
   const conRuolo = daCancellare.filter((u) => u.adminRole !== "NONE");
   if (conRuolo.length > 0) {
-    console.error(`Rifiuto: ${conRuolo.map((u) => u.email).join(", ")} hanno un ruolo di moderazione.`);
+    console.error(
+      `Rifiuto: ${conRuolo.map((u) => u.email).join(", ")} hanno un ruolo di moderazione.`
+    );
     process.exitCode = 1;
     return;
   }
@@ -161,7 +161,9 @@ async function main() {
     return;
   }
 
-  const { count } = await prisma.user.deleteMany({ where: { id: { in: daCancellare.map((u) => u.id) } } });
+  const { count } = await prisma.user.deleteMany({
+    where: { id: { in: daCancellare.map((u) => u.id) } },
+  });
   console.log(`\n${count} account rimossi.`);
 
   // Le pagine che li mostravano sono generate staticamente e rigenerate ogni

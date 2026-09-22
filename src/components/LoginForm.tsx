@@ -63,18 +63,36 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       <div>
-        <label htmlFor="email" className="mb-1 block text-sm font-medium">Email</label>
-        <input id="email" name="email" type="email" required autoComplete="email" className="input" />
+        <label htmlFor="email" className="mb-1 block text-sm font-medium">
+          Email
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          className="input"
+        />
       </div>
 
       <div>
         <div className="mb-1 flex items-baseline justify-between gap-2">
-          <label htmlFor="password" className="block text-sm font-medium">Password</label>
+          <label htmlFor="password" className="block text-sm font-medium">
+            Password
+          </label>
           <Link href="/password-dimenticata" className="text-xs text-brand-600 hover:underline">
             Password dimenticata?
           </Link>
         </div>
-        <input id="password" name="password" type="password" required autoComplete="current-password" className="input" />
+        <input
+          id="password"
+          name="password"
+          type="password"
+          required
+          autoComplete="current-password"
+          className="input"
+        />
       </div>
 
       {problem && (

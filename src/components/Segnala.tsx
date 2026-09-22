@@ -42,7 +42,13 @@ export function Segnala({
       const res = await fetch("/api/segnalazioni", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetType, targetId, reason: motivo, details, reporterEmail: email }),
+        body: JSON.stringify({
+          targetType,
+          targetId,
+          reason: motivo,
+          details,
+          reporterEmail: email,
+        }),
       });
       const body = await res.json();
 
@@ -81,8 +87,8 @@ export function Segnala({
     <form onSubmit={invia} className="card mt-3 max-w-lg">
       <p className="text-fluid-sm font-semibold">Segnala questo contenuto</p>
       <p className="mt-1 text-fluid-xs text-ink-muted">
-        Le segnalazioni sono esaminate da una persona. Usarle per dissapori
-        personali le rende più lente per chi ne ha davvero bisogno.
+        Le segnalazioni sono esaminate da una persona. Usarle per dissapori personali le rende più
+        lente per chi ne ha davvero bisogno.
       </p>
 
       <fieldset className="mt-4">
@@ -133,8 +139,8 @@ export function Segnala({
         placeholder="Per ricevere l'esito"
       />
       <p className="mt-1.5 text-fluid-xs text-ink-faint">
-        La usiamo solo per comunicarti la decisione. Puoi lasciarla in bianco: la
-        segnalazione viene comunque presa in carico.
+        La usiamo solo per comunicarti la decisione. Puoi lasciarla in bianco: la segnalazione viene
+        comunque presa in carico.
       </p>
 
       <div className="mt-5 flex flex-wrap gap-3">

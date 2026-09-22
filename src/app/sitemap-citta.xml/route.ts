@@ -37,10 +37,14 @@ export async function GET() {
   ]);
 
   const artistsBy = new Map<string, number>(
-    artistCounts.flatMap((c) => (c.citySlug ? [[c.citySlug, c._count._all] as [string, number]] : []))
+    artistCounts.flatMap((c) =>
+      c.citySlug ? [[c.citySlug, c._count._all] as [string, number]] : []
+    )
   );
   const eventsBy = new Map<string, number>(
-    eventCounts.flatMap((c) => (c.citySlug ? [[c.citySlug, c._count._all] as [string, number]] : []))
+    eventCounts.flatMap((c) =>
+      c.citySlug ? [[c.citySlug, c._count._all] as [string, number]] : []
+    )
   );
 
   // Chiave "citta|disciplina" -> quanti profili

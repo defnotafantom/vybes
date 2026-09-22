@@ -79,7 +79,13 @@ export function formatCompensoBreve(
   return orario ? `${base} · ${durata} · ${orario} €/h` : `${base} · ${durata}`;
 }
 
-export function EventCard({ event, priority = false }: { event: EventCardData; priority?: boolean }) {
+export function EventCard({
+  event,
+  priority = false,
+}: {
+  event: EventCardData;
+  priority?: boolean;
+}) {
   const chiave = (event.category in EVENT_CATEGORIES ? event.category : "LIVE") as EventCategory;
   const cat = EVENT_CATEGORIES[chiave];
   const sfondo = SFONDO[chiave];

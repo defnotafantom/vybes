@@ -20,7 +20,10 @@ export function Pagination({
   );
 
   return (
-    <nav aria-label="Paginazione" className="mt-10 flex flex-wrap items-center justify-center gap-2">
+    <nav
+      aria-label="Paginazione"
+      className="mt-10 flex flex-wrap items-center justify-center gap-2"
+    >
       {page > 1 && (
         <Link rel="prev" href={href(page - 1)} className="btn-ghost">
           Precedente
