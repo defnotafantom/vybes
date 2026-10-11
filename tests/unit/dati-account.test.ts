@@ -12,6 +12,9 @@ vi.mock("@/lib/prisma", () => ({ prisma: { $transaction: mocks.transaction,
 vi.mock("@/lib/rate-limit", () => ({ clientKey: () => "test", rateLimit: mocks.rateLimit }));
 vi.mock("@/lib/env", () => ({ envReport: mocks.envReport }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
+vi.mock("next/server", async (importOriginal) => ({
+  ...await importOriginal<typeof import("next/server")>(), after: vi.fn(),
+}));
 vi.mock("@/lib/gamification", () => ({ syncProfileQuest: vi.fn() }));
 vi.mock("@/lib/reputazione-server", () => ({ ricalcolaReputazione: vi.fn() }));
 vi.mock("@/lib/upload-cleanup", () => ({ cleanupPendingUploads: vi.fn() }));

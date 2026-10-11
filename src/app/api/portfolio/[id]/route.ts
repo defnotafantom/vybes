@@ -6,6 +6,7 @@ import { cleanupPendingUploads } from "@/lib/upload-cleanup";
 import { slugDi } from "@/lib/utente";
 import { ricalcolaReputazione } from "@/lib/reputazione-server";
 import { syncPortfolioQuests } from "@/lib/gamification";
+import { after } from "next/server";
 
 async function owned(id: string, userId: string) {
   const item = await prisma.portfolioItem.findUnique({
@@ -67,7 +68,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       }),
       prisma.portfolioItem.delete({ where: { id } }),
     ]);
-    await cleanupPendingUploads(g.user!.id).catch(() => null);
+    after(async () => { await cleanupPendingUploads(g.user!.id).catch(() => null); });
 
     /* ── Quello che il portfolio alimenta va rifatto anche in discesa ──
      *

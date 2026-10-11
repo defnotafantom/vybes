@@ -8,6 +8,7 @@ import { syncProfileQuest } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
 import { ricalcolaReputazione } from "@/lib/reputazione-server";
 import { cleanupPendingUploads } from "@/lib/upload-cleanup";
+import { after } from "next/server";
 
 export async function PATCH(req: Request) {
   return handle(async () => {
@@ -132,11 +133,9 @@ export async function DELETE(req: Request) {
       }),
       prisma.user.delete({ where: { id: me.id } }),
     ]);
-    try {
-      await cleanupPendingUploads();
-    } catch {
-      // La transazione è già riuscita: i tentativi successivi leggono la coda.
-    }
+    // Risponde dopo la transazione: un guasto o la lentezza dello storage
+    // non devono trasformare una cancellazione riuscita in un errore utente.
+    after(async () => { await cleanupPendingUploads().catch(() => null); });
 
     // Le pagine indicizzate che mostravano il profilo vanno rigenerate subito:
     // altrimenti resterebbero servite dalla cache per un'ora dopo che la
