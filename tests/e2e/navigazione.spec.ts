@@ -74,6 +74,6 @@ test.describe("navigazione pubblica", () => {
     const res = await request.get("/api/health");
     const body = await res.json();
     expect(body).toHaveProperty("status");
-    expect(body).toHaveProperty("database");
+    expect(Object.keys(body)).toEqual(["status"]);
   });
 });

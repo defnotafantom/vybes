@@ -185,7 +185,7 @@ export function ScenaLanding() {
               className="scena-battuta"
               style={{ "--indice": i, "--totale": SCENE.length } as React.CSSProperties}
             >
-              <p className="scena-frase">{s.testo}</p>
+              {i === 0 ? <h1 className="scena-frase">{s.testo}</h1> : <p className="scena-frase">{s.testo}</p>}
               <p className="scena-nota">{s.nota}</p>
             </div>
           ))}

@@ -230,8 +230,8 @@ export default function PrivacyPage() {
           <ul className="mt-3 list-disc space-y-2 pl-5">
             <li>
               <strong className="text-ink">Copia dei tuoi dati:</strong> dal{" "}
-              <Link href="/dashboard/profilo" className="link-underline">
-                tuo profilo
+              <Link href="/account" className="link-underline">
+                pannello di gestione dei tuoi dati
               </Link>
               , pulsante «Esporta i miei dati». Ottieni un file JSON, formato leggibile anche da
               altri programmi.

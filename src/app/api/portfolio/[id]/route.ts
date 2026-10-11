@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { portfolioSchema } from "@/lib/validations";
 import { guard, parseBody, ok, fail, handle } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import { deleteFile } from "@/lib/upload";
+import { cleanupPendingUploads } from "@/lib/upload-cleanup";
 import { slugDi } from "@/lib/utente";
 import { ricalcolaReputazione } from "@/lib/reputazione-server";
 import { syncPortfolioQuests } from "@/lib/gamification";
@@ -58,9 +58,16 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const check = await owned(id, g.user!.id);
     if (check.error) return check.error;
 
-    await prisma.portfolioItem.delete({ where: { id } });
-    // Il record e' andato: si libera anche lo storage.
-    if (check.item?.mediaUrl) await deleteFile(check.item.mediaUrl);
+    // L'URL del portfolio è modificabile: si eliminano soltanto upload
+    // realmente registrati a nome dell'autore, con tentativo ripetibile.
+    await prisma.$transaction([
+      prisma.uploadedFile.updateMany({
+        where: { ownerId: g.user!.id, url: check.item!.mediaUrl },
+        data: { deleteRequestedAt: new Date() },
+      }),
+      prisma.portfolioItem.delete({ where: { id } }),
+    ]);
+    await cleanupPendingUploads(g.user!.id).catch(() => null);
 
     /* ── Quello che il portfolio alimenta va rifatto anche in discesa ──
      *

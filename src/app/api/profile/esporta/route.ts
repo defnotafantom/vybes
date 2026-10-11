@@ -24,7 +24,7 @@ import { fromCsv } from "@/lib/slug";
  */
 export async function GET(req: Request) {
   return handle(async () => {
-    const g = await guard(req, { scope: "profile-export", limit: 5 });
+    const g = await guard(req, { scope: "profile-export", limit: 5, ancheIncompleto: true });
     if (g.error) return g.error;
 
     const me = await prisma.user.findUnique({

@@ -55,8 +55,9 @@ export async function guard(
      * la regola esiste, ed esiste in un posto solo.
      *
      * Chiusa per difetto e non aperta, perché l'elenco delle rotte che devono
-     * restare accessibili a un account incompleto è **una**: quella che lo
-     * completa. Al contrario — aperta per difetto, chiusa dove serve —
+     * restare accessibili a un account incompleto comprende il completamento
+     * del profilo e la gestione dei propri dati (esportazione e cancellazione).
+     * Al contrario — aperta per difetto, chiusa dove serve —
      * bisognerebbe ricordarsene su ogni rotta nuova, e il giorno che ci si
      * dimentica non succede niente di visibile.
      */

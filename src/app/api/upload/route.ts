@@ -1,5 +1,6 @@
 import { guard, ok, fail, handle } from "@/lib/api";
-import { storeFile } from "@/lib/upload";
+import { storeFile, deleteFile } from "@/lib/upload";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
@@ -20,9 +21,21 @@ export async function POST(req: Request) {
 
     try {
       const result = await storeFile(file, folder);
+      try {
+        await prisma.uploadedFile.create({ data: { url: result.url, ownerId: g.user!.id } });
+      } catch {
+        // Non restituire un URL senza proprietario registrato.
+        await deleteFile(result.url);
+        return fail("Upload non riuscito, riprova", 503);
+      }
       return ok(result, { status: 201 });
     } catch (e) {
-      return fail(e instanceof Error ? e.message : "Upload non riuscito", 422);
+      const message = e instanceof Error ? e.message : "";
+      // Solo messaggi di validazione locali; niente errori grezzi dei fornitori.
+      if (/^(Tipo di file non consentito:|File troppo grande|File vuoto|Il contenuto del file|Questo file non può essere pubblicato:)/.test(message)) {
+        return fail(message, 422);
+      }
+      return fail("Upload non riuscito, riprova", 503);
     }
   });
 }

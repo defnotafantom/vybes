@@ -6,6 +6,7 @@ import { buildMetadata } from "@/lib/seo";
 import { CompletaProfilo } from "@/components/CompletaProfilo";
 import { ruoloDi } from "@/lib/ruolo";
 import { Logo } from "@/components/Logo";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +79,9 @@ export default async function BenvenutoPage() {
       <div className="mt-10">
         <CompletaProfilo nomeIniziale={me.name} ruoloIniziale={ruoloDi(me.role)} />
       </div>
+      <p className="mt-8 text-fluid-sm text-ink-muted">
+        Vuoi prima gestire i tuoi dati? <Link href="/account" className="underline">Esporta i dati o elimina l&apos;account</Link>.
+      </p>
     </div>
   );
 }
