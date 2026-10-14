@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { MailCheck } from "lucide-react";
 import { registerSchema } from "@/lib/validations";
 import { ResendVerification } from "@/components/ResendVerification";
@@ -36,6 +36,9 @@ export function RegisterForm({
    *  il posto alla schermata di conferma. */
   const [inviata, setInviata] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [pronto, setPronto] = useState(false);
+  // Prima dell'idratazione il browser non deve inviare il modulo nativo.
+  useEffect(() => setPronto(true), []);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -154,6 +157,7 @@ export function RegisterForm({
           {role === "ARTIST" ? "Nome d'arte" : "Nome o ragione sociale"}
         </label>
         <input
+          disabled={!pronto}
           id="name"
           name="name"
           required
@@ -176,6 +180,7 @@ export function RegisterForm({
           Email
         </label>
         <input
+          disabled={!pronto}
           id="email"
           name="email"
           type="email"
@@ -195,6 +200,7 @@ export function RegisterForm({
           Password
         </label>
         <input
+          disabled={!pronto}
           id="password"
           name="password"
           type="password"
@@ -219,7 +225,7 @@ export function RegisterForm({
         </p>
       )}
 
-      <button type="submit" className="btn-primary w-full" disabled={pending}>
+      <button type="submit" className="btn-primary w-full" disabled={!pronto || pending}>
         {pending ? "Creazione…" : "Crea account"}
       </button>
       {/* I due documenti erano nominati ma non raggiungibili da qui. Chiedere

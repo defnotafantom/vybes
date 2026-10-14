@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 type Problem = { kind: "credenziali" | "non-verificata" | "generico"; message: string };
 
@@ -13,6 +13,9 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
   const [email, setEmail] = useState("");
   const [resent, setResent] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [pronto, setPronto] = useState(false);
+  // Prima dell'idratazione il browser non deve inviare il modulo nativo.
+  useEffect(() => setPronto(true), []);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -66,6 +69,7 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
           Email
         </label>
         <input
+          disabled={!pronto}
           id="email"
           name="email"
           type="email"
@@ -85,6 +89,7 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
           </Link>
         </div>
         <input
+          disabled={!pronto}
           id="password"
           name="password"
           type="password"
@@ -109,7 +114,7 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
         </div>
       )}
 
-      <button type="submit" className="btn-primary w-full" disabled={pending}>
+      <button type="submit" className="btn-primary w-full" disabled={!pronto || pending}>
         {pending ? "Accesso in corso…" : "Accedi"}
       </button>
     </form>

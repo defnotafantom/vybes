@@ -22,11 +22,12 @@ test("la prima scelta del ruolo apre la dashboard senza dover ricaricare la pagi
   ).toBeAttached();
 });
 
-test("dalla scena iniziale si raggiunge l'accesso", async ({ page }) => {
+test("dalla scena iniziale si raggiunge l'accesso", async ({ page, browserName, isMobile }) => {
   await page.goto("/");
   // Uno scorrimento reale funziona anche sui profili mobili e non dipende
   // dal focus iniziale della tastiera.
-  await page.mouse.wheel(0, 5000);
+  if (browserName === "webkit" && isMobile) await page.keyboard.press("End");
+  else await page.mouse.wheel(0, 5000);
   const link = page.getByRole("link", { name: /ho già un account/i });
   await expect(link).toBeVisible({ timeout: 10_000 });
   await link.click();

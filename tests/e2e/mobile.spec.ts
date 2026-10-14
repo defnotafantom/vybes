@@ -170,7 +170,9 @@ test.describe("dentro l'area personale", () => {
     const email = `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.test`;
 
     await page.goto("/registrati");
-    await page.getByLabel(/nome/i).fill("Prova Telefono");
+    await page
+      .getByLabel(/nome/i)
+      .fill(`Prova Telefono ${Date.now()}-${Math.random().toString(36).slice(2, 6)}`);
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill("PasswordValida1");
     await page.getByRole("button", { name: /crea account/i }).click();

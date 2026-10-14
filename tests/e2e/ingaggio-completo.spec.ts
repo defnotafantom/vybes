@@ -186,6 +186,13 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
       "il messaggio della candidatura non è arrivato all'organizzatore"
     ).toBeVisible({ timeout: 20_000 });
 
+    if (isMobile) {
+      const sfora = await org.page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
+      );
+      expect(sfora, "i comandi dell'ingaggio non devono allargare la pagina mobile").toBe(false);
+    }
+
     await org.page.getByRole("button", { name: /^accetta$/i }).click();
 
     // Dopo la decisione compare il modo di scrivere alla persona accettata:
@@ -212,7 +219,7 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
     ).toBeVisible({ timeout: 20_000 });
 
     // ── 5. Si parlano ──────────────────────────────────────────────────────
-    await scrivi.click();
+    await scrivi.click({ timeout: 20_000 });
     await org.page.waitForURL(/\/dashboard\/messaggi/, { timeout: 20_000 });
 
     await org.page.getByRole("textbox").last().fill(messaggioAccordo);
