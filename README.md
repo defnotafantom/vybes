@@ -1,207 +1,95 @@
 # Vybes
 
-Piattaforma che collega artisti e chi li ingaggia. Next.js 15 (App Router),
-TypeScript, Prisma su PostgreSQL, Tailwind. Costruita SEO-first: tutto ciò che
-ha valore per la ricerca organica è renderizzato lato server e statico dove
-possibile.
+**Piattaforma per artisti e organizzatori di eventi.**
 
-![CI](https://github.com/defnotafantom/vybes/actions/workflows/ci.yml/badge.svg)
+Vybes nasce dall’idea di rendere più semplice trovare persone creative, mostrare i loro lavori e proporre una collaborazione. Un artista può creare un profilo e un portfolio; un organizzatore può pubblicare un’opportunità e ricevere candidature.
 
-**In produzione:** [vybeshub.art](https://vybeshub.art)
+**Stato:** progetto personale in sviluppo. Il codice è disponibile per essere esaminato e provato in un ambiente di sviluppo; questo non equivale a un servizio commerciale completato.
 
-## Documentazione
+[Presentazione nel portfolio](https://cphr.it/lavori/vybeshub) · [Profilo di Daniele](https://github.com/defnotafantom)
 
-| Documento | A cosa serve |
-|---|---|
-| [PANORAMICA.md](./PANORAMICA.md) | **Parti da qui.** Cos'è, cosa è risolto, cosa resta |
-| [DECISIONI.md](./DECISIONI.md) | Ogni scelta architetturale, con le alternative scartate e il prezzo pagato |
-| [MANUALE.md](./MANUALE.md) | I passi per arrivare online, con i comandi esatti |
-| [COLLOQUIO.md](./COLLOQUIO.md) | Come spiegare il progetto e le domande che arrivano |
-| [PORT.md](./PORT.md) | Cosa è stato preso dalla versione precedente e perché |
-| [CV.md](./CV.md) | I testi pronti per curriculum, GitHub e LinkedIn |
-| [RECLUTAMENTO.md](./RECLUTAMENTO.md) | Come portare i primi venti artisti reali |
+## Contesto e contributo
 
----
+Progetto di Daniele Bucca, sviluppato con l’assistenza di Claude, Codex e ChatGPT. Il contributo riguarda la definizione del prodotto, i requisiti, le scelte di interfaccia e l’organizzazione del lavoro. Implementazione e verifiche sono assistite dall’IA; la padronanza delle tecnologie impiegate è in consolidamento.
+
+## Cosa contiene
+
+- Profili per artisti, portfolio e ricerca per città e disciplina.
+- Opportunità pubblicate dagli organizzatori e gestione delle candidature.
+- Account, autenticazione, ruoli, messaggi e notifiche.
+- Funzioni per esportare i dati dell’account e richiederne la cancellazione.
+- Pagine pubbliche con metadata, sitemap e dati strutturati.
+- Test unitari, controlli sui tipi e pipeline GitHub Actions.
+
+## Tecnologie
+
+| Ambito | Tecnologie presenti |
+| --- | --- |
+| Interfaccia e server | TypeScript, React, Next.js App Router |
+| Dati | PostgreSQL, Prisma e migrazioni versionate |
+| Accesso e validazione | Auth.js, Zod |
+| File | Vercel Blob; driver locale per lo sviluppo |
+| Qualità | Vitest, Playwright, GitHub Actions |
+| Diagnostica | Sentry, endpoint di salute |
+
+## Dove leggere il codice
+
+| Percorso | Contenuto |
+| --- | --- |
+| [`src/app`](./src/app) | Pagine e API |
+| [`src/components`](./src/components) | Componenti dell’interfaccia |
+| [`src/lib`](./src/lib) | Autenticazione, permessi, validazione e logica condivisa |
+| [`prisma/schema.prisma`](./prisma/schema.prisma) | Modello dei dati |
+| [`prisma/migrations`](./prisma/migrations) | Evoluzione dello schema |
+| [`tests/unit`](./tests/unit) | Test della logica |
+| [`tests/e2e`](./tests/e2e) | Flussi di navigazione verificati con Playwright |
+| [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) | Controlli della pipeline |
 
 ## Avvio in locale
 
+Servono Node.js 22.12 o successivo e un database PostgreSQL dedicato allo sviluppo.
+
 ```bash
-npm install
-cp .env.local.example .env.local     # compila DATABASE_URL, DIRECT_URL, AUTH_SECRET
-npx prisma migrate dev --name init
-npm run db:seed                      # 20 città, 8 quest, 6 artisti e 6 ingaggi demo
+npm ci
+cp .env.local.example .env
+```
+
+Configura `DATABASE_URL` e `DIRECT_URL` verso quel database, `AUTH_SECRET` con un valore locale e `NEXT_PUBLIC_SITE_URL=http://localhost:3000`. Per i caricamenti di prova usa `UPLOAD_DRIVER=local`. Le altre integrazioni sono documentate nel file di esempio. Prima del rilascio configura anche i riferimenti `TITOLARE_*` sul server: i dati anagrafici e fiscali non sono inseriti nel codice della repository.
+
+```bash
+npx prisma migrate deploy
+npm run db:seed
 npm run dev
 ```
 
-Serve un PostgreSQL: un branch di sviluppo su Neon (consigliato: stesso motore
-della produzione) oppure un container locale — il comando è in
-`.env.local.example`.
+Il seed crea contenuti e account dimostrativi con indirizzi `.test`. Migrazioni, seed e test end-to-end devono usare un database di sviluppo o di test, separato dai dati degli utenti.
 
-Account demo, password `Password123`:
-
-| Email | Ruolo |
-|---|---|
-| `recruiter@vybes.test` | organizzatore, ha pubblicato gli ingaggi demo |
-| `chiara-bellandi@vybes.test` | artista |
-
-Diagnostica rapida: `http://localhost:3000/api/health`.
-
----
-
-## Struttura delle rotte
-
-### Pubbliche e indicizzabili
-
-| Rotta | Rendering | Note SEO |
-|---|---|---|
-| `/` | ISR 10 min | FAQPage + Organization + WebSite (SearchAction) |
-| `/artisti` · `?disciplina=…` | ISR 10 min | ItemList, canonical alla pagina 1 |
-| `/artisti/[slug]` | SSG + ISR 1 h | `Person` o `MusicGroup`, OG image dinamica |
-| `/eventi` · `?categoria=…` | ISR 5 min | ItemList |
-| `/eventi/[slug]` | SSG + ISR 15 min | `Event` con `Offer` e `Place` → rich result |
-| `/portfolio/[slug]` | ISR 1 h | `ImageObject` / `VideoObject` / `AudioObject` |
-| `/citta` | ISR 24 h | hub regionale |
-| `/citta/[citta]` | SSG | FAQPage localizzata, intro univoca per città |
-| `/citta/[citta]/artisti` | SSG | ItemList |
-| `/citta/[citta]/artisti/[disciplina]` | SSG selettivo | long tail: "DJ a Milano" |
-| `/citta/[citta]/eventi` | SSG | ItemList + archivio |
-| `/mappa` | ISR 10 min | mappa client + elenco testuale per i crawler |
-| `/come-funziona` · `/chi-siamo` · `/privacy` · `/termini` | statiche | |
-
-### Fuori indice (`noindex`)
-
-`/cerca`, `/accedi`, `/registrati`, `/password-dimenticata`, `/reimposta-password`,
-`/verifica-email`, tutta `/dashboard/*`, la paginazione oltre la prima pagina,
-gli eventi annullati o in bozza, le pagine di elenco senza contenuto.
-
----
-
-## Come è fatto il layer SEO
-
-**Un solo costruttore di metadata.** `src/lib/seo.ts` espone `buildMetadata()`:
-ogni pagina lo chiama e ottiene canonical assoluto, hreflang, Open Graph e
-Twitter card coerenti. Non esistono pagine con metadata scritti a mano che
-possono divergere.
-
-**Dati strutturati centralizzati.** `src/lib/jsonld.ts` costruisce gli oggetti
-Schema.org, `<JsonLd>` li stampa lato server. Tipi coperti: Organization,
-WebSite, Person, MusicGroup, Event, Offer, Place, CreativeWork, ItemList,
-BreadcrumbList, FAQPage.
-
-**Sitemap partizionata.** `/sitemap.xml` è un indice verso cinque file
-(`statiche`, `citta`, `artisti`, `eventi`, `portfolio`), ognuno con la propria
-cadenza di `revalidate`. Ogni file resta sotto i 50.000 URL. Gli eventi passati
-scendono a `priority 0.3` e `changefreq monthly` per non sprecare crawl budget.
-
-**Difesa dal thin content.** 20 città × 10 discipline fanno 200 combinazioni,
-quasi tutte vuote all'inizio. Le pagine sotto la soglia `MIN_ITEMS_FOR_INDEX`
-(`src/lib/constants.ts`) restano raggiungibili e linkate, ma fuori da sitemap e
-indice. Segnalare a Google duecento pagine che dicono "nessun profilo" non porta
-traffico: abbassa la valutazione del dominio e la frequenza di scansione anche
-delle pagine buone.
-
-**Rigenerazione mirata.** Le API chiamano `revalidatePath()` sulle pagine
-realmente interessate: pubblicare un ingaggio rigenera `/eventi`,
-`/citta/<città>/eventi` e `/mappa`, non l'intero sito.
-
-**Design e movimento.** Token in `globals.css` (colori come terne RGB, così
-Tailwind può applicarci l'opacità), scala brand completa fino a 950, ombre a due
-strati, sette animazioni riusabili. Le transizioni tra pagine stanno in
-`template.tsx` e **non animano il primo caricamento**: un fade-in da opacity 0
-ritarderebbe il momento in cui il browser dipinge l'elemento più grande, che è
-esattamente ciò che misura l'LCP. Gli skeleton replicano il rapporto d'aspetto
-dei componenti che sostituiscono, per non generare layout shift all'arrivo dei
-dati. Tutto si azzera sotto `prefers-reduced-motion`.
-
-**Performance.** Font con `display: swap`, `next/image` con AVIF/WebP,
-compressione delle immagini nel browser prima dell'upload, `priority` solo sulle
-prime tre card above the fold, Leaflet caricato dinamicamente e solo su `/mappa`
-(altrove c'è `StaticMap`, un iframe lazy che non costa JavaScript).
-
-### `NEXT_PUBLIC_SITE_URL` non è opzionale
-
-Tutto il layer passa da `siteUrl()`. Se manca, il codice ricade su `VERCEL_URL`,
-che è l'URL del singolo deployment: canonical, sitemap e OG punterebbero a
-`vybes-a1b2c3.vercel.app`. `src/lib/env.ts` blocca l'avvio in produzione proprio
-per questo.
-
----
-
-## Test
+## Verifiche riproducibili
 
 ```bash
-npm test              # 81 test unitari (Vitest), ~2 secondi
-npm run test:e2e      # 20 test end-to-end (Playwright)
-npm run test:coverage
+npm run typecheck
+npm run lint
+npm run verify:seo
+npm run verify:css
+npm run verify:shader
+npm test
+npm audit
 ```
 
-Gli unitari coprono il layer SEO (canonical, hreflang, troncamento descrizioni,
-JSON-LD), la validazione, il rate limit, la curva dei livelli, gli slug e i
-permessi. Gli e2e verificano che robots, sitemap, canonical e dati strutturati
-non regrediscano in silenzio: sono errori che non rompono la build e che ci si
-accorge di avere settimane dopo, guardando Search Console.
+Per gli end-to-end configura un `E2E_DATABASE_URL` dedicato, poi:
 
----
+```bash
+npm run test:e2e
+```
 
-## Scelte tecniche da conoscere
+[`scripts/verifica-db-test.mjs`](./scripts/verifica-db-test.mjs) controlla la configurazione prima di eseguire i test. `npm run build` applica anche le migrazioni: eseguilo solo sull’ambiente che intendi aggiornare.
 
-**Chat: SSE, non Socket.io.** L'App Router non espone un server HTTP a cui
-agganciare Socket.io senza un custom server, e su Vercel non regge proprio.
-`/api/messages/[id]/stream` è uno stream Server-Sent Events con **due sorgenti**:
-il bus in-process (`src/lib/realtime.ts`), istantaneo ma limitato all'istanza
-corrente, e il tailing del database ogni 2 secondi, che copre i messaggi scritti
-da altre istanze. Su Vercel chi scrive e chi ascolta finiscono quasi sempre su
-funzioni diverse, quindi il secondo è quello che garantisce la consegna. Il
-dedup è per id, così un messaggio che arriva da entrambe le sorgenti viene
-mostrato una volta sola.
+## Limiti e lavoro aperto
 
-Redis pub/sub qui non aiuterebbe: servirebbe comunque una connessione
-persistente per istanza, e il database — che è già la fonte di verità — risolve
-lo stesso problema senza aggiungere un servizio.
+Il rilascio richiede una verifica dei flussi con database e servizi configurati, delle procedure di ripristino e dei contenuti di privacy. Le funzioni email, storage e monitoraggio dipendono dalle rispettive configurazioni. Un test unitario superato non dimostra da solo che tutte queste integrazioni siano funzionanti.
 
-**Upload: Vercel Blob.** `src/lib/upload.ts` valida estensione, dimensione
-(15 MB) e **magic bytes** — il MIME dichiarato dal client non è affidabile. Il
-driver si sceglie da solo: `vercel-blob` su Vercel, `local` in sviluppo. Il ramo
-locale **non** funziona in produzione: il filesystem delle funzioni è effimero.
-`src/lib/image-client.ts` ridimensiona e converte in WebP prima di inviare.
+I documenti precedenti presenti nella repository conservano analisi e decisioni storiche. Per l’avvio e lo stato dichiarato, parti da questo README e controlla la revisione del codice che stai usando.
 
-**Database: Neon.** Due URL, servono entrambe. `DATABASE_URL` è il pooler, per
-le query a runtime. `DIRECT_URL` è l'endpoint diretto, richiesto da
-`prisma migrate` che ha bisogno di lock sullo schema. Migrazioni versionate,
-applicate automaticamente dallo script `build`. Indici composti sulle query
-calde (`citySlug + status + isPublic + startsAt` per la directory locale).
+## Pubblicazione
 
-Lo schema non usa enum né array nativi: le discipline sono una stringa CSV e i
-tag una tabella ponte. Era una scelta per la portabilità da SQLite; ora che il
-target è Postgres si potrebbe passare a `String[]` ed enum nativi, ma tocca
-diversi file e il guadagno è modesto.
-
-**Due assi di ruoli.** `role` distingue artista da organizzatore ed è il ruolo di
-prodotto. `adminRole` (`src/lib/permissions.ts`) è la moderazione: un artista può
-moderare senza smettere di essere un artista.
-
-**Sicurezza.** Rate limit per IP e per rotta (`src/lib/rate-limit.ts`). Con
-`UPSTASH_REDIS_REST_*` configurate il contatore è condiviso da tutte le istanze
-e il limite è quello vero; senza, vale per singola istanza. Se Redis è
-configurato ma non risponde si ricade sulla memoria invece di bloccare: un
-guasto del rate limiter non deve diventare un guasto del sito. Password bcrypt
-cost 12 con policy applicata sia client sia server,
-token di verifica salvati come hash SHA-256, validazione Zod su ogni endpoint,
-header di sicurezza in `next.config.ts`, sessione JWT httpOnly gestita da
-Auth.js.
-
-**hreflang IT/EN.** L'infrastruttura c'è (`LOCALES` in `src/lib/seo.ts`) ma è
-attiva solo su `it`: le rotte `/en/*` non esistono e dichiarare hreflang verso
-URL inesistenti è un errore che Search Console segnala. Quando le pagine
-inglesi ci saranno, aggiungi `"en"` a `LOCALES` e metadata e sitemap si
-aggiornano da soli.
-
----
-
-## Cosa manca ancora
-
-- **Blog.** Il canale più efficace per la long tail informazionale ("quanto
-  costa ingaggiare una band"). Non c'è.
-- **Rotte `/en`.** L'infrastruttura hreflang è pronta, mancano le pagine.
-- **Feature di prodotto dal vecchio progetto** — livello social, gamification
-  avanzata, pannello admin. Analisi e raccomandazione in [PORT.md](./PORT.md).
+I deploy automatici del ramo `main` sono sospesi finché il rilascio non viene collaudato e preparato sull’ambiente operativo. Un aggiornamento di questa repository non applica migrazioni al database online. Prima del rilascio occorre configurare i riferimenti `TITOLARE_*` sul server, verificare le integrazioni e predisporre il ripristino dei dati.

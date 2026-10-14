@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations";
 import { guard, parseBody, ok, fail, handle } from "@/lib/api";
-import { uniqueSlug } from "@/lib/slug";
+import { uniqueSlug, profileSlugBase } from "@/lib/slug";
 import { progressQuest } from "@/lib/gamification";
 import { sendVerificationEmail, emailIsConfigured } from "@/lib/email";
 import { issueToken } from "@/lib/tokens";
@@ -19,8 +19,10 @@ export async function POST(req: Request) {
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
     if (existing) return fail("Esiste già un account con questa email", 409);
 
-    const slug = await uniqueSlug(data.name, async (s) =>
-      Boolean(await prisma.user.findUnique({ where: { slug: s } }))
+    const slug = await uniqueSlug(
+      profileSlugBase(data.name),
+      async (s) => Boolean(await prisma.user.findUnique({ where: { slug: s } })),
+      30
     );
     const hashed = await bcrypt.hash(data.password, 12);
 

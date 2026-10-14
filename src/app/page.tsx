@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
-import { SITE } from "@/lib/constants";
+import { SITE, siteUrl } from "@/lib/constants";
+import { JsonLd } from "@/components/JsonLd";
 import { ScenaLanding } from "@/components/ScenaLanding";
 
 // La home resta statica; nessun dato strutturato FAQ per risposte non visibili.
@@ -19,5 +20,18 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default function HomePage() {
-  return <ScenaLanding />;
+  return (
+    <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: SITE.name,
+          url: siteUrl(),
+          inLanguage: "it-IT",
+        }}
+      />
+      <ScenaLanding />
+    </>
+  );
 }

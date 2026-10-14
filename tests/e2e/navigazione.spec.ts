@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 /**
  * Questi test girano su quattro profili, tre dei quali sono telefoni.
@@ -15,10 +15,10 @@ import { test, expect } from "@playwright/test";
 const daComputer = (larghezza?: number) => (larghezza ?? 1280) >= 768;
 
 test.describe("navigazione pubblica", () => {
-  test("dalla home si raggiungono le sezioni principali", async ({ page, viewport }) => {
+  test("dal catalogo si raggiungono le sezioni principali", async ({ page, viewport }) => {
     test.skip(!daComputer(viewport?.width), "sotto i 768px la navigazione sta nel menu");
 
-    await page.goto("/");
+    await page.goto("/citta");
     await page
       .getByRole("navigation", { name: /principale/i })
       .getByRole("link", { name: "Artisti" })
@@ -64,7 +64,7 @@ test.describe("navigazione pubblica", () => {
   });
 
   test("il tema scuro si attiva e persiste", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/artisti");
     await page.getByRole("button", { name: /tema/i }).click();
     await page.reload();
     await expect(page.locator("html")).toHaveClass(/dark/);

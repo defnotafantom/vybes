@@ -91,7 +91,11 @@ export async function storeFile(file: File, folder = "misc"): Promise<UploadResu
 export async function deleteFile(url: string): Promise<void> {
   if (url.startsWith("https://")) {
     const parsed = new URL(url);
-    if (!parsed.hostname.endsWith(".public.blob.vercel-storage.com") || parsed.username || parsed.password) {
+    if (
+      !parsed.hostname.endsWith(".public.blob.vercel-storage.com") ||
+      parsed.username ||
+      parsed.password
+    ) {
       throw new Error("Storage non riconosciuto");
     }
     const { del } = await import("@vercel/blob");
@@ -99,7 +103,11 @@ export async function deleteFile(url: string): Promise<void> {
     return;
   }
   // Solo file generati da storeFile: nessun percorso arbitrario dal client.
-  if (!/^\/uploads\/(avatar|cover|post|portfolio|evento|messaggio|misc)\/[a-f0-9-]{36}\.(jpg|png|webp|avif|gif|mp4|webm|mp3|wav|ogg)$/.test(url)) {
+  if (
+    !/^\/uploads\/(avatar|cover|post|portfolio|evento|messaggio|misc)\/[a-f0-9-]{36}\.(jpg|png|webp|avif|gif|mp4|webm|mp3|wav|ogg)$/.test(
+      url
+    )
+  ) {
     throw new Error("Percorso upload non riconosciuto");
   }
   try {

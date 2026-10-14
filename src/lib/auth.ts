@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/lib/validations";
 import { emailIsConfigured } from "@/lib/email";
-import { uniqueSlug } from "@/lib/slug";
+import { uniqueSlug, profileSlugBase } from "@/lib/slug";
 
 /**
  * Lo schema del login vive in `validations.ts`, insieme a tutti gli altri.
@@ -157,8 +157,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       const name = user.name?.trim() || user.email.split("@")[0];
-      const slug = await uniqueSlug(name, async (s) =>
-        Boolean(await prisma.user.findUnique({ where: { slug: s } }))
+      const slug = await uniqueSlug(
+        profileSlugBase(name),
+        async (s) => Boolean(await prisma.user.findUnique({ where: { slug: s } })),
+        30
       );
 
       const created = await prisma.user.create({

@@ -1,3 +1,5 @@
+> Documento di lavoro precedente. I numeri e gli stati qui descritti possono riferirsi a revisioni diverse; per la presentazione e l’avvio attuali vedi [README.md](./README.md).
+
 # Difendere il progetto
 
 Se questo progetto sta al posto di un titolo di studio, il codice che gira è

@@ -68,7 +68,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       }),
       prisma.portfolioItem.delete({ where: { id } }),
     ]);
-    after(async () => { await cleanupPendingUploads(g.user!.id).catch(() => null); });
+    after(async () => {
+      await cleanupPendingUploads(g.user!.id).catch(() => null);
+    });
 
     /* ── Quello che il portfolio alimenta va rifatto anche in discesa ──
      *

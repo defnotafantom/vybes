@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 /**
  * Questi test proteggono il lavoro SEO da regressioni silenziose: sono errori
@@ -54,8 +54,8 @@ test.describe("infrastruttura SEO", () => {
     const types = blocks.flatMap(
       (b) => JSON.stringify(JSON.parse(b)).match(/"@type":"[^"]+"/g) ?? []
     );
-    expect(types.join()).toContain("Organization");
-    expect(types.join()).toContain("FAQPage");
+    expect(types.join()).toContain("WebSite");
+    expect(types.join()).not.toContain("FAQPage");
 
     // Ogni blocco deve essere JSON valido: uno rotto invalida i rich result.
     for (const block of blocks) expect(() => JSON.parse(block)).not.toThrow();

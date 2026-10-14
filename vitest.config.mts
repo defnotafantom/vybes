@@ -1,5 +1,5 @@
 import { defineConfig } from "vitest/config";
-import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 // Vitest invece di Jest: stessa API di test, ma legge direttamente TypeScript
 // e i path alias di tsconfig senza una catena di transform da configurare.
@@ -14,6 +14,6 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: { "@": path.resolve(__dirname, "./src") },
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
 });

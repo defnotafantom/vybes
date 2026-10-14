@@ -69,6 +69,9 @@ jobs:
       - name: Test unitari
         run: npm test
 
+      - name: Dipendenze runtime
+        run: npm audit --omit=dev --audit-level=high
+
   build:
     name: Build di produzione
     runs-on: ubuntu-latest
@@ -109,9 +112,8 @@ jobs:
   e2e:
     name: Test end-to-end
     runs-on: ubuntu-latest
-    # Gli e2e richiedono un database vero: girano solo su main, dove ha senso
-    # spendere qualche minuto in più.
-    if: github.ref == 'refs/heads/main'
+    # Verifica i flussi su un database isolato prima del merge e dopo il push.
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     services:
       postgres:
         image: postgres:16

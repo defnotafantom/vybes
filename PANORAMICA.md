@@ -1,3 +1,5 @@
+> Documento di lavoro precedente. I numeri e gli stati qui descritti possono riferirsi a revisioni diverse; per la presentazione e l’avvio attuali vedi [README.md](./README.md).
+
 # Vybes — stato del progetto
 
 Fotografia di dove siamo. Tre parti: **cos'è**, **cosa è risolto**, **cosa

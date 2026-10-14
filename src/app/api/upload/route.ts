@@ -32,7 +32,11 @@ export async function POST(req: Request) {
     } catch (e) {
       const message = e instanceof Error ? e.message : "";
       // Solo messaggi di validazione locali; niente errori grezzi dei fornitori.
-      if (/^(Tipo di file non consentito:|File troppo grande|File vuoto|Il contenuto del file|Questo file non può essere pubblicato:)/.test(message)) {
+      if (
+        /^(Tipo di file non consentito:|File troppo grande|File vuoto|Il contenuto del file|Questo file non può essere pubblicato:)/.test(
+          message
+        )
+      ) {
         return fail(message, 422);
       }
       return fail("Upload non riuscito, riprova", 503);

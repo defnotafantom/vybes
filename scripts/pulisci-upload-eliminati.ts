@@ -7,7 +7,9 @@ async function main() {
   console.log(JSON.stringify(result));
   if (result.failed) process.exitCode = 1;
 }
-main().catch(() => {
-  console.error("Pulizia upload non riuscita; le richieste restano in coda.");
-  process.exitCode = 1;
-}).finally(() => prisma.$disconnect());
+main()
+  .catch(() => {
+    console.error("Pulizia upload non riuscita; le richieste restano in coda.");
+    process.exitCode = 1;
+  })
+  .finally(() => prisma.$disconnect());

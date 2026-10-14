@@ -8,14 +8,17 @@ import { ZonaPericolosa } from "@/components/ZonaPericolosa";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = buildMetadata({
-  title: "Gestisci i tuoi dati", path: "/account", noindex: true,
+  title: "Gestisci i tuoi dati",
+  path: "/account",
+  noindex: true,
 });
 
 export default async function AccountPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/account");
   const me = await prisma.user.findUnique({
-    where: { id: session.user.id }, select: { name: true, password: true },
+    where: { id: session.user.id },
+    select: { name: true, password: true },
   });
   if (!me) redirect("/accedi");
   return (
@@ -25,7 +28,9 @@ export default async function AccountPage() {
         Puoi esportare i tuoi dati o eliminare l&apos;account anche prima di completare il profilo.
       </p>
       <ZonaPericolosa nome={me.name} haPassword={Boolean(me.password)} />
-      <Link href="/benvenuto" className="btn-ghost mt-8 inline-flex">Torna al profilo</Link>
+      <Link href="/benvenuto" className="btn-ghost mt-8 inline-flex">
+        Torna al profilo
+      </Link>
     </div>
   );
 }

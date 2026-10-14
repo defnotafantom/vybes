@@ -80,7 +80,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <Avatar name={session.user.name ?? "?"} src={session.user.image} size="sm" />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold">{session.user.name}</p>
-              <RoleBadge role={session.user.role} />
+              <RoleBadge role={ruolo} />
             </div>
           </div>
         </div>

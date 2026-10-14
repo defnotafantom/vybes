@@ -129,13 +129,16 @@ export async function DELETE(req: Request) {
     // non risponde dopo che i dati dell'account sono stati rimossi.
     await prisma.$transaction([
       prisma.uploadedFile.updateMany({
-        where: { ownerId: me.id }, data: { deleteRequestedAt: new Date() },
+        where: { ownerId: me.id },
+        data: { deleteRequestedAt: new Date() },
       }),
       prisma.user.delete({ where: { id: me.id } }),
     ]);
     // Risponde dopo la transazione: un guasto o la lentezza dello storage
     // non devono trasformare una cancellazione riuscita in un errore utente.
-    after(async () => { await cleanupPendingUploads().catch(() => null); });
+    after(async () => {
+      await cleanupPendingUploads().catch(() => null);
+    });
 
     // Le pagine indicizzate che mostravano il profilo vanno rigenerate subito:
     // altrimenti resterebbero servite dalla cache per un'ora dopo che la

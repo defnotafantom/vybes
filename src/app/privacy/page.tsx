@@ -90,8 +90,8 @@ export default function PrivacyPage() {
           ) : (
             <p>
               <span className="rounded bg-gold-500/[0.12] px-1.5 py-0.5 text-gold-300">
-                Da compilare in src/lib/titolare.ts: nome o ragione sociale, indirizzo, partita IVA
-                o codice fiscale, email di contatto.
+                Da configurare sul server: nome o ragione sociale, indirizzo, partita IVA o codice
+                fiscale, email di contatto.
               </span>
             </p>
           )}
