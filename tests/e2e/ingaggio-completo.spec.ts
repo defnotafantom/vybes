@@ -152,13 +152,22 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
     // pubblicare qualcosa che vede solo chi l'ha scritto è già capitato.
     await expect(art.page.getByRole("heading", { name: titolo })).toBeVisible();
 
-    await art.page.getByRole("button", { name: /^candidati$/i }).click();
+    await art.page
+      .getByRole("button", { name: /^candidati$/i })
+      .filter({ visible: true })
+      .first()
+      .click();
     await art.page.getByLabel(/messaggio per l'organizzatore/i).fill(messaggioCandidatura);
     await art.page.getByRole("button", { name: /invia candidatura/i }).click();
 
     // Il pulsante cambia stato: è il riscontro immediato che l'invio è
     // andato. Senza, chi si candida non sa se ha cliccato davvero.
-    await expect(art.page.getByRole("button", { name: /ritira la candidatura/i })).toBeVisible({
+    await expect(
+      art.page
+        .getByRole("button", { name: /ritira la candidatura/i })
+        .filter({ visible: true })
+        .first()
+    ).toBeVisible({
       timeout: 20_000,
     });
 
