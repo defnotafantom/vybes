@@ -108,7 +108,7 @@ export default defineConfig({
    * fidarsi del rosso.
    */
   workers: process.env.CI ? 2 : 3,
-  reporter: process.env.CI ? "github" : "list",
+  reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: { baseURL: BASE_URL, trace: "on-first-retry", locale: "it-IT" },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },

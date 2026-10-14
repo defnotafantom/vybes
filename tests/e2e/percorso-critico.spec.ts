@@ -55,7 +55,10 @@ test.describe("ritorno alla destinazione dopo il login", () => {
     const href = await primo.getAttribute("href");
     await page.goto(href!);
 
-    const accedi = page.getByRole("link", { name: /accedi per candidarti/i });
+    const accedi = page
+      .getByRole("link", { name: /accedi per candidarti/i })
+      .filter({ visible: true })
+      .first();
     test.skip((await accedi.count()) === 0, "ingaggio non aperto alle candidature");
 
     await accedi.click();

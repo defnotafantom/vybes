@@ -20,10 +20,9 @@ export async function completeOnboarding(
   page: Page,
   role: "ARTIST" | "RECRUITER" | "ENTRAMBI" = "ARTIST"
 ) {
-  // Una registrazione può attraversare /dashboard prima del redirect.
-  // Il caricamento diretto rende osservabile la decisione del server.
-  await page.goto("/benvenuto");
-  if (/\/dashboard/.test(page.url())) return;
+  // La registrazione naviga già qui: attendere evita una seconda
+  // navigazione concorrente, soprattutto su WebKit.
+  await expect(page).toHaveURL(/\/benvenuto$/, { timeout: 25_000 });
   await expect(page.getByRole("button", { name: "Entra", exact: true })).toBeVisible();
   const choice =
     role === "RECRUITER"
@@ -34,7 +33,5 @@ export async function completeOnboarding(
   await page.getByRole("radio", { name: choice }).check();
   await page.getByRole("button", { name: "Entra", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard$/, { timeout: 20_000 });
-  await expect(
-    page.getByRole("navigation", { name: /sezioni dell'area personale/i })
-  ).toBeAttached();
+  await expect(page.getByRole("heading", { level: 1, name: /^Ciao / })).toBeVisible();
 }

@@ -18,7 +18,7 @@ test("la prima scelta del ruolo apre la dashboard senza dover ricaricare la pagi
     page.getByRole("heading", { level: 1, name: /Ciao Prova Onboarding/ })
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Come ti vedono gli artisti", exact: true })
+    page.getByRole("link", { name: "Come ti vedono gli artisti", exact: true, includeHidden: true })
   ).toBeAttached();
 });
 

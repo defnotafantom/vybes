@@ -175,7 +175,6 @@ test.describe("dentro l'area personale", () => {
     await page.getByLabel("Password").fill("PasswordValida1");
     await page.getByRole("button", { name: /crea account/i }).click();
 
-    await page.waitForURL(/\/dashboard|\/benvenuto/, { timeout: 20_000 });
     await completeOnboarding(page, "ENTRAMBI");
     test.skip(
       !/\/dashboard/.test(page.url()),

@@ -64,7 +64,6 @@ async function entra(
   await page.getByLabel("Password").fill(PASSWORD);
   await page.getByRole("button", { name: /crea account/i }).click();
 
-  await page.waitForURL(/\/dashboard|\/benvenuto/, { timeout: 25_000 });
   await completeOnboarding(page, role);
 
   return email;
