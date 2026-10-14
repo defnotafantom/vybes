@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { MailCheck } from "lucide-react";
 import { registerSchema } from "@/lib/validations";
@@ -26,7 +25,6 @@ export function RegisterForm({
   role?: "ARTIST" | "RECRUITER";
   onRoleChange?: (r: "ARTIST" | "RECRUITER") => void;
 }) {
-  const router = useRouter();
   const [roleInterno, setRoleInterno] = useState(defaultRole);
   const role = roleEsterno ?? roleInterno;
   const setRole = (r: "ARTIST" | "RECRUITER") => {
@@ -102,8 +100,9 @@ export function RegisterForm({
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      // La nuova sessione viene letta dal server senza conservare
+      // il redirect anonimo o avviare un refresh concorrente.
+      window.location.replace("/benvenuto");
     });
   }
 

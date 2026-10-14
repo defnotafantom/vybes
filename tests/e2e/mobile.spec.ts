@@ -204,6 +204,15 @@ test.describe("dentro l'area personale", () => {
       await link.click();
 
       await expect(page).toHaveURL(new RegExp(percorso.replace(/\//g, "\\/")));
+      // Su WebKit l'URL cambia prima del contenuto: attendere il titolo
+      // evita di iniziare il giro successivo durante la navigazione.
+      await expect(
+        page.getByRole("heading", {
+          level: 1,
+          name: voce === "Quest" ? /^(Quest|Obiettivi)$/ : voce,
+          exact: true,
+        })
+      ).toBeVisible();
 
       const sfora = await page.evaluate(
         () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
@@ -240,6 +249,7 @@ test.describe("dentro l'area personale", () => {
     await page.goto("/dashboard/profilo");
 
     const casella = page.locator("input[type=checkbox]").first();
+    await expect(casella).toBeVisible();
     await casella.scrollIntoViewIfNeeded();
     const box = await casella.boundingBox();
     expect(box!.height, "casella troppo piccola per un dito").toBeGreaterThanOrEqual(19);

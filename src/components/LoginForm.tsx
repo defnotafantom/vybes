@@ -2,13 +2,11 @@
 
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 type Problem = { kind: "credenziali" | "non-verificata" | "generico"; message: string };
 
 export function LoginForm({ next, initialError }: { next: string; initialError: string | null }) {
-  const router = useRouter();
   const [problem, setProblem] = useState<Problem | null>(
     initialError ? { kind: "credenziali", message: initialError } : null
   );
@@ -46,8 +44,9 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
         return;
       }
 
-      router.push(next);
-      router.refresh();
+      // La destinazione è validata dalla pagina di accesso.
+      // Il caricamento completo legge il cookie appena creato.
+      window.location.replace(next);
     });
   }
 
