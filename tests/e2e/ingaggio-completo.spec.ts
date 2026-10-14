@@ -1,4 +1,5 @@
-import { test, expect, type Page, type Browser } from "@playwright/test";
+import { type Page, type Browser, type BrowserContextOptions } from "@playwright/test";
+import { test, expect, completeOnboarding } from "./fixtures";
 
 /**
  * Il percorso per cui il sito esiste, dall'inizio alla fine.
@@ -34,7 +35,7 @@ import { test, expect, type Page, type Browser } from "@playwright/test";
  */
 
 const emailUnica = (chi: string) =>
-  `e2e-${Date.now()}-${chi}${Math.random().toString(36).slice(2, 6)}@example.com`;
+  `e2e-${Date.now()}-${chi}${Math.random().toString(36).slice(2, 6)}@example.test`;
 
 const PASSWORD = "PasswordValida1";
 
@@ -47,7 +48,14 @@ const PASSWORD = "PasswordValida1";
  * quello che gli interessa viene disattivato dopo la seconda volta, e da quel
  * momento non protegge più niente.
  */
-async function entra(page: Page, nome: string): Promise<string> {
+async function entra(
+  page: Page,
+  nome: string,
+  role: "ARTIST" | "RECRUITER" = "ARTIST"
+): Promise<string> {
+  await page.context().setExtraHTTPHeaders({
+    "x-forwarded-for": `2001:db8::${Math.floor(Math.random() * 65535).toString(16)}`,
+  });
   const email = emailUnica(nome.toLowerCase().replace(/\W/g, ""));
 
   await page.goto("/registrati");
@@ -56,11 +64,7 @@ async function entra(page: Page, nome: string): Promise<string> {
   await page.getByLabel("Password").fill(PASSWORD);
   await page.getByRole("button", { name: /crea account/i }).click();
 
-  await page.waitForURL(/\/dashboard/, { timeout: 25_000 }).catch(() => {});
-  test.skip(
-    !/\/dashboard/.test(page.url()),
-    "verifica dell'email attiva: l'accesso automatico non avviene, il flusso non è percorribile da qui"
-  );
+  await completeOnboarding(page, role);
 
   return email;
 }
@@ -72,13 +76,17 @@ function fraDueSettimane(): string {
   return d.toISOString().slice(0, 16);
 }
 
-async function nuovoContesto(browser: Browser) {
-  const context = await browser.newContext();
+async function nuovoContesto(browser: Browser, options: BrowserContextOptions) {
+  const context = await browser.newContext(options);
   return { context, page: await context.newPage() };
 }
 
 test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, ci parliamo", async ({
   browser,
+  viewport,
+  isMobile,
+  hasTouch,
+  userAgent,
 }) => {
   // Quattro passaggi con due sessioni: il tempo predefinito non basta, e
   // alzarlo qui è meglio che spezzare il flusso in prove che non si
@@ -89,12 +97,13 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
   const messaggioCandidatura = "Suono da otto anni, ho un repertorio pronto per questa data.";
   const messaggioAccordo = "Ciao, confermiamo l'orario: arrivo per il soundcheck alle 19.";
 
-  const org = await nuovoContesto(browser);
-  const art = await nuovoContesto(browser);
+  const options = { viewport, isMobile, hasTouch, userAgent };
+  const org = await nuovoContesto(browser, options);
+  const art = await nuovoContesto(browser, options);
 
   try {
     // ── 1. L'organizzatore pubblica ────────────────────────────────────────
-    await entra(org.page, "Prova Organizzatore");
+    await entra(org.page, "Prova Organizzatore", "RECRUITER");
 
     await org.page.goto("/dashboard/eventi/nuovo");
     await org.page.getByLabel("Titolo").fill(titolo);
@@ -143,13 +152,22 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
     // pubblicare qualcosa che vede solo chi l'ha scritto è già capitato.
     await expect(art.page.getByRole("heading", { name: titolo })).toBeVisible();
 
-    await art.page.getByRole("button", { name: /^candidati$/i }).click();
+    await art.page
+      .getByRole("button", { name: /^candidati$/i })
+      .filter({ visible: true })
+      .first()
+      .click();
     await art.page.getByLabel(/messaggio per l'organizzatore/i).fill(messaggioCandidatura);
     await art.page.getByRole("button", { name: /invia candidatura/i }).click();
 
     // Il pulsante cambia stato: è il riscontro immediato che l'invio è
     // andato. Senza, chi si candida non sa se ha cliccato davvero.
-    await expect(art.page.getByRole("button", { name: /ritira la candidatura/i })).toBeVisible({
+    await expect(
+      art.page
+        .getByRole("button", { name: /ritira la candidatura/i })
+        .filter({ visible: true })
+        .first()
+    ).toBeVisible({
       timeout: 20_000,
     });
 
@@ -167,6 +185,13 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
       org.page.getByText(messaggioCandidatura),
       "il messaggio della candidatura non è arrivato all'organizzatore"
     ).toBeVisible({ timeout: 20_000 });
+
+    if (isMobile) {
+      const sfora = await org.page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
+      );
+      expect(sfora, "i comandi dell'ingaggio non devono allargare la pagina mobile").toBe(false);
+    }
 
     await org.page.getByRole("button", { name: /^accetta$/i }).click();
 
@@ -194,7 +219,7 @@ test("un ingaggio arriva fino all'accordo: pubblico, mi candido, mi accettano, c
     ).toBeVisible({ timeout: 20_000 });
 
     // ── 5. Si parlano ──────────────────────────────────────────────────────
-    await scrivi.click();
+    await scrivi.click({ timeout: 20_000 });
     await org.page.waitForURL(/\/dashboard\/messaggi/, { timeout: 20_000 });
 
     await org.page.getByRole("textbox").last().fill(messaggioAccordo);

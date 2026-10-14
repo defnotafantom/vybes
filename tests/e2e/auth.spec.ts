@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("accesso e registrazione", () => {
   test("la dashboard reindirizza chi non è autenticato", async ({ page }) => {
@@ -10,7 +10,7 @@ test.describe("accesso e registrazione", () => {
 
   test("credenziali errate mostrano un errore, non una schermata bianca", async ({ page }) => {
     await page.goto("/accedi");
-    await page.getByLabel("Email").fill("nessuno@example.com");
+    await page.getByLabel("Email").fill("nessuno@example.test");
     await page.getByLabel("Password").fill("PasswordSbagliata1");
     await page.getByRole("button", { name: /accedi/i }).click();
 
@@ -20,7 +20,7 @@ test.describe("accesso e registrazione", () => {
   test("la registrazione valida la password lato client", async ({ page }) => {
     await page.goto("/registrati");
     await page.getByLabel(/nome/i).fill("Test Utente");
-    await page.getByLabel("Email").fill(`test-${Date.now()}@example.com`);
+    await page.getByLabel("Email").fill(`test-${Date.now()}@example.test`);
     await page.getByLabel("Password").fill("debole");
     await page.getByRole("button", { name: /crea account/i }).click();
 
@@ -37,7 +37,7 @@ test.describe("accesso e registrazione", () => {
 
   test("il recupero password non rivela se l'account esiste", async ({ page }) => {
     await page.goto("/password-dimenticata");
-    await page.getByLabel("Email").fill("sicuramente-inesistente@example.com");
+    await page.getByLabel("Email").fill("sicuramente-inesistente@example.test");
     await page.getByRole("button", { name: /invia il link/i }).click();
 
     // `.first()` e non `getByRole("status")` da solo: le notifiche temporanee

@@ -79,8 +79,8 @@ export default function TerminiPage() {
           ) : (
             <p>
               <Manca>
-                Da compilare in src/lib/titolare.ts: nome o ragione sociale, indirizzo, partita IVA
-                o codice fiscale, email
+                Da configurare sul server: nome o ragione sociale, indirizzo, partita IVA o codice
+                fiscale, email
               </Manca>
             </p>
           )}

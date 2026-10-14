@@ -10,16 +10,24 @@ export function toSlug(input: string): string {
  */
 export async function uniqueSlug(
   base: string,
-  exists: (slug: string) => Promise<boolean>
+  exists: (slug: string) => Promise<boolean>,
+  maxLength = Infinity
 ): Promise<string> {
-  const root = toSlug(base) || "vybes";
+  const root = (toSlug(base) || "vybes").slice(0, maxLength).replace(/-+$/, "");
   let candidate = root;
   let n = 1;
   while (await exists(candidate)) {
     n += 1;
-    candidate = `${root}-${n}`;
+    const suffix = `-${n}`;
+    candidate = `${root.slice(0, maxLength - suffix.length).replace(/-+$/, "")}${suffix}`;
   }
   return candidate;
+}
+
+/** Proposta compatibile con i limiti del nickname pubblico. */
+export function profileSlugBase(name: string): string {
+  const slug = toSlug(name).slice(0, 30).replace(/-+$/, "");
+  return slug.length >= 3 ? slug : `${slug || "utente"}-vybes`;
 }
 
 /** Separa una stringa "a,b,c" in array pulito (workaround array su sqlite). */

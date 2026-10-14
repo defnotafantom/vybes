@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 /**
  * Il percorso per cui il sito esiste.
@@ -20,7 +20,7 @@ import { test, expect } from "@playwright/test";
  */
 
 /** Indirizzo irripetibile: i test girano in parallelo e più volte al giorno. */
-const emailUnica = () => `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+const emailUnica = () => `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.test`;
 
 test.describe("ritorno alla destinazione dopo il login", () => {
   test("chi clicca «Contatta» senza essere autenticato non perde l'artista", async ({ page }) => {
@@ -55,7 +55,10 @@ test.describe("ritorno alla destinazione dopo il login", () => {
     const href = await primo.getAttribute("href");
     await page.goto(href!);
 
-    const accedi = page.getByRole("link", { name: /accedi per candidarti/i });
+    const accedi = page
+      .getByRole("link", { name: /accedi per candidarti/i })
+      .filter({ visible: true })
+      .first();
     test.skip((await accedi.count()) === 0, "ingaggio non aperto alle candidature");
 
     await accedi.click();
@@ -194,7 +197,7 @@ test.describe("la registrazione finisce da qualche parte", () => {
       const scadenza = Date.now() + 45_000;
       const guarda = async () => {
         const url = page.url();
-        if (/\/dashboard/.test(url)) return risolvi("dentro");
+        if (/\/dashboard|\/benvenuto/.test(url)) return risolvi("dentro");
         if (
           await page
             .getByText(/conferma l'email|controlla/i)
@@ -229,7 +232,7 @@ test.describe("la registrazione finisce da qualche parte", () => {
       esito === "fermo"
         ? "la registrazione non è finita da nessuna parte: né dashboard né schermata di verifica"
         : esito === "limitato"
-          ? "il limitatore ha respinto la registrazione: il server dei test deve partire con RATE_LIMIT_DISABILITATO=1 (vedi playwright.config.ts)"
+          ? "il limitatore ha respinto la registrazione: i browser di prova devono usare indirizzi simulati distinti (vedi fixtures.ts)"
           : "chi si è appena iscritto è stato rimandato al modulo di accesso"
     ).toMatch(/^(dentro|verifica)$/);
 
@@ -277,7 +280,7 @@ test.describe("il sito è navigabile dal telefono", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test("dal telefono si raggiungono tutte le sezioni", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/artisti");
 
     await page.getByRole("button", { name: /apri il menu/i }).click();
     const menu = page.getByRole("dialog", { name: /menu/i });
@@ -293,14 +296,14 @@ test.describe("il sito è navigabile dal telefono", () => {
   });
 
   test("il menu porta davvero dove dice", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/artisti");
     await page.getByRole("button", { name: /apri il menu/i }).click();
     await page.getByRole("dialog").getByRole("link", { name: "Artisti", exact: true }).click();
     await expect(page).toHaveURL(/\/artisti$/);
   });
 
   test("si chiude con Escape", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/artisti");
     await page.getByRole("button", { name: /apri il menu/i }).click();
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toBeHidden();
@@ -309,7 +312,7 @@ test.describe("il sito è navigabile dal telefono", () => {
 
 test.describe("area personale e sito pubblico sono due posti diversi", () => {
   test("la barra superiore c'è sul sito pubblico", async ({ page, viewport }) => {
-    await page.goto("/");
+    await page.goto("/artisti");
 
     // La stessa navigazione ha due forme: la fila orizzontale da 768px in su,
     // il pulsante del menu sotto. Verificare solo la prima significava

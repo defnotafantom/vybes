@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, completeOnboarding } from "./fixtures";
 
 /**
  * Il sito da un telefono.
@@ -38,7 +38,7 @@ test("«Accedi» si vede senza dover aprire niente", async ({ page }) => {
   // Il difetto: `hidden sm:inline-flex`. Sotto i 640px il pulsante spariva
   // dall'intestazione, e l'unico rimasto — «Iscriviti» — invitava a creare un
   // secondo account chi ne aveva già uno.
-  await page.goto("/");
+  await page.goto("/artisti");
 
   const accedi = page.getByRole("banner").getByRole("link", { name: /^accedi$/i });
   await expect(accedi).toBeVisible();
@@ -59,7 +59,7 @@ test("nessuno scorrimento orizzontale nelle pagine principali", async ({ page })
 });
 
 test("i bersagli dell'intestazione si toccano senza sbagliare", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/artisti");
   const barra = page.getByRole("banner");
 
   // 44px è la soglia sotto la quale un dito adulto manca il bersaglio.
@@ -77,7 +77,7 @@ test("i bersagli dell'intestazione si toccano senza sbagliare", async ({ page })
 });
 
 test("il menu si apre, scorre e porta dove dice", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/artisti");
   await page.getByRole("button", { name: /apri il menu/i }).click();
 
   const menu = page.getByRole("dialog", { name: /menu/i });
@@ -96,7 +96,7 @@ test("il menu si apre, scorre e porta dove dice", async ({ page }) => {
 });
 
 test("il pannello non esce dallo schermo", async ({ page, viewport }) => {
-  await page.goto("/");
+  await page.goto("/artisti");
   await page.getByRole("button", { name: /apri il menu/i }).click();
 
   const pannello = page.getByRole("dialog", { name: /menu/i }).locator("> div").last();
@@ -131,7 +131,7 @@ test("lo zoom resta possibile", async ({ page }) => {
   // WCAG 1.4.4). Questo test esiste perché quella riga non rientri di
   // nascosto fra sei mesi, quando qualcuno vorrà chiudere in fretta lo stesso
   // problema.
-  await page.goto("/");
+  await page.goto("/artisti");
   const viewport = await page.locator('meta[name="viewport"]').getAttribute("content");
   expect(viewport ?? "").not.toMatch(/maximum-scale\s*=\s*1|user-scalable\s*=\s*no/);
 });
@@ -167,15 +167,17 @@ test("senza sessione la dashboard porta al login, non a una pagina rotta", async
 test.describe("dentro l'area personale", () => {
   /** Entra, oppure salta: senza sessione non c'è niente da verificare qui. */
   async function entra(page: import("@playwright/test").Page) {
-    const email = `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+    const email = `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.test`;
 
     await page.goto("/registrati");
-    await page.getByLabel(/nome/i).fill("Prova Telefono");
+    await page
+      .getByLabel(/nome/i)
+      .fill(`Prova Telefono ${Date.now()}-${Math.random().toString(36).slice(2, 6)}`);
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill("PasswordValida1");
     await page.getByRole("button", { name: /crea account/i }).click();
 
-    await page.waitForURL(/\/dashboard|\/registrati|\/accedi/, { timeout: 20_000 }).catch(() => {});
+    await completeOnboarding(page, "ENTRAMBI");
     test.skip(
       !/\/dashboard/.test(page.url()),
       "verifica dell'email attiva: l'accesso automatico non avviene"
@@ -198,11 +200,21 @@ test.describe("dentro l'area personale", () => {
       await page.getByRole("button", { name: /apri il menu delle sezioni/i }).click();
 
       const pannello = page.getByRole("dialog", { name: /menu/i });
-      const link = pannello.getByRole("link", { name: voce, exact: true });
+      const link = pannello.locator(`a[href="${percorso}"]`);
+      await expect(link, `Voce ${voce}`).toBeAttached();
       await link.scrollIntoViewIfNeeded();
       await link.click();
 
       await expect(page).toHaveURL(new RegExp(percorso.replace(/\//g, "\\/")));
+      // Su WebKit l'URL cambia prima del contenuto: attendere il titolo
+      // evita di iniziare il giro successivo durante la navigazione.
+      await expect(
+        page.getByRole("heading", {
+          level: 1,
+          name: voce === "Quest" ? /^(Quest|Obiettivi)$/ : voce,
+          exact: true,
+        })
+      ).toBeVisible();
 
       const sfora = await page.evaluate(
         () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
@@ -239,6 +251,7 @@ test.describe("dentro l'area personale", () => {
     await page.goto("/dashboard/profilo");
 
     const casella = page.locator("input[type=checkbox]").first();
+    await expect(casella).toBeVisible();
     await casella.scrollIntoViewIfNeeded();
     const box = await casella.boundingBox();
     expect(box!.height, "casella troppo piccola per un dito").toBeGreaterThanOrEqual(19);

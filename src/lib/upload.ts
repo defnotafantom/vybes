@@ -85,22 +85,35 @@ export async function storeFile(file: File, folder = "misc"): Promise<UploadResu
 }
 
 /**
- * Rimuove un file caricato. Non solleva: la cancellazione dello storage e'
- * accessoria rispetto a quella del record, e un file orfano e' meno grave di
- * un'operazione utente fallita.
+ * Rimuove un file inventariato. Gli errori restano visibili al chiamante,
+ * che deve conservare la richiesta per un nuovo tentativo.
  */
 export async function deleteFile(url: string): Promise<void> {
+  if (url.startsWith("https://")) {
+    const parsed = new URL(url);
+    if (
+      !parsed.hostname.endsWith(".public.blob.vercel-storage.com") ||
+      parsed.username ||
+      parsed.password
+    ) {
+      throw new Error("Storage non riconosciuto");
+    }
+    const { del } = await import("@vercel/blob");
+    await del(url);
+    return;
+  }
+  // Solo file generati da storeFile: nessun percorso arbitrario dal client.
+  if (
+    !/^\/uploads\/(avatar|cover|post|portfolio|evento|messaggio|misc)\/[a-f0-9-]{36}\.(jpg|png|webp|avif|gif|mp4|webm|mp3|wav|ogg)$/.test(
+      url
+    )
+  ) {
+    throw new Error("Percorso upload non riconosciuto");
+  }
   try {
-    if (url.startsWith("http")) {
-      const { del } = await import("@vercel/blob");
-      await del(url);
-      return;
-    }
-    if (url.startsWith("/uploads/")) {
-      await unlink(path.join(process.cwd(), "public", url));
-    }
+    await unlink(path.join(process.cwd(), "public", url));
   } catch (e) {
-    console.warn("[upload] cancellazione non riuscita", url, e);
+    if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
   }
 }
 

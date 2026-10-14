@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { toSlug } from "@/lib/slug";
+import { profileSlugBase, toSlug } from "@/lib/slug";
 import { SCELTE_RUOLO, type Ruolo } from "@/lib/ruolo";
 
 /**
@@ -45,11 +44,14 @@ import { SCELTE_RUOLO, type Ruolo } from "@/lib/ruolo";
 export function CompletaProfilo({
   nomeIniziale,
   ruoloIniziale,
+  baseIndirizzo,
+  slugIniziale,
 }: {
   nomeIniziale: string;
   ruoloIniziale: Ruolo;
+  baseIndirizzo: string;
+  slugIniziale: string;
 }) {
-  const router = useRouter();
   const [nome, setNome] = useState(nomeIniziale);
   const [ruolo, setRuolo] = useState<Ruolo>(ruoloIniziale);
   const [errore, setErrore] = useState<string | null>(null);
@@ -63,7 +65,12 @@ export function CompletaProfilo({
    * vedrebbe ricomparire la proposta sotto le dita a ogni lettera del nome.
    */
   const [nickScelto, setNickScelto] = useState<string | null>(null);
-  const proposta = useMemo(() => toSlug(nome).slice(0, 30), [nome]);
+  // La registrazione ha già assegnato un indirizzo libero, anche quando
+  // due persone hanno lo stesso nome. Non sostituirlo con una proposta presa.
+  const proposta = useMemo(
+    () => (nome.trim() === nomeIniziale.trim() ? slugIniziale : profileSlugBase(nome)),
+    [nome, nomeIniziale, slugIniziale]
+  );
   const nick = nickScelto ?? proposta;
 
   function invia(e: React.FormEvent) {
@@ -80,11 +87,10 @@ export function CompletaProfilo({
         setErrore(json.error ?? "Non è andata");
         return;
       }
-      // `refresh` prima di `push`: il layout della dashboard legge il ruolo dal
-      // database, e senza rileggerlo rimanderebbe qui — un rimbalzo che
-      // sembrerebbe un errore proprio nel momento in cui è andato tutto bene.
-      router.refresh();
-      router.push("/dashboard");
+      // Il router può conservare il redirect della dashboard visto prima
+      // della scelta del ruolo. Una navigazione completa legge lo stato appena
+      // salvato e non corre insieme a un refresh della vecchia pagina.
+      window.location.replace("/dashboard");
     });
   }
 
@@ -114,7 +120,7 @@ export function CompletaProfilo({
           Il tuo indirizzo
         </label>
         <div className="flex items-center gap-1 rounded-xl border bg-surface-sunken px-3">
-          <span className="shrink-0 text-fluid-sm text-ink-faint">vybes.it/artisti/</span>
+          <span className="shrink-0 text-fluid-sm text-ink-faint">{baseIndirizzo}</span>
           <input
             id="c-nick"
             className="min-w-0 flex-1 bg-transparent py-3 text-fluid-sm outline-none"

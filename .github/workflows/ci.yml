@@ -69,6 +69,9 @@ jobs:
       - name: Test unitari
         run: npm test
 
+      - name: Dipendenze runtime
+        run: npm audit --omit=dev --audit-level=high
+
   build:
     name: Build di produzione
     runs-on: ubuntu-latest
@@ -107,11 +110,15 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://vybeshub.art
 
   e2e:
-    name: Test end-to-end
+    name: Test end-to-end (${{ matrix.project }})
     runs-on: ubuntu-latest
-    # Gli e2e richiedono un database vero: girano solo su main, dove ha senso
-    # spendere qualche minuto in più.
-    if: github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, android, iphone, iphone-se]
+    # Verifica i flussi su un database isolato prima del merge e dopo il push.
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     services:
       postgres:
         image: postgres:16
@@ -151,11 +158,11 @@ jobs:
       # in configurazione e non veniva eseguito da nessuno: una suite che
       # nessuno lancia è documentazione, non verifica.
       - name: Playwright
-        run: npx playwright test
+        run: npx playwright test --project=${{ matrix.project }}
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.project }}
           path: playwright-report/
           retention-days: 7

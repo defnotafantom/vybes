@@ -1,3 +1,5 @@
+> Documento di lavoro precedente. I numeri e gli stati qui descritti possono riferirsi a revisioni diverse; per la presentazione e l’avvio attuali vedi [README.md](./README.md).
+
 # Da qui alla messa online — lista completa
 
 Sei fasi in ordine. Ognuna dà per fatta la precedente.

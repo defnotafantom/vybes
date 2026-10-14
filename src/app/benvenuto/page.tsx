@@ -3,9 +3,13 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
+import { uniqueSlug, profileSlugBase } from "@/lib/slug";
+import { completaProfiloSchema } from "@/lib/validations";
+import { siteUrl } from "@/lib/constants";
 import { CompletaProfilo } from "@/components/CompletaProfilo";
 import { ruoloDi } from "@/lib/ruolo";
 import { Logo } from "@/components/Logo";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +66,14 @@ export default async function BenvenutoPage() {
   if (!me) redirect("/accedi");
   if (me.ruoloSceltoIl) redirect("/dashboard");
 
+  const slugIniziale = completaProfiloSchema.shape.slug.safeParse(me.slug).success
+    ? me.slug
+    : await uniqueSlug(
+        profileSlugBase(me.name),
+        async (slug) => Boolean(await prisma.user.findUnique({ where: { slug } })),
+        30
+      );
+
   return (
     <div className="container-narrow flex min-h-[70dvh] flex-col justify-center py-16">
       <div className="mb-10 text-center">
@@ -76,8 +88,20 @@ export default async function BenvenutoPage() {
       </p>
 
       <div className="mt-10">
-        <CompletaProfilo nomeIniziale={me.name} ruoloIniziale={ruoloDi(me.role)} />
+        <CompletaProfilo
+          baseIndirizzo={`${new URL(siteUrl()).host}/artisti/`}
+          slugIniziale={slugIniziale}
+          nomeIniziale={me.name}
+          ruoloIniziale={ruoloDi(me.role)}
+        />
       </div>
+      <p className="mt-8 text-fluid-sm text-ink-muted">
+        Vuoi prima gestire i tuoi dati?{" "}
+        <Link href="/account" className="underline">
+          Esporta i dati o elimina l&apos;account
+        </Link>
+        .
+      </p>
     </div>
   );
 }

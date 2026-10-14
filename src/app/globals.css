@@ -846,6 +846,8 @@
    Sparisce nel primo decimo: un invito che resta dopo essere stato
    accolto diventa un rimprovero. */
 .scena-invito {
+  /* La decorazione resta inerte anche quando trasparente su WebKit. */
+  pointer-events: none;
   grid-area: 1 / 1;
   align-self: end;
   justify-self: center;

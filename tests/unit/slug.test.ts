@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toSlug, uniqueSlug, fromCsv, toCsv } from "@/lib/slug";
+import { toSlug, uniqueSlug, profileSlugBase, fromCsv, toCsv } from "@/lib/slug";
 import { haversineKm, SEED_CITIES, cityIntro } from "@/lib/cities";
 
 describe("toSlug", () => {
@@ -29,6 +29,23 @@ describe("uniqueSlug", () => {
 
   it("usa un fallback se il nome non produce slug", async () => {
     expect(await uniqueSlug("!!!", async () => false)).toBe("vybes");
+  });
+});
+
+describe("nickname pubblico", () => {
+  it("accetta nomi corti e nomi senza caratteri utilizzabili", () => {
+    expect(profileSlugBase("DJ")).toBe("dj-vybes");
+    expect(profileSlugBase("!!!")).toBe("utente-vybes");
+  });
+
+  it("tronca un nome lungo senza lasciare un trattino finale", () => {
+    expect(profileSlugBase(`${"a".repeat(29)} bbbbb`)).toBe("a".repeat(29));
+  });
+
+  it("mantiene il limite anche quando aggiunge il suffisso per un omonimo", async () => {
+    const root = "a".repeat(30);
+    const taken = new Set([root, `${"a".repeat(28)}-2`]);
+    expect(await uniqueSlug(root, async (s) => taken.has(s), 30)).toBe(`${"a".repeat(28)}-3`);
   });
 });
 

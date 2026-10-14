@@ -53,7 +53,7 @@ export function PaginaHeader({
             </p>
           )}
         </div>
-        {azioni && <div className="flex shrink-0 flex-wrap gap-2">{azioni}</div>}
+        {azioni && <div className="flex max-w-full flex-wrap gap-2">{azioni}</div>}
       </div>
     </header>
   );

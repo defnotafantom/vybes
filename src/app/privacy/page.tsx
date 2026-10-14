@@ -90,8 +90,8 @@ export default function PrivacyPage() {
           ) : (
             <p>
               <span className="rounded bg-gold-500/[0.12] px-1.5 py-0.5 text-gold-300">
-                Da compilare in src/lib/titolare.ts: nome o ragione sociale, indirizzo, partita IVA
-                o codice fiscale, email di contatto.
+                Da configurare sul server: nome o ragione sociale, indirizzo, partita IVA o codice
+                fiscale, email di contatto.
               </span>
             </p>
           )}
@@ -230,8 +230,8 @@ export default function PrivacyPage() {
           <ul className="mt-3 list-disc space-y-2 pl-5">
             <li>
               <strong className="text-ink">Copia dei tuoi dati:</strong> dal{" "}
-              <Link href="/dashboard/profilo" className="link-underline">
-                tuo profilo
+              <Link href="/account" className="link-underline">
+                pannello di gestione dei tuoi dati
               </Link>
               , pulsante «Esporta i miei dati». Ottieni un file JSON, formato leggibile anche da
               altri programmi.

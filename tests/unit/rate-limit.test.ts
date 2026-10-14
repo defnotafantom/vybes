@@ -76,14 +76,24 @@ describe("rateLimit — backend Redis", () => {
   }
 
   it("conta su Redis quando è configurato", async () => {
-    const counters = new Map<string, number>();
-    stubRedis(counters);
-    const { rateLimit: limiter } = await import("@/lib/rate-limit");
+    // Fissa il tempo: tre richieste reali possono attraversare il confine
+    // di una finestra e riaprire correttamente il contatore durante il test.
+    const now = 1_700_000_000_000;
+    const clock = vi.spyOn(Date, "now").mockReturnValue(now);
+    try {
+      const counters = new Map<string, number>();
+      stubRedis(counters);
+      const { rateLimit: limiter } = await import("@/lib/rate-limit");
 
-    const key = `r-${Math.random()}`;
-    expect((await limiter(key, 2)).backend).toBe("redis");
-    expect((await limiter(key, 2)).ok).toBe(true);
-    expect((await limiter(key, 2)).ok).toBe(false);
+      const key = `r-${Math.random()}`;
+      expect((await limiter(key, 2)).backend).toBe("redis");
+      expect((await limiter(key, 2)).ok).toBe(true);
+      expect((await limiter(key, 2)).ok).toBe(false);
+      clock.mockReturnValue(now + 60_000);
+      expect((await limiter(key, 2)).ok).toBe(true);
+    } finally {
+      clock.mockRestore();
+    }
   });
 
   it("ricade sulla memoria se Redis non risponde, invece di bloccare", async () => {

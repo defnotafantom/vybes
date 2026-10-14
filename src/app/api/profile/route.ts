@@ -7,6 +7,8 @@ import { toCsv } from "@/lib/slug";
 import { syncProfileQuest } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
 import { ricalcolaReputazione } from "@/lib/reputazione-server";
+import { cleanupPendingUploads } from "@/lib/upload-cleanup";
+import { after } from "next/server";
 
 export async function PATCH(req: Request) {
   return handle(async () => {
@@ -101,7 +103,7 @@ export async function DELETE(req: Request) {
   return handle(async () => {
     // Limite basso: nessuno cancella il proprio account cinque volte al minuto,
     // e un tentativo ripetuto è un attacco a forza bruta sulla password.
-    const g = await guard(req, { scope: "profile-delete", limit: 5 });
+    const g = await guard(req, { scope: "profile-delete", limit: 5, ancheIncompleto: true });
     if (g.error) return g.error;
 
     const { data, error } = await parseBody(req, eliminaSchema);
@@ -123,7 +125,20 @@ export async function DELETE(req: Request) {
       });
     }
 
-    await prisma.user.delete({ where: { id: me.id } });
+    // La coda non va in cascade: conserva la richiesta anche se lo storage
+    // non risponde dopo che i dati dell'account sono stati rimossi.
+    await prisma.$transaction([
+      prisma.uploadedFile.updateMany({
+        where: { ownerId: me.id },
+        data: { deleteRequestedAt: new Date() },
+      }),
+      prisma.user.delete({ where: { id: me.id } }),
+    ]);
+    // Risponde dopo la transazione: un guasto o la lentezza dello storage
+    // non devono trasformare una cancellazione riuscita in un errore utente.
+    after(async () => {
+      await cleanupPendingUploads().catch(() => null);
+    });
 
     // Le pagine indicizzate che mostravano il profilo vanno rigenerate subito:
     // altrimenti resterebbero servite dalla cache per un'ora dopo che la

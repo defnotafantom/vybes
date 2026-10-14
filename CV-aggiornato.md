@@ -1,3 +1,5 @@
+> Documento di lavoro precedente. I numeri e gli stati qui descritti possono riferirsi a revisioni diverse; per la presentazione e l’avvio attuali vedi [README.md](./README.md).
+
 # Daniele Bucca — CV aggiornato
 
 Testo pronto da incollare nel tuo modello. Le modifiche e il perché sono in

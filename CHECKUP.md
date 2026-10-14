@@ -1,3 +1,5 @@
+> Documento di lavoro precedente. I numeri e gli stati qui descritti possono riferirsi a revisioni diverse; per la presentazione e l’avvio attuali vedi [README.md](./README.md).
+
 # Vybes come biglietto da visita: cosa regge e cosa no
 
 Scritto per rispondere a una domanda sola: **questo progetto è pronto per

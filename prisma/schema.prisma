@@ -106,12 +106,26 @@ model User {
   movimenti      MovimentoMonete[]
   partite        PartitaOrecchio[]
   giri           GiroRuota[]
+  uploads        UploadedFile[]
 
   // Copre la query principale della directory locale:
   // "artisti pubblici di <citta>, ordinati per reputazione".
   @@index([citySlug, role, isPublic, reputation])
   @@index([role, isPublic, reputation])
   @@index([updatedAt])
+}
+
+// L'inventario resta dopo la cancellazione dell'utente finché lo storage è ripulito.
+model UploadedFile {
+  id                String    @id @default(cuid())
+  url               String    @unique
+  ownerId           String?
+  owner             User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  deleteRequestedAt DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([ownerId])
+  @@index([deleteRequestedAt])
 }
 
 model VerificationToken {
